@@ -16,6 +16,7 @@ public class Style
 			stroke = new float[4];
 			fill = new float[4];
 			no_fill = false;
+			setDefault();
 		}
 		
 		void apply()

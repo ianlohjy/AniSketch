@@ -22,7 +22,6 @@ public class AniSketch extends PApplet
 	
 	//UI hori_resize_bar;
 	
-
 	MainWindows main_windows;
 	
 	public static void main(String args[])

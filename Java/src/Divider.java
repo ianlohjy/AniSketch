@@ -11,88 +11,101 @@ public class Divider extends Element{
 	int thickness;
 	int type;
 	
-	float bounds[]; // The bounds is the size of the thing that the divider is "dividing"
-	float current_postion; // Position of divider within bounds
-	float movement_range[]; // Range within which the divider is allowed to move in, value is relative to bounds 
+	float ratio_position; // Position of divider within bounds
+	float lower_bounds; // The bounds is the size of the thing that the divider is "dividing"
+	float upper_bounds;
+	float start_range; // Range within which the divider is allowed to move in, value is relative to bounds 
+	float stop_range;
 	
-	
-
 	Divider(PApplet p)
 	{
 		super(0,0,0,0,p);
-		default_style = new Style(p);
-		default_style.setDefault();
-		hover_style = new Style(p);
-		hover_style.setDefault();
 		
-		bounds = new float[2];
-		movement_range = new float[2];
-		current_postion = 0;
+		hover_style   = new Style(p);
+		default_style = new Style(p);
+		
+		this.thickness       = 1;
+		this.lower_bounds    = 0;
+		this.lower_bounds    = 1;
+		this.ratio_position  = 0;
+		this.start_range     = 0;
+		this.stop_range      = 1;
 	}
 	
-	void setVertical(int x, int y, int h, int thickness)
+	void setThickness(int thickness)
 	{
-		this.x = x;
-		this.y = y;
-		this.h = h;
+	}
+	
+	void setVertical(float lower_bounds, float upper_bounds, float start_range, float stop_range, float ratio_position, int thickness)
+	{
+		this.ratio_position = ratio_position;
+		this.x = (int)(lower_bounds+(ratio_position*(upper_bounds-lower_bounds)));
 		this.w = thickness;
 		this.thickness = thickness;
-		x_offset = (int)(-thickness/2f);
-		y_offset = 0;
+		this.x_offset = (int)(-thickness/2f);
+		this.y_offset = 0;
+		this.upper_bounds = upper_bounds;
+		this.lower_bounds = lower_bounds;
+		this.start_range = start_range;
+		this.stop_range = stop_range;
 		type = VERTICAL;
 	}
 	
-	void setBounds(float lower, float upper)
+	void setHorizontal(float lower_bounds, float upper_bounds, float start_range, float stop_range, float ratio_position, int thickness)
 	{
-		bounds[0] = lower;
-		bounds[1] = upper;
+		this.ratio_position = ratio_position;
+		this.y = (int)(lower_bounds+(ratio_position*(upper_bounds-lower_bounds)));
+		this.h = thickness;
+		this.thickness = thickness;
+		this.x_offset = 0;
+		this.y_offset = (int)(-thickness/2f);
+		this.upper_bounds = upper_bounds;
+		this.lower_bounds = lower_bounds;
+		this.start_range = start_range;
+		this.stop_range = stop_range;
+		type = HORIZONTAL;
+	}
+		
+	void setBounds(float lower_bounds, float upper_bounds)
+	{
+		this.lower_bounds = lower_bounds;
+		this.upper_bounds = upper_bounds;
 	}
 	
+	/*
 	void setMovementRange(float start, float stop)
 	{
 		movement_range[0] = start;
 		movement_range[1] = stop;
 	}
+	*/
 	
 	void updateRatioPosition()
-	{
+	{	// Calculates and updates the position of the divider, as a ratio between lower and upper bounds 
+		// This is used whenever the divider is moved
 		if(type == VERTICAL)
 		{
-			current_postion = x/(bounds[1]-bounds[0]);	
+			ratio_position = x/(upper_bounds-lower_bounds);	
 		}
 		else if(type == HORIZONTAL)
 		{
-			current_postion = y/(bounds[1]-bounds[0]);
+			ratio_position = y/(upper_bounds-lower_bounds);
 		}
 	}
 	
 	void updateCurrentPosition()
-	{
+	{	// Calculates the "hard"/static position of the divider
 		if(type == VERTICAL)
 		{
-			//current_postion = x/(bounds[1]-bounds[0]);	
-			//p.println(current_postion);
-			x = (int)(bounds[0]+(current_postion*(bounds[1]-bounds[0])));
+			x = (int)(lower_bounds+(ratio_position*(upper_bounds-lower_bounds)));
 		}
 		else if(type == HORIZONTAL)
 		{
-			//current_postion = y/(bounds[1]-bounds[0]);
-			y = (int)(bounds[0]+(current_postion*(bounds[1]-bounds[0])));
+			y = (int)(lower_bounds+(ratio_position*(upper_bounds-lower_bounds)));
 		}
 	}
 	
-	void setHorizontal(int x, int y, int w, int thickness)
-	{
-		this.x = x;
-		this.y = y;
-		this.w = w;
-		this.h = thickness;
-		this.thickness = thickness;
-		x_offset = 0;
-		y_offset = (int)(-thickness/2f);
-		type = HORIZONTAL;
-	}
-		
+
 	void mouseInputResponse()
 	{
 		if(pressed)
@@ -100,13 +113,13 @@ public class Divider extends Element{
 			if(type == VERTICAL)
 			{
 				x = p.mouseX;
-				if(x < movement_range[0]*(bounds[1]-bounds[0]))
+				if(x < start_range*(upper_bounds-lower_bounds))
 				{
-					x = (int)(movement_range[0]*(bounds[1]-bounds[0]));
+					x = (int)(start_range*(upper_bounds-lower_bounds));
 				}
-				else if(x > movement_range[1]*(bounds[1]-bounds[0]))
+				else if(x > stop_range*(upper_bounds-lower_bounds))
 				{
-					x = (int)(movement_range[1]*(bounds[1]-bounds[0]));
+					x = (int)(stop_range*(upper_bounds-lower_bounds));
 				}
 				updateRatioPosition();
 			}
@@ -114,13 +127,13 @@ public class Divider extends Element{
 			else if(type == HORIZONTAL)
 			{
 				y = p.mouseY;
-				if(y < movement_range[0]*(bounds[1]-bounds[0]))
+				if(y < start_range*(upper_bounds-lower_bounds))
 				{
-					y = (int)(movement_range[0]*(bounds[1]-bounds[0]));
+					y = (int)(start_range*(upper_bounds-lower_bounds));
 				}
-				else if(y > movement_range[1]*(bounds[1]-bounds[0]))
+				else if(y > stop_range*(upper_bounds-lower_bounds))
 				{
-					y = (int)(movement_range[1]*(bounds[1]-bounds[0]));
+					y = (int)(stop_range*(upper_bounds-lower_bounds));
 				}
 				updateRatioPosition();
 			}
@@ -131,7 +144,6 @@ public class Divider extends Element{
 	void draw()
 	{
 		updateCurrentPosition();
-		
 		if(hover || pressed)
 		{
 			hover_style.apply();

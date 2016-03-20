@@ -44,35 +44,40 @@ public class MainWindows {
 	void setupDividers()
 	{
 		horizontal_divider = new Divider(p);
-		horizontal_divider.setHorizontal(0, p.height/2, p.width, 10);
-		
-		horizontal_divider.default_style.noStroke();
-		horizontal_divider.default_style.fill(10,10,10,255);
-		horizontal_divider.hover_style.noStroke();
-		horizontal_divider.hover_style.fill(80,80,80,255);
-		horizontal_divider.setBounds(0, p.height);
-		horizontal_divider.setMovementRange(0.5f, 0.9f);
+		horizontal_divider.setHorizontal(0,p.height,0.2f,0.8f,0.5f,10);
 		
 		vertical_divider = new Divider(p);
-		vertical_divider.setVertical(p.width/2, 0, horizontal_divider.y+horizontal_divider.thickness/2, 10);
-		vertical_divider.setBounds(0, p.width);
-		vertical_divider.setMovementRange(0.2f, 0.8f);
+		vertical_divider.setVertical(0,p.width,0.2f,0.8f,0.5f,10); 
 		
-		vertical_divider.default_style = horizontal_divider.default_style;
-		vertical_divider.hover_style = horizontal_divider.hover_style;
+		horizontal_divider.w = p.width;
+		horizontal_divider.x = 0;
 		
-		horizontal_divider.updateRatioPosition();
-		vertical_divider.updateRatioPosition();
+		vertical_divider.h = horizontal_divider.y;
+		vertical_divider.y = 0;
+		
+		//vertical_divider.default_style = horizontal_divider.default_style;
+		//vertical_divider.hover_style = horizontal_divider.hover_style;
+
+		//vertical_divider.setBounds(0, p.width);
+		//vertical_divider.setMovementRange(0.2f, 0.8f);
+				
+		//horizontal_divider.default_style.noStroke();
+		//horizontal_divider.default_style.fill(10,10,10,255);
+		//horizontal_divider.hover_style.noStroke();
+		//horizontal_divider.hover_style.fill(80,80,80,255);
+		//horizontal_divider.setBounds(0, p.height);
+		//horizontal_divider.setMovementRange(0.5f, 0.9f);
 	}
 	
-	void updateDividers(){
+	void updateDividers()
+	{
 		vertical_divider.h = horizontal_divider.y+horizontal_divider.thickness/2;
 		vertical_divider.draw();
 		horizontal_divider.draw();
-
+		
 	}
 	
-	void onScreenResize()
+	void handleDividersOnResize()
 	{
 		horizontal_divider.setBounds(0, p.height);
 		horizontal_divider.w = p.width;
@@ -81,6 +86,11 @@ public class MainWindows {
 		vertical_divider.updateCurrentPosition();
 		horizontal_divider.updateCurrentPosition();
 		updateDividers();
+	}
+	
+	void onScreenResize()
+	{
+		handleDividersOnResize();
 	}
 	
 	
