@@ -8,7 +8,7 @@ public class Sheet extends Element{
 	{
 		super(x,y,w,h,p);
 		default_style = new Style(p);
-		default_style.setDefault();
+		default_style.fill(230,230,230,255);
 	}
 	
 	void draw()

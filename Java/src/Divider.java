@@ -17,7 +17,9 @@ public class Divider extends Element{
 	float start_range; // Range within which the divider is allowed to move in, value is relative to bounds 
 	float stop_range;
 	
-	Divider(PApplet p)
+	Object parent;
+	
+	Divider(PApplet p, Object parent)
 	{
 		super(0,0,0,0,p);
 		
@@ -31,6 +33,8 @@ public class Divider extends Element{
 		this.ratio_position  = 0;
 		this.start_range     = 0;
 		this.stop_range      = 1;
+		
+		this.parent = parent;
 	}
 	
 	void setVertical(float lower_bounds, float upper_bounds, float start_range, float stop_range, float ratio_position, int thickness)
@@ -92,9 +96,13 @@ public class Divider extends Element{
 		{
 			y = (int)(lower_bounds+(ratio_position*(upper_bounds-lower_bounds)));
 		}
+		
+		if(parent instanceof MainWindows)
+		{
+			((MainWindows) parent).callbackDividersUpdatePosition();
+		}
 	}
 	
-
 	void mouseInputResponse()
 	{
 		if(pressed)

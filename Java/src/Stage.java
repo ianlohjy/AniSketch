@@ -8,7 +8,7 @@ public class Stage extends Element{
 	{
 		super(x,y,w,h,p);
 		default_style = new Style(p);
-		default_style.setDefault();
+		default_style.fill(200,200,200,255);
 	}
 	
 	void draw()

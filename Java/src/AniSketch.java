@@ -31,7 +31,6 @@ public class AniSketch extends PApplet
 	
 	public void settings()
 	{
-		
 		size(init_resolution[0],init_resolution[1]);
 	}
 	
@@ -70,6 +69,7 @@ public class AniSketch extends PApplet
 	
 	public void setup()
 	{
+		//frameRate(30);
 		initialisePAppletFrame();
 		initialiseMainWindows();
 	}

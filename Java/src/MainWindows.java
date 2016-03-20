@@ -30,20 +30,46 @@ public class MainWindows {
 	MainWindows(PApplet p){
 		this.p = p;
 		setupDividers();
-		//sheet  = new Sheet(0, 0, (int)(vertical_divider*p.width), (int)(horizont_divider*p.height), p);
-		//stage  = new Stage((int)(vertical_divider*p.width), 0, (int)((1-vertical_divider)*p.width), (int)(horizont_divider*p.height), p);
+		setupWindows();
 	}
 	
 	void setup()
 	{
 	}
 	
+	void setupWindows()
+	{
+		sheet  = new Sheet(0,0,0,0,p);
+		stage  = new Stage(0,0,0,0,p);
+		timeline = new Timeline(0,0,0,0,p);
+		
+		updateWindowPositions();
+	}
+	
+	void updateWindowPositions()
+	{
+		sheet.x = 0;
+		sheet.y = 0;
+		sheet.w = vertical_divider.x;
+		sheet.h = horizontal_divider.y;
+		
+		stage.x = vertical_divider.x;
+		stage.y = 0;
+		stage.w = p.width-vertical_divider.x;
+		stage.h = horizontal_divider.y;
+		
+		timeline.x = 0;
+		timeline.y = horizontal_divider.y;
+		timeline.w = p.width;
+		timeline.h = p.height-horizontal_divider.y;
+	}
+	
 	void setupDividers()
 	{
-		horizontal_divider = new Divider(p);
+		horizontal_divider = new Divider(p,this);
 		horizontal_divider.setHorizontal(0,p.height,0.2f,0.8f,0.5f,10);
 		
-		vertical_divider = new Divider(p);
+		vertical_divider = new Divider(p,this);
 		vertical_divider.setVertical(0,p.width,0.2f,0.8f,0.5f,10); 
 		
 		horizontal_divider.w = p.width;
@@ -64,6 +90,13 @@ public class MainWindows {
 		horizontal_divider.draw();
 	}
 	
+	void drawWindows()
+	{
+		sheet.draw();
+		stage.draw();
+		timeline.draw();
+	}
+	
 	void handleDividersOnResize()
 	{	// Things that need to be updated on dividers when window is resized
 		horizontal_divider.w = p.width;
@@ -74,11 +107,18 @@ public class MainWindows {
 		horizontal_divider.updateCurrentPosition();
 
 		updateVerticalDividerHeight();
+		updateWindowPositions();
 	}
 	
 	void onScreenResize()
 	{
 		handleDividersOnResize();
+		updateWindowPositions();
+	}
+	
+	void callbackDividersUpdatePosition()
+	{
+		updateWindowPositions();
 	}
 	
 	void drawBorder()
@@ -92,6 +132,7 @@ public class MainWindows {
 	void update()
 	{
 		updateVerticalDividerHeight();
+		drawWindows();
 		drawDividers();
 	}
 	
@@ -99,6 +140,7 @@ public class MainWindows {
 	{
 		horizontal_divider.checkMouseEvent(e);
 		vertical_divider.checkMouseEvent(e);
+		
 	}
 	
 	
