@@ -23,6 +23,7 @@ public class Divider extends Element{
 		
 		hover_style   = new Style(p);
 		default_style = new Style(p);
+		setupStyles();
 		
 		this.thickness       = 1;
 		this.lower_bounds    = 0;
@@ -30,10 +31,6 @@ public class Divider extends Element{
 		this.ratio_position  = 0;
 		this.start_range     = 0;
 		this.stop_range      = 1;
-	}
-	
-	void setThickness(int thickness)
-	{
 	}
 	
 	void setVertical(float lower_bounds, float upper_bounds, float start_range, float stop_range, float ratio_position, int thickness)
@@ -71,14 +68,6 @@ public class Divider extends Element{
 		this.lower_bounds = lower_bounds;
 		this.upper_bounds = upper_bounds;
 	}
-	
-	/*
-	void setMovementRange(float start, float stop)
-	{
-		movement_range[0] = start;
-		movement_range[1] = stop;
-	}
-	*/
 	
 	void updateRatioPosition()
 	{	// Calculates and updates the position of the divider, as a ratio between lower and upper bounds 
@@ -138,7 +127,14 @@ public class Divider extends Element{
 				updateRatioPosition();
 			}
 		}
-		//p.println(current_postion);
+	}
+	
+	void setupStyles()
+	{
+		hover_style.fill(80,80,80,255);
+		hover_style.noStroke();
+		default_style.fill(20,20,20,255);
+		default_style.noStroke();
 	}
 	
 	void draw()

@@ -21,9 +21,6 @@ public class MainWindows {
 	Divider vertical_divider;
 	Divider horizontal_divider;
 	
-	//float vertical_divider = 0.5f;  // x position of the vertical divider (out of width)
-	//float horizont_divider = 0.85f; // y position of the horizontal divider (out of height)
-	
 	final static int LEFT_HAND  = 0;
 	final static int RIGHT_HAND = 1;
 	int handedness = RIGHT_HAND;
@@ -54,45 +51,35 @@ public class MainWindows {
 		
 		vertical_divider.h = horizontal_divider.y;
 		vertical_divider.y = 0;
-		
-		//vertical_divider.default_style = horizontal_divider.default_style;
-		//vertical_divider.hover_style = horizontal_divider.hover_style;
-
-		//vertical_divider.setBounds(0, p.width);
-		//vertical_divider.setMovementRange(0.2f, 0.8f);
-				
-		//horizontal_divider.default_style.noStroke();
-		//horizontal_divider.default_style.fill(10,10,10,255);
-		//horizontal_divider.hover_style.noStroke();
-		//horizontal_divider.hover_style.fill(80,80,80,255);
-		//horizontal_divider.setBounds(0, p.height);
-		//horizontal_divider.setMovementRange(0.5f, 0.9f);
 	}
 	
-	void updateDividers()
-	{
-		vertical_divider.h = horizontal_divider.y+horizontal_divider.thickness/2;
+	void updateVerticalDividerHeight()
+	{	// Makes sure that the height of the vertical divider does not exceed the position of the horizontal divider
+		vertical_divider.h = horizontal_divider.y+horizontal_divider.thickness/2;			
+	}
+	
+	void drawDividers()
+	{	// Draws dividers
 		vertical_divider.draw();
 		horizontal_divider.draw();
-		
 	}
 	
 	void handleDividersOnResize()
-	{
-		horizontal_divider.setBounds(0, p.height);
+	{	// Things that need to be updated on dividers when window is resized
 		horizontal_divider.w = p.width;
+		horizontal_divider.setBounds(0, p.height);
 		vertical_divider.setBounds(0, p.width);
 		
 		vertical_divider.updateCurrentPosition();
 		horizontal_divider.updateCurrentPosition();
-		updateDividers();
+
+		updateVerticalDividerHeight();
 	}
 	
 	void onScreenResize()
 	{
 		handleDividersOnResize();
 	}
-	
 	
 	void drawBorder()
 	{
@@ -104,7 +91,8 @@ public class MainWindows {
 	
 	void update()
 	{
-		updateDividers();
+		updateVerticalDividerHeight();
+		drawDividers();
 	}
 	
 	void checkMouseEvent(MouseEvent e)
