@@ -67,10 +67,10 @@ public class MainWindows {
 	void setupDividers()
 	{
 		horizontal_divider = new Divider(p,this);
-		horizontal_divider.setHorizontal(0,p.height,0.2f,0.8f,0.5f,10);
+		horizontal_divider.setHorizontal(0,p.height,0.2f,0.9f,0.8f,12);
 		
 		vertical_divider = new Divider(p,this);
-		vertical_divider.setVertical(0,p.width,0.2f,0.8f,0.5f,10); 
+		vertical_divider.setVertical(0,p.width,0.05f,0.95f,0.5f,12); 
 		
 		horizontal_divider.w = p.width;
 		horizontal_divider.x = 0;
