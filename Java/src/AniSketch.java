@@ -1,16 +1,11 @@
 
-
-
 import javax.swing.JFrame;
-
 import java.awt.Dimension;
 import java.awt.event.*;
-
 
 import processing.awt.PSurfaceAWT.SmoothCanvas;
 import processing.core.*;
 import processing.event.MouseEvent;
-
 
 public class AniSketch extends PApplet 
 {
@@ -21,6 +16,7 @@ public class AniSketch extends PApplet
 	int cur_height;
 	
 	//UI hori_resize_bar;
+	GestureEngine gesture_engine = new GestureEngine();
 	
 	MainWindows main_windows;
 	
