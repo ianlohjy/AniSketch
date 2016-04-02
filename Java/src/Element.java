@@ -65,6 +65,7 @@ public class Element
 	
 	void mouseInputResponse()
 	{
+		// This method serves as a mouse event "callback" for any class that extends "Element".
 	}
 	
 	boolean withinBounds(int input_x, int input_y)

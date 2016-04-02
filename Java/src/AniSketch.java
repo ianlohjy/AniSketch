@@ -76,11 +76,12 @@ public class AniSketch extends PApplet
 		background(200);
 		screenResized();
 		main_windows.update();
+		gesture_handler.update();
 	}
 
 	public void initialiseGestureHandler()
 	{
-		gesture_handler = new GestureHandler();
+		gesture_handler = new GestureHandler(this);
 	}
 	
 	public void setupWindows()
@@ -91,7 +92,7 @@ public class AniSketch extends PApplet
 	public void passMouseEvents(MouseEvent e)
 	{
 		main_windows.checkMouseEvent(e);
-		
+		gesture_handler.handleMouseEvents(e);
 	}
 	
 	public void mousePressed(MouseEvent e)
@@ -111,7 +112,6 @@ public class AniSketch extends PApplet
 	
 	public void mouseDragged(MouseEvent e)
 	{
-		//println(e.getAction());
 		passMouseEvents(e);
 	}
 	
