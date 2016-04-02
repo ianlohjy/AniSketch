@@ -1,5 +1,6 @@
 
 import javax.swing.JFrame;
+
 import java.awt.Dimension;
 import java.awt.event.*;
 
@@ -15,9 +16,7 @@ public class AniSketch extends PApplet
 	int cur_width;
 	int cur_height;
 	
-	//UI hori_resize_bar;
-	GestureEngine gesture_engine = new GestureEngine();
-	
+	GestureHandler gesture_handler;
 	MainWindows main_windows;
 	
 	public static void main(String args[])
@@ -27,6 +26,7 @@ public class AniSketch extends PApplet
 	
 	public void settings()
 	{
+		println("TEST");
 		size(init_resolution[0],init_resolution[1]);
 	}
 	
@@ -68,6 +68,7 @@ public class AniSketch extends PApplet
 		//frameRate(30);
 		initialisePAppletFrame();
 		initialiseMainWindows();
+		initialiseGestureHandler();
 	}
 	
 	public void draw()
@@ -77,6 +78,11 @@ public class AniSketch extends PApplet
 		main_windows.update();
 	}
 
+	public void initialiseGestureHandler()
+	{
+		gesture_handler = new GestureHandler();
+	}
+	
 	public void setupWindows()
 	{
 		
@@ -108,5 +114,21 @@ public class AniSketch extends PApplet
 		//println(e.getAction());
 		passMouseEvents(e);
 	}
+	
+	public class TestWindow extends PApplet{
+		
+		public void settings()
+		{
+			size(500,500);
+			println("SDA");
+		}
+		
+		public void draw()
+		{
+			ellipse(5,5,5,5);
+			
+		}
+	}
+
 	
 }
