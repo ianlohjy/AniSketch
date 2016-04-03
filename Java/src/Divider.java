@@ -1,4 +1,5 @@
 import processing.core.PApplet;
+import processing.event.MouseEvent;
 
 public class Divider extends Element{
 
@@ -103,7 +104,8 @@ public class Divider extends Element{
 		}
 	}
 	
-	void mouseInputResponse()
+	@Override
+	void mouseInputResponse(MouseEvent e)
 	{
 		if(pressed)
 		{

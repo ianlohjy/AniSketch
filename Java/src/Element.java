@@ -3,7 +3,6 @@ import processing.core.*;
 
 public class Element 
 {
-	
 	// Generic interface element
 	// Has very basic parameters
 	// Handles simple mouse detection
@@ -12,7 +11,6 @@ public class Element
 	int x,y,w,h;
 	
 	PApplet p;
-	Object parent;
 	
 	int x_offset;
 	int y_offset;
@@ -27,7 +25,6 @@ public class Element
 		
 		this.hover = false;
 		this.pressed = false;
-		this.parent = parent;
 		
 		int x_offset = 0;
 		int y_offset = 0;
@@ -60,10 +57,10 @@ public class Element
 			else
 			{hover = false;}
 		}
-		mouseInputResponse();
+		mouseInputResponse(e);
 	}
 	
-	void mouseInputResponse()
+	void mouseInputResponse(MouseEvent e)
 	{
 		// This method serves as a mouse event "callback" for any class that extends "Element".
 	}
