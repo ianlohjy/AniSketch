@@ -69,7 +69,6 @@ public class Element
 	{
 		// Returns true if input x/y is inside element's bounding box
 		
-		
 		if(input_x > x+x_offset && input_x < x+w+x_offset)
 		{
 			if(input_y > y+y_offset && input_y < y+h+y_offset)

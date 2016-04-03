@@ -1,4 +1,5 @@
 import processing.core.PApplet;
+import processing.event.MouseEvent;
 
 public class Stage extends Element{
 
@@ -23,6 +24,11 @@ public class Stage extends Element{
 		p.rect(x, y, w, h);
 		test.update();
 		p.noClip();
+	}
+	
+	void checkMouseEvent(MouseEvent e)
+	{
+		test.checkMouseEvent(e);
 	}
 	
 }

@@ -1,4 +1,5 @@
 import processing.core.*;
+import processing.event.MouseEvent;
 
 public class Primitive
 {	// Primitive represents an animatable object within AniSketch
@@ -25,7 +26,14 @@ public class Primitive
 	Handle rt_bottom_right;
 	Handle rt_top_right;
 	
-	boolean selected;
+	boolean pressed, hover, selected;
+	boolean handles_enabled;
+	
+	int transform_mode;
+	final static int NONE = 0;
+	final static int MOVE = 1;
+	final static int ROTATE = 2;
+	final static int SCALE = 3;
 	
 	Primitive(float x, float y, float w, float h, Stage stage, PApplet p)
 	{
@@ -36,6 +44,8 @@ public class Primitive
 		this.stage = stage;
 		this.p = p;
 		this.selected = false;
+		this.pressed = false;
+		this.hover = false;
 		bounding_points = new PVector[4];
 		setupHandles();
 	}
@@ -44,8 +54,11 @@ public class Primitive
 	{
 		calculateBoundingPoints();
 		drawBoundingBox();
-		drawHandles();
 		drawPivot();
+		if(selected)
+		{
+			drawHandles();
+		}
 	}
 	
 	public void setupHandles()
@@ -102,7 +115,25 @@ public class Primitive
 		
 		p.rectMode(p.CENTER);
 		p.noFill();
-		p.stroke(0, 50);
+		if(hover)
+		{
+			p.strokeWeight(5);
+			p.stroke(255, 150);
+			p.rect(0, 0, w, h);
+			
+			p.stroke(0, 150);
+			
+		}
+		else
+		{
+			p.stroke(0, 50);
+		}
+		
+		if(selected)
+		{
+			p.stroke(0, 255);
+		}
+		
 		p.strokeWeight(1);
 		p.rect(0, 0, w, h);
 		p.rectMode(p.CORNER);
@@ -125,11 +156,84 @@ public class Primitive
 		p.popMatrix();
 	}
 	
-	public boolean isPointLeftOrRight(PVector a, PVector b, PVector p)
+	public boolean isPointLeftOfLine(PVector a, PVector b, float input_x, float input_y)
 	{
-		return ((b.x - a.x)*(p.y - a.y) - (b.y - a.y)*(p.x - a.x)) > 0;
+		return ((b.x - a.x)*(input_y - a.y) - (b.y - a.y)*(input_x - a.x)) > 0;
 	}
 	
+	public boolean withinBounds(float input_x, float input_y)
+	{
+		if(!isPointLeftOfLine(bounding_points[0], bounding_points[1], input_x, input_y))
+		{
+			if(!isPointLeftOfLine(bounding_points[1], bounding_points[2], input_x, input_y))
+			{
+				if(!isPointLeftOfLine(bounding_points[2], bounding_points[3], input_x, input_y))
+				{
+					if(!isPointLeftOfLine(bounding_points[3], bounding_points[0], input_x, input_y))
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+			return false;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	public void checkMouseEvent(MouseEvent e)
+	{
+		if(e.getButton() == 37)
+		{ // If its a left click
+			if(e.getAction() == 1)
+			{
+				// Mouse Pressed
+				if(withinBounds(e.getX(), e.getY()))
+				{
+					selected = true;
+				}
+				else
+				{
+					selected = false;
+				}
+			}
+			else if(e.getAction() == 4)
+			{
+				// Mouse Dragged
+				if(selected)
+				{
+					p.println("MOVING");
+				}
+			}
+		}
+		
+		if(e.getAction() == 1)
+		{
+			// Mouse Pressed
+		}
+		else if(e.getAction() == 2)
+		{
+			// Mouse Released
+		}
+		
+		else if(e.getAction() == 5)
+		{
+			// Mouse Moved
+			if(withinBounds(e.getX(), e.getY()))
+			{
+				hover = true;
+			}
+			else
+			{
+				hover = false;
+			}
+		}
+	}
+	
+	// Handle class
 	class Handle
 	{
 		final static int WIDTH_HEIGHT = 0;
@@ -195,7 +299,7 @@ public class Primitive
 				p.rotate(p.radians(rotation+270));
 			}
 			
-			p.arc(0, 0, 20, 20, 0, p.HALF_PI);
+			p.arc(0, 0, 30, 30, 0, p.HALF_PI);
 			p.popMatrix();
 		}
 		
@@ -227,6 +331,7 @@ public class Primitive
 			}
 			
 			p.rect(0, 0, 8, 8);
+			//p.ellipse(0, 0, 8, 8);
 			p.rectMode(p.CORNER);
 			p.popMatrix();
 		}

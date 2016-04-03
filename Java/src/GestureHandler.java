@@ -31,11 +31,11 @@ public class GestureHandler {
 	public void setupStyles()
 	{
 		line_style_default.noFill();
-		line_style_default.stroke(0,0,0,200);
-		line_style_default.strokeWeight(2);
+		line_style_default.stroke(0,0,0,255);
+		line_style_default.strokeWeight(3);
 	}
 	
-	public void handleMouseEvents(MouseEvent e)
+	public void checkMouseEvent(MouseEvent e)
 	{
 		if(e.getButton() == 39)
 		{ // If its a right click

@@ -77,6 +77,7 @@ public class AniSketch extends PApplet
 		screenResized();
 		main_windows.update();
 		gesture_handler.update();
+		text("Framerate " + (int)frameRate, 5, 15);
 	}
 
 	public void initialiseGestureHandler()
@@ -92,7 +93,7 @@ public class AniSketch extends PApplet
 	public void passMouseEvents(MouseEvent e)
 	{
 		main_windows.checkMouseEvent(e);
-		gesture_handler.handleMouseEvents(e);
+		gesture_handler.checkMouseEvent(e);
 	}
 	
 	public void mousePressed(MouseEvent e)

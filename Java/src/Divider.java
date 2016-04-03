@@ -107,7 +107,7 @@ public class Divider extends Element{
 	@Override
 	void mouseInputResponse(MouseEvent e)
 	{
-		if(pressed)
+		if(pressed && e.getButton() == 37)
 		{
 			if(type == VERTICAL)
 			{
