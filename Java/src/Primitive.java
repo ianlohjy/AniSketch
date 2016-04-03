@@ -29,6 +29,9 @@ public class Primitive
 	boolean pressed, hover, selected;
 	boolean handles_enabled;
 	
+	PVector transform_start_point;
+	PVector transform_offset;
+	boolean transform_started;
 	int transform_mode;
 	final static int NONE = 0;
 	final static int MOVE = 1;
@@ -47,6 +50,7 @@ public class Primitive
 		this.pressed = false;
 		this.hover = false;
 		bounding_points = new PVector[4];
+		transform_started = false;
 		setupHandles();
 	}
 	
@@ -122,7 +126,6 @@ public class Primitive
 			p.rect(0, 0, w, h);
 			
 			p.stroke(0, 150);
-			
 		}
 		else
 		{
@@ -145,7 +148,7 @@ public class Primitive
 	{
 		p.pushMatrix();
 		p.translate(stage.x + x, stage.y + y);
-		p.rotate(p.radians(rotation));
+		//p.rotate(p.radians(rotation));
 		
 		p.noFill();
 		p.stroke(0);
@@ -205,20 +208,29 @@ public class Primitive
 				// Mouse Dragged
 				if(selected)
 				{
-					p.println("MOVING");
+					if(!transform_started)
+					{
+						p.println("MOVING");
+						transform_started = true;
+						transform_offset  = new PVector(e.getX() - x, e.getY() - y);
+						p.println(transform_offset);
+					}
+					if(transform_started)
+					{
+						x = e.getX() - transform_offset.x;
+						y = e.getY() - transform_offset.y;
+					}
+				}
+			}
+			else if(e.getAction() == 2)
+			{
+				// Mouse Released
+				if(transform_started)
+				{
+					transform_started = false;
 				}
 			}
 		}
-		
-		if(e.getAction() == 1)
-		{
-			// Mouse Pressed
-		}
-		else if(e.getAction() == 2)
-		{
-			// Mouse Released
-		}
-		
 		else if(e.getAction() == 5)
 		{
 			// Mouse Moved
@@ -231,6 +243,31 @@ public class Primitive
 				hover = false;
 			}
 		}
+	}
+	
+	public void transformTranslate()
+	{
+		
+	}
+	
+	public void startTransform(int mode)
+	{
+		
+	}
+	
+	public void endTransform()
+	{
+		
+	}
+	
+	public void transformRotate()
+	{
+		
+	}
+	
+	public void transformScale()
+	{
+		
 	}
 	
 	// Handle class
@@ -252,6 +289,11 @@ public class Primitive
 		boolean selected;
 		int handle_postion;
 		int handle_type;
+		int width_height_handle_size = 10;
+		int rotation_handle_size = 10;
+		
+		PVector handle_center;
+		
 		
 		Handle(int handle_type, int handle_position)
 		{
@@ -261,6 +303,7 @@ public class Primitive
 			setupStyles();
 		}
 		
+		// Drawing and rendering
 		void setupStyles()
 		{
 			rotation_style_default = new Style(p);
@@ -273,6 +316,19 @@ public class Primitive
 			width_height_style_default.noStroke();
 		}
 		
+		void drawHandle()
+		{
+			updateHandlePosition();
+			if(handle_type == WIDTH_HEIGHT)
+			{
+				drawWidthHeightHandles();
+			} 
+			else if(handle_type == ROTATION)
+			{
+				drawRotationHandles();
+			}
+		}
+		
 		void drawRotationHandles()
 		{
 			p.pushMatrix();
@@ -281,25 +337,27 @@ public class Primitive
 			if(handle_postion == TOP_LEFT)
 			{
 				p.translate(bounding_points[0].x, bounding_points[0].y);
-				p.rotate(p.radians(rotation+180));
+				p.rotate(p.radians(rotation));
+				p.ellipse(-rotation_handle_size, -rotation_handle_size, rotation_handle_size, rotation_handle_size);
 			}
 			else if(handle_postion == BOTTOM_LEFT)
 			{
 				p.translate(bounding_points[1].x, bounding_points[1].y);
-				p.rotate(p.radians(rotation+90));
+				p.rotate(p.radians(rotation));
+				p.ellipse(-rotation_handle_size, rotation_handle_size, rotation_handle_size, rotation_handle_size);
 			}
 			else if(handle_postion == BOTTOM_RIGHT)
 			{
 				p.translate(bounding_points[2].x, bounding_points[2].y);
 				p.rotate(p.radians(rotation));
+				p.ellipse(rotation_handle_size, rotation_handle_size, rotation_handle_size, rotation_handle_size);
 			}
 			else if(handle_postion == TOP_RIGHT)
 			{
 				p.translate(bounding_points[3].x, bounding_points[3].y);
-				p.rotate(p.radians(rotation+270));
+				p.rotate(p.radians(rotation));
+				p.ellipse(rotation_handle_size, -rotation_handle_size, rotation_handle_size, rotation_handle_size);
 			}
-			
-			p.arc(0, 0, 30, 30, 0, p.HALF_PI);
 			p.popMatrix();
 		}
 		
@@ -313,45 +371,108 @@ public class Primitive
 			{
 				p.translate(bounding_points[0].x, bounding_points[0].y);
 				p.rotate(p.radians(rotation));
+				p.rect(width_height_handle_size/2, width_height_handle_size/2, width_height_handle_size, width_height_handle_size);
 			}
 			else if(handle_postion == BOTTOM_LEFT)
 			{
 				p.translate(bounding_points[1].x, bounding_points[1].y);
 				p.rotate(p.radians(rotation));
+				p.rect(width_height_handle_size/2, -width_height_handle_size/2, width_height_handle_size, width_height_handle_size);
 			}
 			else if(handle_postion == BOTTOM_RIGHT)
 			{
 				p.translate(bounding_points[2].x, bounding_points[2].y);
 				p.rotate(p.radians(rotation));
+				p.rect(-width_height_handle_size/2, -width_height_handle_size/2, width_height_handle_size, width_height_handle_size);
 			}
 			else if(handle_postion == TOP_RIGHT)
 			{
 				p.translate(bounding_points[3].x, bounding_points[3].y);
 				p.rotate(p.radians(rotation));
+				p.rect(-width_height_handle_size/2, width_height_handle_size/2, width_height_handle_size, width_height_handle_size);
 			}
-			
-			p.rect(0, 0, 8, 8);
-			//p.ellipse(0, 0, 8, 8);
 			p.rectMode(p.CORNER);
 			p.popMatrix();
 		}
-		
-		void drawHandle()
-		{
-			if(handle_type == WIDTH_HEIGHT)
-			{
-				drawWidthHeightHandles();
-			} 
-			else if(handle_type == ROTATION)
-			{
-				drawRotationHandles();
-			}
-		}
-		
-		void handleMouse()
+
+		void checkMouseEvent()
 		{
 			
 		}
+		
+		void updateHandlePosition()
+		{
+			// Updates the handle's position for drawing and mouse event checking
+			if(handle_type == ROTATION)
+			{
+				handle_center = new PVector();
+				
+				if(handle_postion == TOP_LEFT)
+				{
+					handle_center = handle_center.add(-width_height_handle_size, -width_height_handle_size);
+					handle_center = handle_center.add(-w/2, -h/2);
+					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.add(x+stage.x, y+stage.y);
+				}
+				else if(handle_postion == BOTTOM_LEFT)
+				{
+					handle_center = handle_center.add(-width_height_handle_size, width_height_handle_size);
+					handle_center = handle_center.add(-w/2, h/2);
+					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.add(x+stage.x, y+stage.y);
+				}
+				else if(handle_postion == BOTTOM_RIGHT)
+				{
+					handle_center = handle_center.add(width_height_handle_size, width_height_handle_size);
+					handle_center = handle_center.add(w/2, h/2);
+					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.add(x+stage.x, y+stage.y);
+				}
+				else if(handle_postion == TOP_RIGHT)
+				{
+					handle_center = handle_center.add(width_height_handle_size, -width_height_handle_size);
+					handle_center = handle_center.add(w/2, -h/2);
+					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.add(x+stage.x, y+stage.y);
+				}
+			}
+			else if(handle_type == WIDTH_HEIGHT)
+			{
+				handle_center = new PVector();
+				
+				if(handle_postion == TOP_LEFT)
+				{
+					handle_center = handle_center.add(width_height_handle_size/2, width_height_handle_size/2);
+					handle_center = handle_center.add(-w/2, -h/2);
+					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.add(x+stage.x, y+stage.y);
+				}
+				else if(handle_postion == BOTTOM_LEFT)
+				{
+					handle_center = handle_center.add(width_height_handle_size/2, -width_height_handle_size/2);
+					handle_center = handle_center.add(-w/2, h/2);
+					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.add(x+stage.x, y+stage.y);
+				}
+				else if(handle_postion == BOTTOM_RIGHT)
+				{
+					handle_center = handle_center.add(-width_height_handle_size/2, -width_height_handle_size/2);
+					handle_center = handle_center.add(w/2, h/2);
+					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.add(x+stage.x, y+stage.y);
+				}
+				else if(handle_postion == TOP_RIGHT)
+				{
+					handle_center = handle_center.add(-width_height_handle_size/2, width_height_handle_size/2);
+					handle_center = handle_center.add(w/2, -h/2);
+					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.add(x+stage.x, y+stage.y);
+				}
+			}
+			p.fill(255,0,0,50);
+			p.ellipse(handle_center.x, handle_center.y, width_height_handle_size+2, width_height_handle_size+2);
+		}
+		
 	}
 	
 }

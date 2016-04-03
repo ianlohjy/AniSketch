@@ -138,10 +138,12 @@ public class MainWindows {
 	
 	void checkMouseEvent(MouseEvent e)
 	{
-		stage.checkMouseEvent(e);
 		horizontal_divider.checkMouseEvent(e);
 		vertical_divider.checkMouseEvent(e);
-		
+		if(!horizontal_divider.pressed && !vertical_divider.pressed)
+		{
+			stage.checkMouseEvent(e);
+		}
 	}
 	
 	

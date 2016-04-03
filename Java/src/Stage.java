@@ -18,7 +18,7 @@ public class Stage extends Element{
 	
 	void draw()
 	{
-		//test.rotation = p.frameCount;
+		test.rotation = p.frameCount/5;
 		p.clip(x, y, w, h);
 		default_style.apply();
 		p.rect(x, y, w, h);
