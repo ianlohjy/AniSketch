@@ -134,6 +134,9 @@ public class Primitive
 		
 		if(selected)
 		{
+			p.strokeWeight(5);
+			p.stroke(255, 150);
+			p.rect(0, 0, w, h);
 			p.stroke(0, 255);
 		}
 		
@@ -159,6 +162,7 @@ public class Primitive
 		p.popMatrix();
 	}
 	
+	// COLLISION AND BOUNDING BOX DETECTION
 	public boolean isPointLeftOfLine(PVector a, PVector b, float input_x, float input_y)
 	{
 		return ((b.x - a.x)*(input_y - a.y) - (b.y - a.y)*(input_x - a.x)) > 0;
@@ -187,6 +191,7 @@ public class Primitive
 		}
 	}
 	
+	// EVENT HANDLING
 	public void checkMouseEvent(MouseEvent e)
 	{
 		if(e.getButton() == 37)
@@ -242,7 +247,53 @@ public class Primitive
 			{
 				hover = false;
 			}
+			
+			if(selected)
+			{
+				checkMouseEventHandles(e);
+			}
+			
 		}
+	}
+	
+	public boolean checkMouseEventHandles(MouseEvent e)
+	{
+		// Returns true if any of the handles registers a mouse event within its bounds
+		boolean mouse_state = false;
+		
+		if(wh_top_left.checkMouseEvent(e))
+		{
+			mouse_state = true;
+		}
+		if(wh_bottom_left.checkMouseEvent(e))
+		{
+			mouse_state = true;
+		}
+		if(wh_bottom_right.checkMouseEvent(e))
+		{
+			mouse_state = true;
+		}
+		if(wh_top_right.checkMouseEvent(e))
+		{
+			mouse_state = true;
+		}
+		if(rt_top_left.checkMouseEvent(e))
+		{
+			mouse_state = true;
+		}
+		if(rt_bottom_left.checkMouseEvent(e))
+		{
+			mouse_state = true;
+		}
+		if(rt_bottom_right.checkMouseEvent(e))
+		{
+			mouse_state = true;
+		}
+		if(rt_top_right.checkMouseEvent(e))
+		{
+			mouse_state = true;
+		}
+		return mouse_state;
 	}
 	
 	public void transformTranslate()
@@ -282,11 +333,11 @@ public class Primitive
 		final static int BOTTOM_RIGHT = 3;
 		
 		Style rotation_style_default;
-		Style rotation_style_hover;
+		Style rotation_style_selected;
 		Style width_height_style_default;
-		Style width_height_style_hover;
+		Style width_height_style_selected;
 		
-		boolean selected;
+		boolean selected, hover;
 		int handle_postion;
 		int handle_type;
 		int width_height_handle_size = 10;
@@ -300,6 +351,7 @@ public class Primitive
 			this.handle_postion = handle_position;
 			this.handle_type = handle_type;
 			this.selected = false;
+			this.hover = false;
 			setupStyles();
 		}
 		
@@ -314,6 +366,15 @@ public class Primitive
 			width_height_style_default = new Style(p);
 			width_height_style_default.fill(0, 0, 0, 50);
 			width_height_style_default.noStroke();
+			
+			rotation_style_selected = new Style(p);
+			rotation_style_selected.noFill();
+			rotation_style_selected.stroke(0, 0, 0, 200);
+			rotation_style_selected.strokeWeight(2);
+			
+			width_height_style_selected = new Style(p);
+			width_height_style_selected.fill(0, 0, 0, 200);
+			width_height_style_selected.noStroke();
 		}
 		
 		void drawHandle()
@@ -332,72 +393,74 @@ public class Primitive
 		void drawRotationHandles()
 		{
 			p.pushMatrix();
-			rotation_style_default.apply();
-
-			if(handle_postion == TOP_LEFT)
+			if(hover || selected)
 			{
-				p.translate(bounding_points[0].x, bounding_points[0].y);
-				p.rotate(p.radians(rotation));
-				p.ellipse(-rotation_handle_size, -rotation_handle_size, rotation_handle_size, rotation_handle_size);
+				rotation_style_selected.apply();
 			}
-			else if(handle_postion == BOTTOM_LEFT)
+			else
 			{
-				p.translate(bounding_points[1].x, bounding_points[1].y);
-				p.rotate(p.radians(rotation));
-				p.ellipse(-rotation_handle_size, rotation_handle_size, rotation_handle_size, rotation_handle_size);
+				rotation_style_default.apply();
 			}
-			else if(handle_postion == BOTTOM_RIGHT)
-			{
-				p.translate(bounding_points[2].x, bounding_points[2].y);
-				p.rotate(p.radians(rotation));
-				p.ellipse(rotation_handle_size, rotation_handle_size, rotation_handle_size, rotation_handle_size);
-			}
-			else if(handle_postion == TOP_RIGHT)
-			{
-				p.translate(bounding_points[3].x, bounding_points[3].y);
-				p.rotate(p.radians(rotation));
-				p.ellipse(rotation_handle_size, -rotation_handle_size, rotation_handle_size, rotation_handle_size);
-			}
+			p.ellipse(handle_center.x, handle_center.y, rotation_handle_size, rotation_handle_size);
 			p.popMatrix();
 		}
 		
 		void drawWidthHeightHandles()
 		{
 			p.pushMatrix();
+			if(hover || selected)
+			{
+				width_height_style_selected.apply();
+			}
+			else
+			{
+				width_height_style_default.apply();
+			}
 			p.rectMode(p.CENTER);
-			width_height_style_default.apply();
-
-			if(handle_postion == TOP_LEFT)
-			{
-				p.translate(bounding_points[0].x, bounding_points[0].y);
-				p.rotate(p.radians(rotation));
-				p.rect(width_height_handle_size/2, width_height_handle_size/2, width_height_handle_size, width_height_handle_size);
-			}
-			else if(handle_postion == BOTTOM_LEFT)
-			{
-				p.translate(bounding_points[1].x, bounding_points[1].y);
-				p.rotate(p.radians(rotation));
-				p.rect(width_height_handle_size/2, -width_height_handle_size/2, width_height_handle_size, width_height_handle_size);
-			}
-			else if(handle_postion == BOTTOM_RIGHT)
-			{
-				p.translate(bounding_points[2].x, bounding_points[2].y);
-				p.rotate(p.radians(rotation));
-				p.rect(-width_height_handle_size/2, -width_height_handle_size/2, width_height_handle_size, width_height_handle_size);
-			}
-			else if(handle_postion == TOP_RIGHT)
-			{
-				p.translate(bounding_points[3].x, bounding_points[3].y);
-				p.rotate(p.radians(rotation));
-				p.rect(-width_height_handle_size/2, width_height_handle_size/2, width_height_handle_size, width_height_handle_size);
-			}
+			p.translate(handle_center.x, handle_center.y);
+			p.rotate(p.radians(rotation));
+			p.rect(0, 0, width_height_handle_size, width_height_handle_size);
 			p.rectMode(p.CORNER);
 			p.popMatrix();
 		}
-
-		void checkMouseEvent()
+	
+		boolean checkMouseEvent(MouseEvent e)
 		{
+			boolean within_bounds = withinBounds(e.getX(), e.getY());
 			
+			if(e.getAction() == 5)
+			{ // Mouse moved
+				if(within_bounds)
+				{
+					hover = true;
+				}
+				else
+				{
+					hover = false;
+				}
+			}
+			
+			// If there was at least on mouse event that registered, return true
+			return true;
+		}
+		
+		boolean withinBounds(float input_x, float input_y)
+		{
+			if(handle_type == ROTATION)
+			{
+				if(p.dist(handle_center.x, handle_center.y, input_x, input_y) < rotation_handle_size)
+				{
+					return true;
+				}
+			}
+			else if(handle_type == WIDTH_HEIGHT)
+			{
+				if(p.dist(handle_center.x, handle_center.y, input_x, input_y) < width_height_handle_size)
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 		
 		void updateHandlePosition()
@@ -469,10 +532,10 @@ public class Primitive
 					handle_center = handle_center.add(x+stage.x, y+stage.y);
 				}
 			}
-			p.fill(255,0,0,50);
-			p.ellipse(handle_center.x, handle_center.y, width_height_handle_size+2, width_height_handle_size+2);
 		}
-		
-	}
+	} 
+	// End of Handle class
+	
+	
 	
 }
