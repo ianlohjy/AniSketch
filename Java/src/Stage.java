@@ -32,7 +32,7 @@ public class Stage extends Element{
 	
 	void draw()
 	{
-		//test.setPivot(p.frameCount/20f,p.frameCount/20f);
+		//test.w = p.frameCount/15f;
 		p.clip(x, y, w, h);
 		default_style.apply(); // Apply style for Stage window
 		

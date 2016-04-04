@@ -29,8 +29,8 @@ public class Primitive
 	boolean pressed, hover, selected;
 	boolean handles_enabled;
 	
-	// Transforms
-	PVector transform_offset;
+	// Transform parameters and flags
+	PVector transform_offset; // General parameter for holding initial data from further transforms
 	int transform_mode;
 	float transform_rotate_last_angle;
 	
@@ -207,28 +207,28 @@ public class Primitive
 		bounding_points[0] = bounding_points[0].rotate(PApplet.radians(rotation));
 		bounding_points[0] = bounding_points[0].add(-pivot_offset.x, -pivot_offset.y);
 		bounding_points[0] = bounding_points[0].add(stage.x + x, stage.y + y);
-		p.ellipse(bounding_points[0].x, bounding_points[0].y, 5, 5);
+		//p.ellipse(bounding_points[0].x, bounding_points[0].y, 5, 5);
 		// Bottom left
 		bounding_points[1] = new PVector(-w/2, h/2); 
 		bounding_points[1] = bounding_points[1].add(pivot.x, pivot.y);
 		bounding_points[1] = bounding_points[1].rotate(PApplet.radians(rotation));
 		bounding_points[1] = bounding_points[1].add(-pivot_offset.x, -pivot_offset.y);
 		bounding_points[1] = bounding_points[1].add(stage.x + x, stage.y + y);
-		p.ellipse(bounding_points[1].x, bounding_points[1].y, 5, 5);
+		//p.ellipse(bounding_points[1].x, bounding_points[1].y, 5, 5);
 		// Bottom right
 		bounding_points[2] = new PVector(w/2, h/2); 
 		bounding_points[2] = bounding_points[2].add(pivot.x, pivot.y);
 		bounding_points[2] = bounding_points[2].rotate(PApplet.radians(rotation));
 		bounding_points[2] = bounding_points[2].add(-pivot_offset.x, -pivot_offset.y);
 		bounding_points[2] = bounding_points[2].add(stage.x + x, stage.y + y);
-		p.ellipse(bounding_points[2].x, bounding_points[2].y, 5, 5);
+		//p.ellipse(bounding_points[2].x, bounding_points[2].y, 5, 5);
 		// Top right
 		bounding_points[3] = new PVector(w/2, -h/2); 
 		bounding_points[3] = bounding_points[3].add(pivot.x, pivot.y);
 		bounding_points[3] = bounding_points[3].rotate(PApplet.radians(rotation));
 		bounding_points[3] = bounding_points[3].add(-pivot_offset.x, -pivot_offset.y);
 		bounding_points[3] = bounding_points[3].add(stage.x + x, stage.y + y);
-		p.ellipse(bounding_points[3].x, bounding_points[3].y, 5, 5);
+		//p.ellipse(bounding_points[3].x, bounding_points[3].y, 5, 5);
 	}
 
 	//================//
@@ -433,17 +433,53 @@ public class Primitive
 		}
 	}
 	
-	public void doWidthHeight(float x_input, float y_input)
+	public void doWidthHeight(float x_input, float y_input, Handle handle)
 	{ // Does translation of primitive based on the position of x_start & y_start
 		if(transform_mode == NONE) // If translate has not been started, initialise it
 		{
-			transform_offset  = new PVector(x_input-x, y_input-y);
+			transform_offset  = new PVector(handle.handle_center.x, handle.handle_center.y);
 			transform_mode    = WIDTH_HEIGHT;
 			
 			PApplet.println("Started width height");
 		}
 		if(transform_mode == WIDTH_HEIGHT)
 		{
+			PVector transform_amount = new PVector(x_input-transform_offset.x, y_input-transform_offset.y);
+			transform_amount = transform_amount.rotate(PApplet.radians(-rotation));
+			PApplet.println("Trasform Amount" + transform_amount);
+			
+			if(handle.handle_postion == Handle.TOP_LEFT)
+			{
+				this.h -= transform_amount.y;
+				this.w -= transform_amount.x;
+			}
+			if(handle.handle_postion == Handle.TOP_RIGHT)
+			{
+				this.h -= transform_amount.y;
+				this.w += transform_amount.x;
+			}
+			if(handle.handle_postion == Handle.BOTTOM_RIGHT)
+			{
+				this.h += transform_amount.y;
+				this.w += transform_amount.x;
+			}
+			if(handle.handle_postion == Handle.BOTTOM_LEFT)
+			{
+				this.h += transform_amount.y;
+				this.w -= transform_amount.x;
+			}
+			
+			if(this.w < 30)
+			{
+				this.w = 30;
+			}
+			if(this.h < 30)
+			{
+				this.h = 30;
+			}
+			
+			handle.updateHandlePosition();
+			transform_offset  = new PVector(handle.handle_center.x, handle.handle_center.y);
 		}
 	}
 	
@@ -673,7 +709,7 @@ public class Primitive
 					}
 					else if(handle_type == Primitive.Handle.WIDTH_HEIGHT)
 					{
-						doWidthHeight(e.getX(), e.getY());
+						doWidthHeight(e.getX(), e.getY(), this);
 					}
 					mouse_state = true;
 				}

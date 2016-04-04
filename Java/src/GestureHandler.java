@@ -122,7 +122,7 @@ public class GestureHandler {
 						if(gesture_response.bestGuess.equals("CIRCLE") && gesture_response.bestScore > 70)
 						{
 							p.println("CIRCLE gesture detected");
-							if(gesture_candidate.initialSize[0] < 25 && gesture_candidate.initialSize[1] < 25)
+							if(gesture_candidate.initialSize[0] <= 30 && gesture_candidate.initialSize[1] <= 30)
 							{
 								p.println("Looks like we want to change the pivot position for primitive @" + (Primitive)gsr.start_point_objects.get(0));
 								Primitive detected_primitive = (Primitive)gsr.start_point_objects.get(0);
