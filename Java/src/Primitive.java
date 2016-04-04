@@ -11,7 +11,7 @@ public class Primitive
 	float w, h;
 	float x_offset, y_offset;
 	float rotation;
-	float pivot[]; // Pivot point x,y relative to the object's x,y center
+	PVector pivot; // Pivot point x,y relative to the object's x,y center
 	
 	PVector[] bounding_points; // The calculated "live" position of the 4 bounding points that make up the primitive.
 	
@@ -37,7 +37,7 @@ public class Primitive
 	final static int NONE = 0;
 	final static int MOVE = 1;
 	final static int ROTATE = 2;
-	final static int SCALE = 3;
+	final static int WIDTH_HEIGHT = 3;
 	
 	Primitive(float x, float y, float w, float h, Stage stage, PApplet p)
 	{
@@ -51,6 +51,7 @@ public class Primitive
 		this.pressed = false;
 		this.hover = false;
 		bounding_points = new PVector[4];
+		pivot = new PVector(0,0);
 		setupHandles();
 	}
 	
@@ -106,6 +107,7 @@ public class Primitive
 		p.translate(stage.x, stage.y);
 		p.translate(x, y);
 		p.rotate(p.radians(rotation));
+		p.translate(pivot.x, pivot.y);
 		
 		p.rectMode(p.CENTER);
 		p.noFill();
@@ -196,20 +198,28 @@ public class Primitive
 	{
 		// Top left
 		bounding_points[0] = new PVector(-w/2, -h/2); 
+		bounding_points[0] = bounding_points[0].add(pivot.x, pivot.y);
 		bounding_points[0] = bounding_points[0].rotate(p.radians(rotation));
 		bounding_points[0] = bounding_points[0].add(stage.x + x, stage.y + y);
+		//p.ellipse(bounding_points[0].x, bounding_points[0].y, 5, 5);
 		// Bottom left
 		bounding_points[1] = new PVector(-w/2, h/2); 
+		bounding_points[1] = bounding_points[1].add(pivot.x, pivot.y);
 		bounding_points[1] = bounding_points[1].rotate(p.radians(rotation));
 		bounding_points[1] = bounding_points[1].add(stage.x + x, stage.y + y);
+		//p.ellipse(bounding_points[1].x, bounding_points[1].y, 5, 5);
 		// Bottom right
 		bounding_points[2] = new PVector(w/2, h/2); 
+		bounding_points[2] = bounding_points[2].add(pivot.x, pivot.y);
 		bounding_points[2] = bounding_points[2].rotate(p.radians(rotation));
 		bounding_points[2] = bounding_points[2].add(stage.x + x, stage.y + y);
+		//p.ellipse(bounding_points[2].x, bounding_points[2].y, 5, 5);
 		// Top right
 		bounding_points[3] = new PVector(w/2, -h/2); 
+		bounding_points[3] = bounding_points[3].add(pivot.x, pivot.y);
 		bounding_points[3] = bounding_points[3].rotate(p.radians(rotation));
 		bounding_points[3] = bounding_points[3].add(stage.x + x, stage.y + y);
+		//p.ellipse(bounding_points[3].x, bounding_points[3].y, 5, 5);
 	}
 
 	//================//
@@ -233,12 +243,10 @@ public class Primitive
 			{
 				if(within_bounds) 
 				{
-					p.println("!!!");
 					selected = true;
 				}
 				else if(!within_bounds)
 				{
-					p.println("???");
 					selected = false;
 				}
 			}
@@ -252,9 +260,17 @@ public class Primitive
 			}
 			else if(e.getAction() == 4) // When mouse is dragged
 			{
+				if(within_bounds)
+				{
+					hover = true;
+				}
+				
 				if(selected)
 				{
-					doTranslate(e.getX(), e.getY());
+					if(e.getButton() == 37)
+					{
+						doTranslate(e.getX(), e.getY());
+					}	
 				}
 			}
 			else if(e.getAction() == 5) // When mouse is moved
@@ -380,6 +396,37 @@ public class Primitive
 		{
 			transform_mode = NONE;
 		}
+	}
+	
+	public void doWidthHeight(float x_input, float y_input)
+	{ // Does translation of primitive based on the position of x_start & y_start
+		if(transform_mode == NONE) // If translate has not been started, initialise it
+		{
+			transform_offset  = new PVector(x_input-x, y_input-y);
+			transform_mode    = WIDTH_HEIGHT;
+			
+			p.println("Started width height");
+		}
+		if(transform_mode == WIDTH_HEIGHT)
+		{
+		}
+	}
+	
+	public void endWidthHeight(float x_input, float y_input)
+	{ // Ends translation of primitive
+		if(transform_mode == WIDTH_HEIGHT)
+		{
+			transform_mode = NONE;
+		}
+	}
+	
+	//=========//
+	// EDITING //
+	//=========//
+	public void setPivot(float x, float y)
+	{
+		pivot.x = x;
+		pivot.y = y;
 	}
 	
 	//========================//
@@ -514,6 +561,7 @@ public class Primitive
 			{
 				selected = false;	
 				endRotate(e.getX(), e.getY());
+				endWidthHeight(e.getX(), e.getY());
 			}
 			else if(e.getAction() == 3) // When mouse is clicked (down then up)
 			{
@@ -522,8 +570,14 @@ public class Primitive
 			{
 				if(selected)
 				{
-					doRotate(e.getX(), e.getY());
-					//p.println("MOVE HANDLE");
+					if(handle_type == this.ROTATION)
+					{
+						doRotate(e.getX(), e.getY());
+					}
+					else if(handle_type == this.WIDTH_HEIGHT)
+					{
+						doWidthHeight(e.getX(), e.getY());
+					}
 					mouse_state = true;
 				}
 			}
@@ -539,20 +593,24 @@ public class Primitive
 		
 		boolean withinBounds(float input_x, float input_y)
 		{
-			if(handle_type == ROTATION)
+			if(handle_center != null) // Make sure that handle_center has been calculated
 			{
-				if(p.dist(handle_center.x, handle_center.y, input_x, input_y) < rotation_handle_size)
+				if(handle_type == ROTATION)
 				{
-					return true;
+					if(p.dist(handle_center.x, handle_center.y, input_x, input_y) < rotation_handle_size)
+					{
+						return true;
+					}
+				}
+				else if(handle_type == WIDTH_HEIGHT)
+				{
+					if(p.dist(handle_center.x, handle_center.y, input_x, input_y) < width_height_handle_size)
+					{
+						return true;
+					}
 				}
 			}
-			else if(handle_type == WIDTH_HEIGHT)
-			{
-				if(p.dist(handle_center.x, handle_center.y, input_x, input_y) < width_height_handle_size)
-				{
-					return true;
-				}
-			}
+			
 			return false;
 		}
 		
@@ -566,30 +624,26 @@ public class Primitive
 				if(handle_postion == TOP_LEFT)
 				{
 					handle_center = handle_center.add(-width_height_handle_size, -width_height_handle_size);
-					handle_center = handle_center.add(-w/2, -h/2);
 					handle_center = handle_center.rotate(p.radians(rotation));
-					handle_center = handle_center.add(x+stage.x, y+stage.y);
+					handle_center = handle_center.add(bounding_points[0].x, bounding_points[0].y);
 				}
 				else if(handle_postion == BOTTOM_LEFT)
 				{
 					handle_center = handle_center.add(-width_height_handle_size, width_height_handle_size);
-					handle_center = handle_center.add(-w/2, h/2);
 					handle_center = handle_center.rotate(p.radians(rotation));
-					handle_center = handle_center.add(x+stage.x, y+stage.y);
+					handle_center = handle_center.add(bounding_points[1].x, bounding_points[1].y);
 				}
 				else if(handle_postion == BOTTOM_RIGHT)
 				{
 					handle_center = handle_center.add(width_height_handle_size, width_height_handle_size);
-					handle_center = handle_center.add(w/2, h/2);
 					handle_center = handle_center.rotate(p.radians(rotation));
-					handle_center = handle_center.add(x+stage.x, y+stage.y);
+					handle_center = handle_center.add(bounding_points[2].x, bounding_points[2].y);
 				}
 				else if(handle_postion == TOP_RIGHT)
 				{
 					handle_center = handle_center.add(width_height_handle_size, -width_height_handle_size);
-					handle_center = handle_center.add(w/2, -h/2);
 					handle_center = handle_center.rotate(p.radians(rotation));
-					handle_center = handle_center.add(x+stage.x, y+stage.y);
+					handle_center = handle_center.add(bounding_points[3].x, bounding_points[3].y);
 				}
 			}
 			else if(handle_type == WIDTH_HEIGHT)
@@ -599,30 +653,26 @@ public class Primitive
 				if(handle_postion == TOP_LEFT)
 				{
 					handle_center = handle_center.add(width_height_handle_size/2, width_height_handle_size/2);
-					handle_center = handle_center.add(-w/2, -h/2);
 					handle_center = handle_center.rotate(p.radians(rotation));
-					handle_center = handle_center.add(x+stage.x, y+stage.y);
+					handle_center = handle_center.add(bounding_points[0].x, bounding_points[0].y);
 				}
 				else if(handle_postion == BOTTOM_LEFT)
 				{
 					handle_center = handle_center.add(width_height_handle_size/2, -width_height_handle_size/2);
-					handle_center = handle_center.add(-w/2, h/2);
 					handle_center = handle_center.rotate(p.radians(rotation));
-					handle_center = handle_center.add(x+stage.x, y+stage.y);
+					handle_center = handle_center.add(bounding_points[1].x, bounding_points[1].y);
 				}
 				else if(handle_postion == BOTTOM_RIGHT)
 				{
 					handle_center = handle_center.add(-width_height_handle_size/2, -width_height_handle_size/2);
-					handle_center = handle_center.add(w/2, h/2);
 					handle_center = handle_center.rotate(p.radians(rotation));
-					handle_center = handle_center.add(x+stage.x, y+stage.y);
+					handle_center = handle_center.add(bounding_points[2].x, bounding_points[2].y);
 				}
 				else if(handle_postion == TOP_RIGHT)
 				{
 					handle_center = handle_center.add(-width_height_handle_size/2, width_height_handle_size/2);
-					handle_center = handle_center.add(w/2, -h/2);
 					handle_center = handle_center.rotate(p.radians(rotation));
-					handle_center = handle_center.add(x+stage.x, y+stage.y);
+					handle_center = handle_center.add(bounding_points[3].x, bounding_points[3].y);
 				}
 			}
 		}

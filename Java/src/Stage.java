@@ -13,8 +13,9 @@ public class Stage extends Element{
 		default_style = new Style(p);
 		default_style.fill(200,200,200,255);
 		
-		test = new Primitive(200,200,100,200,this,p);
+		test = new Primitive(200,200,100,100,this,p);
 		test.rotation = 15;
+		test.setPivot(0, 100);
 		test2 = new Primitive(250,200,100,200,this,p);
 		test2.rotation = 15;
 	}
