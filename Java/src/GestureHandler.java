@@ -50,8 +50,11 @@ public class GestureHandler {
 				// Mouse Released
 				if(points.size() > 1)
 				{
-					GestureEngine.GestureResponse response = gesture_engine.recogniseGesture(points);
+					Gesture candidate_gesture = new Gesture(gesture_engine, points);
+					GestureEngine.GestureResponse response = gesture_engine.recogniseGesture(candidate_gesture);
 					response.printTopGuesses(10);
+					p.print("Candidate: " + candidate_gesture.initialSize[0] + " x " + candidate_gesture.initialSize[1]);
+					p.println(" @ " + candidate_gesture.centroid);
 				}
 			}
 			else if(e.getAction() == 4)

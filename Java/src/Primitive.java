@@ -9,7 +9,6 @@ public class Primitive
 	
 	float x, y; // Centered x,y
 	float w, h;
-	float x_offset, y_offset;
 	float rotation;
 	PVector pivot; // Pivot point x,y relative to the object's x,y center
 	
@@ -423,10 +422,26 @@ public class Primitive
 	//=========//
 	// EDITING //
 	//=========//
-	public void setPivot(float x, float y)
+	public void setPivot(float x_input, float y_input)
 	{
-		pivot.x = x;
-		pivot.y = y;
+		// Check if new pivot values are the same, ignore changes if they are
+		// Offset (ALL?, this seems to be what 3ds max does) x/y values to maintain offset
+
+		if(x_input != pivot.x || y_input != pivot.y)
+		{
+			PVector offset_amount;
+			float x_pivot_difference = x_input-pivot.x;
+			float y_pivot_difference = y_input-pivot.y;
+			
+			pivot.x = x_input;
+			pivot.y = y_input;
+			
+			offset_amount = new PVector(x_pivot_difference, y_pivot_difference);
+			offset_amount = offset_amount.rotate(p.radians(this.rotation));
+			
+			this.x = this.x - offset_amount.x;
+			this.y = this.y - offset_amount.y;
+		}
 	}
 	
 	//========================//
