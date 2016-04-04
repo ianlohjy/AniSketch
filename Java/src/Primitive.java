@@ -3,7 +3,7 @@ import processing.event.MouseEvent;
 
 public class Primitive
 {	// Primitive represents an animatable object within AniSketch
-	PApplet p;
+	AniSketch p;
 	Stage stage;
 	SpriteLibrary.Sprite sprite;
 	
@@ -38,7 +38,7 @@ public class Primitive
 	final static int ROTATE = 2;
 	final static int WIDTH_HEIGHT = 3;
 	
-	Primitive(float x, float y, float w, float h, Stage stage, PApplet p)
+	Primitive(float x, float y, float w, float h, Stage stage, AniSketch p)
 	{
 		this.x = x;
 		this.y = y;
@@ -113,20 +113,20 @@ public class Primitive
 		if(hover)
 		{
 			p.strokeWeight(5);
-			p.stroke(255, 150);
+			p.stroke(255, 100);
 			p.rect(0, 0, w, h);
 			
 			p.stroke(0, 150);
 		}
 		else
 		{
-			p.stroke(0, 50);
+			p.stroke(0, 150);
 		}
 		
 		if(selected)
 		{
 			p.strokeWeight(5);
-			p.stroke(255, 150);
+			p.stroke(255, 200);
 			p.rect(0, 0, w, h);
 			p.stroke(0, 255);
 		}
@@ -240,19 +240,37 @@ public class Primitive
 		{
 			if(e.getAction() == 1) // When mouse is pressed (down)
 			{
-				if(within_bounds) 
+				if(e.getButton() == 37)
 				{
-					selected = true;
+					if(within_bounds) 
+					{
+						selected = true;
+					}
+					else if(!within_bounds)
+					{
+						selected = false;
+					}
 				}
-				else if(!within_bounds)
+				
+				// REGISTER GESTURE EVENT //
+				if(within_bounds && e.getButton() == 39)
 				{
-					selected = false;
+					p.gesture_handler.registerObject(this, e);
 				}
+				////////////////////////////
+				
 			}
 			else if(e.getAction() == 2) // When mouse is released
 			{
 				// If translate mode was started, end it
 				endTranslate(e.getX(), e.getY());
+				
+				// REGISTER GESTURE EVENT //
+				if(within_bounds && e.getButton() == 39)
+				{
+					p.gesture_handler.registerObject(this, e);
+				}
+				////////////////////////////
 			}
 			else if(e.getAction() == 3) // When mouse is clicked (down then up)
 			{
@@ -444,6 +462,10 @@ public class Primitive
 		}
 	}
 	
+	public void setPivotUsingGlobalPosition(float x_input, float y_input)
+	{
+	}
+	
 	//========================//
 	// PRIMITIVE HANDLE CLASS //
 	//========================//
@@ -561,16 +583,19 @@ public class Primitive
 			
 			if(e.getAction() == 1) // When mouse is pressed (down)
 			{
-				if(within_bounds) 
+				if(e.getButton() == 37)
 				{
-					selected = true;
-					mouse_state = true;
-				}
-				else 
-				{
-					selected = false;
-				}
-				
+					if(within_bounds) 
+					{
+						selected = true;
+						mouse_state = true;
+					}
+					else 
+					{
+						selected = false;
+					}
+	
+				}								
 			}
 			else if(e.getAction() == 2) // When mouse is released
 			{

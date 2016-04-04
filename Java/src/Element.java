@@ -10,12 +10,12 @@ public class Element
 	boolean hover,pressed;
 	int x,y,w,h;
 	
-	PApplet p;
+	AniSketch p;
 	
 	int x_offset;
 	int y_offset;
 	
-	Element(int x, int y, int w, int h, PApplet p)
+	Element(int x, int y, int w, int h, AniSketch p)
 	{	
 		this.x = x;
 		this.y = y;

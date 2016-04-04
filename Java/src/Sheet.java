@@ -7,7 +7,7 @@ public class Sheet extends Element{
 	float x_camera_offset;
 	float y_camera_offset;
 	
-	Sheet(int x, int y, int w, int h, PApplet p)
+	Sheet(int x, int y, int w, int h, AniSketch p)
 	{
 		super(x,y,w,h,p);
 		default_style = new Style(p);

@@ -65,7 +65,7 @@ public class AniSketch extends PApplet
 	
 	public void setup()
 	{
-		frameRate(240);
+		frameRate(250);
 		initialisePAppletFrame();
 		initialiseMainWindows();
 		initialiseGestureHandler();
