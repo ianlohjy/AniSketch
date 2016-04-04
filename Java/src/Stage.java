@@ -32,8 +32,12 @@ public class Stage extends Element{
 	
 	void checkMouseEvent(MouseEvent e)
 	{
-		test.checkMouseEvent(e);
-		test2.checkMouseEvent(e);
+		if(withinBounds(e.getX(), e.getY()))
+		{
+			test.checkMouseEvent(e);
+			test2.checkMouseEvent(e);
+		}
+		
 	}
 	
 }

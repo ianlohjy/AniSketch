@@ -32,6 +32,7 @@ public class Primitive
 	// Transforms
 	PVector transform_offset;
 	int transform_mode;
+	float transform_rotate_last_angle;
 	
 	final static int NONE = 0;
 	final static int MOVE = 1;
@@ -61,6 +62,10 @@ public class Primitive
 		if(selected)
 		{
 			drawHandles();
+		}
+		if(transform_mode == ROTATE)
+		{
+			drawRotationGizmo();
 		}
 	}
 	
@@ -145,6 +150,15 @@ public class Primitive
 		p.line(-5, 5, 5, -5);
 		
 		p.popMatrix();
+	}
+	
+	public void drawRotationGizmo()
+	{
+		p.noFill();
+		p.stroke(0);
+		p.strokeWeight(2);
+		p.line(p.mouseX, p.mouseY, stage.x+x, stage.y+y);
+		p.ellipse(p.mouseX, p.mouseY, 10, 10);
 	}
 	
 	//========================================//
@@ -253,78 +267,6 @@ public class Primitive
 			//
 			// ...
 			//
-		
-		/*
-		// If its a left click
-		if(e.getButton() == 37)
-		{ 
-			if(selected)
-			{
-				handles_mouse_event_state = checkMouseEventHandles(e);
-			}
-			
-			// If the handles do not register any events for the mouse input, check if there are events that register with the main primitive
-			if(!handles_mouse_event_state)
-			{
-				if(e.getAction() == 1)
-				{
-					// Mouse Pressed
-					if(withinBounds(e.getX(), e.getY()))
-					{
-						selected = true;
-					}
-					else
-					{
-						selected = false;
-					}
-				}
-				else if(e.getAction() == 4)
-				{
-					// Mouse Dragged
-					if(selected)
-					{
-						if(!transform_started)
-						{
-							p.println("MOVING");
-							transform_started = true;
-							transform_offset  = new PVector(e.getX() - x, e.getY() - y);
-							p.println(transform_offset);
-						}
-						if(transform_started)
-						{
-							x = e.getX() - transform_offset.x;
-							y = e.getY() - transform_offset.y;
-						}
-					}
-				}
-				else if(e.getAction() == 2)
-				{
-					// Mouse Released
-					if(transform_started)
-					{
-						transform_started = false;
-					}
-				}
-			}
-		}
-		else if(e.getAction() == 5)
-		{
-			// Mouse Moved
-			if(withinBounds(e.getX(), e.getY()))
-			{
-				hover = true;
-			}
-			else
-			{
-				hover = false;
-			}
-			
-			if(selected)
-			{
-				checkMouseEventHandles(e);
-			}
-		}
-		*/
 	}
 	
 	public boolean checkMouseEventHandles(MouseEvent e)
@@ -377,7 +319,7 @@ public class Primitive
 			transform_offset  = new PVector(x_input-x, y_input-y);
 			transform_mode    = MOVE;
 			
-			p.println("Started transform");
+			p.println("Started translate");
 		}
 		if(transform_mode == MOVE)
 		{
@@ -389,6 +331,52 @@ public class Primitive
 	public void endTranslate(float x_input, float y_input)
 	{ // Ends translation of primitive
 		if(transform_mode == MOVE)
+		{
+			transform_mode = NONE;
+		}
+	}
+	
+	public void doRotate(float x_input, float y_input)
+	{
+		if(transform_mode == NONE)
+		{
+			transform_offset  = new PVector(x_input-x, y_input-y);
+			transform_mode    = ROTATE;
+			
+			transform_rotate_last_angle = p.degrees(p.atan2(x_input-x-stage.x, y_input-y-stage.y));
+			
+			//p.println("Started rotate at " + transform_rotate_last_angle);
+		}
+		if(transform_mode == ROTATE)
+		{
+			transform_offset  = new PVector(x_input-x, y_input-y);
+			float current_transform_angle    = p.degrees(p.atan2(x_input-x-stage.x, y_input-y-stage.y));			
+			
+			if(current_transform_angle > 0 && transform_rotate_last_angle < 0)
+			{ 	// If the mouse moves from -180 to +180
+				transform_rotate_last_angle = 180+(180-(-1*transform_rotate_last_angle));
+				//p.println("Moved between -/+ " + transform_rotate_last_angle);
+			}
+			else if(current_transform_angle < 0 && transform_rotate_last_angle > 0)
+			{	// If the mouse moves from +180 to -180
+				transform_rotate_last_angle = -1*(180+(180-transform_rotate_last_angle));
+				//p.println("Moved between +/- " + transform_rotate_last_angle);
+			}
+			
+			float transform_angle_difference = current_transform_angle-transform_rotate_last_angle;
+			rotation -= transform_angle_difference;
+			
+			//p.println("Last Angle " + transform_rotate_last_angle);
+			//p.println("Transform Difference " + transform_angle_difference);
+			//p.println("Current Primitive Angle " + rotation);
+			
+			transform_rotate_last_angle = current_transform_angle;
+		}
+	}
+	
+	public void endRotate(float x_input, float y_input)
+	{
+		if(transform_mode == ROTATE)
 		{
 			transform_mode = NONE;
 		}
@@ -525,6 +513,7 @@ public class Primitive
 			else if(e.getAction() == 2) // When mouse is released
 			{
 				selected = false;	
+				endRotate(e.getX(), e.getY());
 			}
 			else if(e.getAction() == 3) // When mouse is clicked (down then up)
 			{
@@ -533,7 +522,8 @@ public class Primitive
 			{
 				if(selected)
 				{
-					p.println("MOVE HANDLE");
+					doRotate(e.getX(), e.getY());
+					//p.println("MOVE HANDLE");
 					mouse_state = true;
 				}
 			}
