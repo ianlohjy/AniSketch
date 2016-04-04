@@ -13,13 +13,13 @@ public class Stage extends Element{
 	{
 		super(x,y,w,h,p);
 		default_style = new Style(p);
-		default_style.fill(200,200,200,255);
+		default_style.fill(255,70,0,255);
 		
 		test = new Primitive(50,50,100,100,this,p);
 		test.rotation = 0;
 		test.setPivot(50,50);
-		test.setPivot(50,50);
-		test.setPivot(50,100);
+		//test.setPivot(50,50);
+		//test.setPivot(50,100);
 		//test.setPivot(100,100);
 		test2 = new Primitive(250,200,100,200,this,p);
 		test2.rotation = 15;
@@ -30,7 +30,7 @@ public class Stage extends Element{
 		PVector test_vector = new PVector(100,0);
 		
 		//test.rotation = p.frameCount/5;
-		test.setPivot(0, count);
+		//test.setPivot(0, count);
 		count+=0.1;
 		p.clip(x, y, w, h);
 		default_style.apply();
@@ -47,7 +47,5 @@ public class Stage extends Element{
 			test.checkMouseEvent(e);
 			test2.checkMouseEvent(e);
 		}
-		
 	}
-	
 }

@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-
 import processing.core.PApplet;
 import processing.core.PVector;
 import processing.event.MouseEvent;
@@ -31,7 +30,7 @@ public class GestureHandler {
 	public void setupStyles()
 	{
 		line_style_default.noFill();
-		line_style_default.stroke(0,0,0,255);
+		line_style_default.stroke(150,150,150,255);
 		line_style_default.strokeWeight(3);
 	}
 	
@@ -55,6 +54,7 @@ public class GestureHandler {
 					response.printTopGuesses(10);
 					p.print("Candidate: " + candidate_gesture.initialSize[0] + " x " + candidate_gesture.initialSize[1]);
 					p.println(" @ " + candidate_gesture.centroid);
+					points.clear();
 				}
 			}
 			else if(e.getAction() == 4)
@@ -68,21 +68,38 @@ public class GestureHandler {
 		}
 	}
 	
+	public void processResponse(GestureEngine.GestureResponse gesture_response)
+	{
+		
+	}
+	
 	public void drawLine()
 	{
+		float stroke_opacity;
+		float min_opacity = 20;
+		
 		if(points.size()>1)
 		{
-			line_style_default.apply();
-			for(int i=0; i<points.size()-1; i++)
+			p.beginShape();
+			for(int i=0; i<points.size(); i++)
 			{
-				p.line(points.get(i).x, points.get(i).y, points.get(i+1).x, points.get(i+1).y);
+				//stroke_opacity = (float)i/points.size() * (150);
+				//stroke_opacity += 255-150;
+				//stroke_opacity = p.abs(stroke_opacity-255);
+				//line_style_default.stroke(stroke_opacity, stroke_opacity, stroke_opacity, 200);
+				line_style_default.apply();
+				p.vertex(points.get(i).x, points.get(i).y);
+				//p.line(points.get(i).x, points.get(i).y, points.get(i+1).x, points.get(i+1).y);
 			}
+			p.endShape();
 		}
 	}
 	
 	public void update()
 	{
+		p.blendMode(p.SUBTRACT);
 		drawLine();
+		p.blendMode(p.NORMAL);
 	}
 	
 }
