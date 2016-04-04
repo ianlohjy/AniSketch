@@ -1,0 +1,7 @@
+//===============//
+// OPTIMIZATIONS //
+//===============//
+
+1.  Most angles are stored as degrees, since its easier to visualize it. 
+	We can convert this to radians later on, since all of Processing's 
+	calculations are in radians.

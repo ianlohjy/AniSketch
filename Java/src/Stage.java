@@ -22,13 +22,17 @@ public class Stage extends Element{
 		addPrimitive(250,200,100,200,this,p);
 		
 		test = new Primitive(50,50,100,100,this,p);
-		test.rotation = 150;
-		test.setPivot(50,50);
+		//test.rotation = 150;
+		test.setPivot(150,150);
+		p.println("TEST POS is " + test.x + " " + test.y);
+		test.setPivot(0,100);
+		p.println("TEST POS is " + test.x + " " + test.y);
+		
 	}
 	
 	void draw()
 	{
-
+		//test.setPivot(p.frameCount/20f,p.frameCount/20f);
 		p.clip(x, y, w, h);
 		default_style.apply(); // Apply style for Stage window
 		

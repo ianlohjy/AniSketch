@@ -11,7 +11,8 @@ public class Primitive
 	float w, h;
 	float rotation;
 	PVector pivot; // Pivot point x,y relative to the object's x,y center
-	
+	PVector pivot_offset; // Offset required to move the object to give the appearance that the pivot's center point is moving, instead of the object itself. Expressed in cartesian coords.
+	// PVector position_offset; // General position offset parameter. Currently used for position correction after setting a new pivot.
 	PVector[] bounding_points; // The calculated "live" position of the 4 bounding points that make up the primitive.
 	
 	Primitive parent;
@@ -51,6 +52,7 @@ public class Primitive
 		this.hover = false;
 		bounding_points = new PVector[4];
 		pivot = new PVector(0,0);
+		pivot_offset = new PVector(0,0);
 		setupHandles();
 	}
 	
@@ -67,6 +69,9 @@ public class Primitive
 		{
 			drawRotationGizmo();
 		}
+		
+		// Draw the primitive's x,y position without offsets
+		// p.ellipse(stage.x+x, stage.y+y, 5, 5);
 	}
 	
 	//=======//
@@ -102,13 +107,13 @@ public class Primitive
 	public void drawBoundingBox()
 	{
 		p.pushMatrix();
-		
 		p.translate(stage.x, stage.y);
 		p.translate(x, y);
-		p.rotate(p.radians(rotation));
+		p.translate(-pivot_offset.x, -pivot_offset.y);
+		p.rotate(PApplet.radians(rotation));
 		p.translate(pivot.x, pivot.y);
 		
-		p.rectMode(p.CENTER);
+		p.rectMode(PApplet.CENTER);
 		p.noFill();
 		if(hover)
 		{
@@ -133,7 +138,7 @@ public class Primitive
 		
 		p.strokeWeight(1);
 		p.rect(0, 0, w, h);
-		p.rectMode(p.CORNER);
+		p.rectMode(PApplet.CORNER);
 		
 		p.popMatrix();
 	}
@@ -142,6 +147,7 @@ public class Primitive
 	{
 		p.pushMatrix();
 		p.translate(stage.x + x, stage.y + y);
+		p.translate(-pivot_offset.x, -pivot_offset.y);
 		//p.rotate(p.radians(rotation));
 		
 		p.noFill();
@@ -158,7 +164,7 @@ public class Primitive
 		p.noFill();
 		p.stroke(0);
 		p.strokeWeight(2);
-		p.line(p.mouseX, p.mouseY, stage.x+x, stage.y+y);
+		p.line(p.mouseX, p.mouseY, stage.x+x-pivot_offset.x, stage.y+y-pivot_offset.y);
 		p.ellipse(p.mouseX, p.mouseY, 10, 10);
 	}
 	
@@ -198,27 +204,31 @@ public class Primitive
 		// Top left
 		bounding_points[0] = new PVector(-w/2, -h/2); 
 		bounding_points[0] = bounding_points[0].add(pivot.x, pivot.y);
-		bounding_points[0] = bounding_points[0].rotate(p.radians(rotation));
+		bounding_points[0] = bounding_points[0].rotate(PApplet.radians(rotation));
+		bounding_points[0] = bounding_points[0].add(-pivot_offset.x, -pivot_offset.y);
 		bounding_points[0] = bounding_points[0].add(stage.x + x, stage.y + y);
-		//p.ellipse(bounding_points[0].x, bounding_points[0].y, 5, 5);
+		p.ellipse(bounding_points[0].x, bounding_points[0].y, 5, 5);
 		// Bottom left
 		bounding_points[1] = new PVector(-w/2, h/2); 
 		bounding_points[1] = bounding_points[1].add(pivot.x, pivot.y);
-		bounding_points[1] = bounding_points[1].rotate(p.radians(rotation));
+		bounding_points[1] = bounding_points[1].rotate(PApplet.radians(rotation));
+		bounding_points[1] = bounding_points[1].add(-pivot_offset.x, -pivot_offset.y);
 		bounding_points[1] = bounding_points[1].add(stage.x + x, stage.y + y);
-		//p.ellipse(bounding_points[1].x, bounding_points[1].y, 5, 5);
+		p.ellipse(bounding_points[1].x, bounding_points[1].y, 5, 5);
 		// Bottom right
 		bounding_points[2] = new PVector(w/2, h/2); 
 		bounding_points[2] = bounding_points[2].add(pivot.x, pivot.y);
-		bounding_points[2] = bounding_points[2].rotate(p.radians(rotation));
+		bounding_points[2] = bounding_points[2].rotate(PApplet.radians(rotation));
+		bounding_points[2] = bounding_points[2].add(-pivot_offset.x, -pivot_offset.y);
 		bounding_points[2] = bounding_points[2].add(stage.x + x, stage.y + y);
-		//p.ellipse(bounding_points[2].x, bounding_points[2].y, 5, 5);
+		p.ellipse(bounding_points[2].x, bounding_points[2].y, 5, 5);
 		// Top right
 		bounding_points[3] = new PVector(w/2, -h/2); 
 		bounding_points[3] = bounding_points[3].add(pivot.x, pivot.y);
-		bounding_points[3] = bounding_points[3].rotate(p.radians(rotation));
+		bounding_points[3] = bounding_points[3].rotate(PApplet.radians(rotation));
+		bounding_points[3] = bounding_points[3].add(-pivot_offset.x, -pivot_offset.y);
 		bounding_points[3] = bounding_points[3].add(stage.x + x, stage.y + y);
-		//p.ellipse(bounding_points[3].x, bounding_points[3].y, 5, 5);
+		p.ellipse(bounding_points[3].x, bounding_points[3].y, 5, 5);
 	}
 
 	//================//
@@ -274,6 +284,14 @@ public class Primitive
 			}
 			else if(e.getAction() == 3) // When mouse is clicked (down then up)
 			{
+				/*
+				if(selected)
+				{
+					PApplet.println("CLICKED");
+					setPivotUsingGlobalPosition(e.getX(), e.getY());
+				}
+				*/
+
 			}
 			else if(e.getAction() == 4) // When mouse is dragged
 			{
@@ -352,7 +370,7 @@ public class Primitive
 			transform_offset  = new PVector(x_input-x, y_input-y);
 			transform_mode    = MOVE;
 			
-			p.println("Started translate");
+			PApplet.println("Started translate");
 		}
 		if(transform_mode == MOVE)
 		{
@@ -376,14 +394,14 @@ public class Primitive
 			transform_offset  = new PVector(x_input-x, y_input-y);
 			transform_mode    = ROTATE;
 			
-			transform_rotate_last_angle = p.degrees(p.atan2(x_input-x-stage.x, y_input-y-stage.y));
+			transform_rotate_last_angle = PApplet.degrees(PApplet.atan2(x_input-x-stage.x+pivot_offset.x, y_input-y-stage.y+pivot_offset.y));
 			
 			//p.println("Started rotate at " + transform_rotate_last_angle);
 		}
 		if(transform_mode == ROTATE)
 		{
 			transform_offset  = new PVector(x_input-x, y_input-y);
-			float current_transform_angle    = p.degrees(p.atan2(x_input-x-stage.x, y_input-y-stage.y));			
+			float current_transform_angle    = PApplet.degrees(PApplet.atan2(x_input-x-stage.x+pivot_offset.x, y_input-y-stage.y+pivot_offset.y));			
 			
 			if(current_transform_angle > 0 && transform_rotate_last_angle < 0)
 			{ 	// If the mouse moves from -180 to +180
@@ -422,7 +440,7 @@ public class Primitive
 			transform_offset  = new PVector(x_input-x, y_input-y);
 			transform_mode    = WIDTH_HEIGHT;
 			
-			p.println("Started width height");
+			PApplet.println("Started width height");
 		}
 		if(transform_mode == WIDTH_HEIGHT)
 		{
@@ -442,28 +460,67 @@ public class Primitive
 	//=========//
 	public void setPivot(float x_input, float y_input)
 	{
+		// Sets pivot relative to center of object
 		// Check if new pivot values are the same, ignore changes if they are
 		// Offset (ALL?, this seems to be what 3ds max does) x/y values to maintain offset
 
 		if(x_input != pivot.x || y_input != pivot.y)
 		{
 			PVector offset_amount;
-			float x_pivot_difference = x_input-pivot.x;
-			float y_pivot_difference = y_input-pivot.y;
+			//float x_pivot_difference = x_input-pivot.x;
+			//float y_pivot_difference = y_input-pivot.y;
 			
 			pivot.x = x_input;
 			pivot.y = y_input;
 			
-			offset_amount = new PVector(x_pivot_difference, y_pivot_difference);
-			offset_amount = offset_amount.rotate(p.radians(this.rotation));
+			//offset_amount = new PVector(x_pivot_difference, y_pivot_difference);
+			offset_amount = new PVector(x_input, y_input);
+			offset_amount = offset_amount.rotate(PApplet.radians(this.rotation));
 			
-			this.x = this.x - offset_amount.x;
-			this.y = this.y - offset_amount.y;
+			pivot_offset.x = offset_amount.x;
+			pivot_offset.y = offset_amount.y;
 		}
 	}
 	
-	public void setPivotUsingGlobalPosition(float x_input, float y_input)
-	{
+	public void setPivotUsingGlobalPosition(float x_input, float y_input)	
+	{	
+		//=================================================================================//
+		// Same as setPivot() but uses a global point to set the pivot (ie.mouse position) //
+		//=================================================================================//
+		
+		// Find the vector relative to the current pivot point
+		PVector new_pivot = new PVector(x_input-stage.x-x+pivot_offset.x, y_input-stage.y-y+pivot_offset.y);
+		
+		// Rotate vector back to zero the primitive's rotation
+		new_pivot = new_pivot.rotate(PApplet.radians(-rotation));
+		
+		// Subtract the existing pivot's offset to get new pivot offset relative to the primitive
+		new_pivot = new_pivot.add(-pivot.x, -pivot.y);
+		
+		// Set the new pivot
+		this.setPivot(-new_pivot.x, -new_pivot.y);
+		
+		//===============================================================//
+		// Setting a new pivot point creates a secondary problem. If a   //
+		// primitive already has rotation, it will create a "jump" in    //
+		// position, since the primitive is rotated from a new position. //
+		// To maintain continuity in position, we offset the anticipated //
+		// position change.                                              //
+		//===============================================================//
+		
+		// Find the vector between the input and the original x position (without offsets and pivot adjustments)
+		PVector position_offset = new PVector(x_input-(stage.x+x), y_input-(stage.y+y));
+		
+		// We take the new pivot offset vector, and rotate it by the primitive's rotation
+		new_pivot = new_pivot.rotate(PApplet.radians(rotation));
+		
+		// Subtract the rotated pivot vector to find the positional offset
+		position_offset = position_offset.add(-new_pivot.x, -new_pivot.y);
+		
+		// Apply the positional offset to x & y
+		// (For now this offset is baked in)
+		this.x += position_offset.x;
+		this.y += position_offset.y;
 	}
 	
 	//========================//
@@ -563,11 +620,11 @@ public class Primitive
 			{
 				width_height_style_default.apply();
 			}
-			p.rectMode(p.CENTER);
+			p.rectMode(PApplet.CENTER);
 			p.translate(handle_center.x, handle_center.y);
-			p.rotate(p.radians(rotation));
+			p.rotate(PApplet.radians(rotation));
 			p.rect(0, 0, width_height_handle_size, width_height_handle_size);
-			p.rectMode(p.CORNER);
+			p.rectMode(PApplet.CORNER);
 			p.popMatrix();
 		}
 	
@@ -610,11 +667,11 @@ public class Primitive
 			{
 				if(selected)
 				{
-					if(handle_type == this.ROTATION)
+					if(handle_type == Primitive.Handle.ROTATION)
 					{
 						doRotate(e.getX(), e.getY());
 					}
-					else if(handle_type == this.WIDTH_HEIGHT)
+					else if(handle_type == Primitive.Handle.WIDTH_HEIGHT)
 					{
 						doWidthHeight(e.getX(), e.getY());
 					}
@@ -637,14 +694,14 @@ public class Primitive
 			{
 				if(handle_type == ROTATION)
 				{
-					if(p.dist(handle_center.x, handle_center.y, input_x, input_y) < rotation_handle_size)
+					if(PApplet.dist(handle_center.x, handle_center.y, input_x, input_y) < rotation_handle_size)
 					{
 						return true;
 					}
 				}
 				else if(handle_type == WIDTH_HEIGHT)
 				{
-					if(p.dist(handle_center.x, handle_center.y, input_x, input_y) < width_height_handle_size)
+					if(PApplet.dist(handle_center.x, handle_center.y, input_x, input_y) < width_height_handle_size)
 					{
 						return true;
 					}
@@ -664,25 +721,25 @@ public class Primitive
 				if(handle_postion == TOP_LEFT)
 				{
 					handle_center = handle_center.add(-width_height_handle_size, -width_height_handle_size);
-					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.rotate(PApplet.radians(rotation));
 					handle_center = handle_center.add(bounding_points[0].x, bounding_points[0].y);
 				}
 				else if(handle_postion == BOTTOM_LEFT)
 				{
 					handle_center = handle_center.add(-width_height_handle_size, width_height_handle_size);
-					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.rotate(PApplet.radians(rotation));
 					handle_center = handle_center.add(bounding_points[1].x, bounding_points[1].y);
 				}
 				else if(handle_postion == BOTTOM_RIGHT)
 				{
 					handle_center = handle_center.add(width_height_handle_size, width_height_handle_size);
-					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.rotate(PApplet.radians(rotation));
 					handle_center = handle_center.add(bounding_points[2].x, bounding_points[2].y);
 				}
 				else if(handle_postion == TOP_RIGHT)
 				{
 					handle_center = handle_center.add(width_height_handle_size, -width_height_handle_size);
-					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.rotate(PApplet.radians(rotation));
 					handle_center = handle_center.add(bounding_points[3].x, bounding_points[3].y);
 				}
 			}
@@ -693,25 +750,25 @@ public class Primitive
 				if(handle_postion == TOP_LEFT)
 				{
 					handle_center = handle_center.add(width_height_handle_size/2, width_height_handle_size/2);
-					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.rotate(PApplet.radians(rotation));
 					handle_center = handle_center.add(bounding_points[0].x, bounding_points[0].y);
 				}
 				else if(handle_postion == BOTTOM_LEFT)
 				{
 					handle_center = handle_center.add(width_height_handle_size/2, -width_height_handle_size/2);
-					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.rotate(PApplet.radians(rotation));
 					handle_center = handle_center.add(bounding_points[1].x, bounding_points[1].y);
 				}
 				else if(handle_postion == BOTTOM_RIGHT)
 				{
 					handle_center = handle_center.add(-width_height_handle_size/2, -width_height_handle_size/2);
-					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.rotate(PApplet.radians(rotation));
 					handle_center = handle_center.add(bounding_points[2].x, bounding_points[2].y);
 				}
 				else if(handle_postion == TOP_RIGHT)
 				{
 					handle_center = handle_center.add(-width_height_handle_size/2, width_height_handle_size/2);
-					handle_center = handle_center.rotate(p.radians(rotation));
+					handle_center = handle_center.rotate(PApplet.radians(rotation));
 					handle_center = handle_center.add(bounding_points[3].x, bounding_points[3].y);
 				}
 			}
