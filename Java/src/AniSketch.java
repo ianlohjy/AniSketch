@@ -96,6 +96,11 @@ public class AniSketch extends PApplet
 		gesture_handler.checkMouseEvent(e);
 	}
 	
+	public void mouseClicked(MouseEvent e)
+	{
+		passMouseEvents(e);
+	}
+	
 	public void mousePressed(MouseEvent e)
 	{	
 		passMouseEvents(e);

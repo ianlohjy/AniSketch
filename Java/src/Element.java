@@ -37,11 +37,11 @@ public class Element
 	
 	void checkMouseEvent(MouseEvent e)
 	{
-		boolean inBounds = withinBounds(e.getX(),e.getY());
+		boolean within_bounds = withinBounds(e.getX(),e.getY());
 		
 		if(e.getAction() == 1)
 		{
-			if(inBounds)
+			if(within_bounds)
 			{pressed = true;}
 			else 
 			{pressed = false;}
@@ -52,7 +52,7 @@ public class Element
 		}
 		else if(e.getAction() == 5)
 		{
-			if(inBounds)
+			if(within_bounds)
 			{hover = true;}
 			else
 			{hover = false;}
@@ -65,13 +65,13 @@ public class Element
 		// This method serves as a mouse event "callback" for any class that extends "Element".
 	}
 	
-	boolean withinBounds(int input_x, int input_y)
+	boolean withinBounds(int x_input, int y_input)
 	{
 		// Returns true if input x/y is inside element's bounding box
 		
-		if(input_x > x+x_offset && input_x < x+w+x_offset)
+		if(x_input > x+x_offset && x_input < x+w+x_offset)
 		{
-			if(input_y > y+y_offset && input_y < y+h+y_offset)
+			if(y_input > y+y_offset && y_input < y+h+y_offset)
 			{
 				return true;
 			}

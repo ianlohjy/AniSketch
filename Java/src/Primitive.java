@@ -29,10 +29,10 @@ public class Primitive
 	boolean pressed, hover, selected;
 	boolean handles_enabled;
 	
-	PVector transform_start_point;
+	// Transforms
 	PVector transform_offset;
-	boolean transform_started;
 	int transform_mode;
+	
 	final static int NONE = 0;
 	final static int MOVE = 1;
 	final static int ROTATE = 2;
@@ -50,7 +50,6 @@ public class Primitive
 		this.pressed = false;
 		this.hover = false;
 		bounding_points = new PVector[4];
-		transform_started = false;
 		setupHandles();
 	}
 	
@@ -65,6 +64,9 @@ public class Primitive
 		}
 	}
 	
+	//=======//
+	// SETUP //
+	//=======//
 	public void setupHandles()
 	{
 		wh_top_left = new Handle(Handle.WIDTH_HEIGHT, Handle.TOP_LEFT);
@@ -77,6 +79,9 @@ public class Primitive
 		rt_top_right = new Handle(Handle.ROTATION, Handle.TOP_RIGHT);
 	}
 	
+	//=====================//
+	// DRAWING / RENDERING //
+	//=====================//
 	public void drawHandles()
 	{
 		wh_top_left.drawHandle();
@@ -87,26 +92,6 @@ public class Primitive
 		rt_bottom_left.drawHandle();
 		rt_bottom_right.drawHandle();
 		rt_top_right.drawHandle();
-	}
-	
-	public void calculateBoundingPoints()
-	{
-		// Top left
-		bounding_points[0] = new PVector(-w/2, -h/2); 
-		bounding_points[0] = bounding_points[0].rotate(p.radians(rotation));
-		bounding_points[0] = bounding_points[0].add(stage.x + x, stage.y + y);
-		// Bottom left
-		bounding_points[1] = new PVector(-w/2, h/2); 
-		bounding_points[1] = bounding_points[1].rotate(p.radians(rotation));
-		bounding_points[1] = bounding_points[1].add(stage.x + x, stage.y + y);
-		// Bottom right
-		bounding_points[2] = new PVector(w/2, h/2); 
-		bounding_points[2] = bounding_points[2].rotate(p.radians(rotation));
-		bounding_points[2] = bounding_points[2].add(stage.x + x, stage.y + y);
-		// Top right
-		bounding_points[3] = new PVector(w/2, -h/2); 
-		bounding_points[3] = bounding_points[3].rotate(p.radians(rotation));
-		bounding_points[3] = bounding_points[3].add(stage.x + x, stage.y + y);
 	}
 	
 	public void drawBoundingBox()
@@ -162,7 +147,9 @@ public class Primitive
 		p.popMatrix();
 	}
 	
-	// COLLISION AND BOUNDING BOX DETECTION
+	//========================================//
+	// COLLISION AND BOUNDING BOX CALCULATION //
+	//========================================//
 	public boolean isPointLeftOfLine(PVector a, PVector b, float input_x, float input_y)
 	{
 		return ((b.x - a.x)*(input_y - a.y) - (b.y - a.y)*(input_x - a.x)) > 0;
@@ -191,48 +178,132 @@ public class Primitive
 		}
 	}
 	
-	// EVENT HANDLING
+	public void calculateBoundingPoints()
+	{
+		// Top left
+		bounding_points[0] = new PVector(-w/2, -h/2); 
+		bounding_points[0] = bounding_points[0].rotate(p.radians(rotation));
+		bounding_points[0] = bounding_points[0].add(stage.x + x, stage.y + y);
+		// Bottom left
+		bounding_points[1] = new PVector(-w/2, h/2); 
+		bounding_points[1] = bounding_points[1].rotate(p.radians(rotation));
+		bounding_points[1] = bounding_points[1].add(stage.x + x, stage.y + y);
+		// Bottom right
+		bounding_points[2] = new PVector(w/2, h/2); 
+		bounding_points[2] = bounding_points[2].rotate(p.radians(rotation));
+		bounding_points[2] = bounding_points[2].add(stage.x + x, stage.y + y);
+		// Top right
+		bounding_points[3] = new PVector(w/2, -h/2); 
+		bounding_points[3] = bounding_points[3].rotate(p.radians(rotation));
+		bounding_points[3] = bounding_points[3].add(stage.x + x, stage.y + y);
+	}
+
+	//================//
+	// EVENT HANDLING //
+	//================//
 	public void checkMouseEvent(MouseEvent e)
 	{
-		if(e.getButton() == 37)
-		{ // If its a left click
-			if(e.getAction() == 1)
+		boolean handles_mouse_event_state = false;
+		boolean within_bounds = withinBounds(e.getX(), e.getY());
+		
+		// If the primitive is already selected, pass the mouse event to the handles first
+		if(selected)
+		{
+			handles_mouse_event_state = checkMouseEventHandles(e);
+		}
+		
+		// If the handles do not register any mouse events, continue to pass the mouse event to the primitive proper
+		if(!handles_mouse_event_state)
+		{
+			if(e.getAction() == 1) // When mouse is pressed (down)
 			{
-				// Mouse Pressed
-				if(withinBounds(e.getX(), e.getY()))
+				if(within_bounds) 
 				{
+					p.println("!!!");
 					selected = true;
 				}
-				else
+				else if(!within_bounds)
 				{
+					p.println("???");
 					selected = false;
 				}
 			}
-			else if(e.getAction() == 4)
+			else if(e.getAction() == 2) // When mouse is released
 			{
-				// Mouse Dragged
+				// If translate mode was started, end it
+				endTranslate(e.getX(), e.getY());
+			}
+			else if(e.getAction() == 3) // When mouse is clicked (down then up)
+			{
+			}
+			else if(e.getAction() == 4) // When mouse is dragged
+			{
 				if(selected)
 				{
-					if(!transform_started)
-					{
-						p.println("MOVING");
-						transform_started = true;
-						transform_offset  = new PVector(e.getX() - x, e.getY() - y);
-						p.println(transform_offset);
-					}
-					if(transform_started)
-					{
-						x = e.getX() - transform_offset.x;
-						y = e.getY() - transform_offset.y;
-					}
+					doTranslate(e.getX(), e.getY());
 				}
 			}
-			else if(e.getAction() == 2)
+			else if(e.getAction() == 5) // When mouse is moved
 			{
-				// Mouse Released
-				if(transform_started)
+				if(within_bounds) {hover = true;}
+				else {hover = false;}
+			}
+		}
+			// Regardless of state of handles, pass these mouse events
+			//
+			// ...
+			//
+		
+		/*
+		// If its a left click
+		if(e.getButton() == 37)
+		{ 
+			if(selected)
+			{
+				handles_mouse_event_state = checkMouseEventHandles(e);
+			}
+			
+			// If the handles do not register any events for the mouse input, check if there are events that register with the main primitive
+			if(!handles_mouse_event_state)
+			{
+				if(e.getAction() == 1)
 				{
-					transform_started = false;
+					// Mouse Pressed
+					if(withinBounds(e.getX(), e.getY()))
+					{
+						selected = true;
+					}
+					else
+					{
+						selected = false;
+					}
+				}
+				else if(e.getAction() == 4)
+				{
+					// Mouse Dragged
+					if(selected)
+					{
+						if(!transform_started)
+						{
+							p.println("MOVING");
+							transform_started = true;
+							transform_offset  = new PVector(e.getX() - x, e.getY() - y);
+							p.println(transform_offset);
+						}
+						if(transform_started)
+						{
+							x = e.getX() - transform_offset.x;
+							y = e.getY() - transform_offset.y;
+						}
+					}
+				}
+				else if(e.getAction() == 2)
+				{
+					// Mouse Released
+					if(transform_started)
+					{
+						transform_started = false;
+					}
 				}
 			}
 		}
@@ -252,8 +323,8 @@ public class Primitive
 			{
 				checkMouseEventHandles(e);
 			}
-			
 		}
+		*/
 	}
 	
 	public boolean checkMouseEventHandles(MouseEvent e)
@@ -296,32 +367,36 @@ public class Primitive
 		return mouse_state;
 	}
 	
-	public void transformTranslate()
-	{
-		
+	//====================//
+	// TRANSFORM HANDLING //
+	//====================//
+	public void doTranslate(float x_input, float y_input)
+	{ // Does translation of primitive based on the position of x_start & y_start
+		if(transform_mode == NONE) // If translate has not been started, initialise it
+		{
+			transform_offset  = new PVector(x_input-x, y_input-y);
+			transform_mode    = MOVE;
+			
+			p.println("Started transform");
+		}
+		if(transform_mode == MOVE)
+		{
+			x = x_input - transform_offset.x;
+			y = y_input - transform_offset.y;
+		}
 	}
 	
-	public void startTransform(int mode)
-	{
-		
+	public void endTranslate(float x_input, float y_input)
+	{ // Ends translation of primitive
+		if(transform_mode == MOVE)
+		{
+			transform_mode = NONE;
+		}
 	}
 	
-	public void endTransform()
-	{
-		
-	}
-	
-	public void transformRotate()
-	{
-		
-	}
-	
-	public void transformScale()
-	{
-		
-	}
-	
-	// Handle class
+	//========================//
+	// PRIMITIVE HANDLE CLASS //
+	//========================//
 	class Handle
 	{
 		final static int WIDTH_HEIGHT = 0;
@@ -427,21 +502,49 @@ public class Primitive
 		boolean checkMouseEvent(MouseEvent e)
 		{
 			boolean within_bounds = withinBounds(e.getX(), e.getY());
+			boolean mouse_state   = false;
 			
-			if(e.getAction() == 5)
-			{ // Mouse moved
-				if(within_bounds)
+			//if(within_bounds)
+			//{
+			//	mouse_state = true;
+			//}
+			
+			if(e.getAction() == 1) // When mouse is pressed (down)
+			{
+				if(within_bounds) 
 				{
-					hover = true;
+					selected = true;
+					mouse_state = true;
 				}
-				else
+				else 
 				{
-					hover = false;
+					selected = false;
 				}
+				
+			}
+			else if(e.getAction() == 2) // When mouse is released
+			{
+				selected = false;	
+			}
+			else if(e.getAction() == 3) // When mouse is clicked (down then up)
+			{
+			}
+			else if(e.getAction() == 4) // When mouse is dragged
+			{
+				if(selected)
+				{
+					p.println("MOVE HANDLE");
+					mouse_state = true;
+				}
+			}
+			else if(e.getAction() == 5) // When mouse is moved
+			{
+				if(within_bounds) {hover = true;}
+				else {hover = false;}
 			}
 			
 			// If there was at least on mouse event that registered, return true
-			return true;
+			return mouse_state;
 		}
 		
 		boolean withinBounds(float input_x, float input_y)
@@ -534,8 +637,5 @@ public class Primitive
 			}
 		}
 	} 
-	// End of Handle class
-	
-	
-	
+
 }
