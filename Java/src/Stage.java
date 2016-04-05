@@ -12,9 +12,14 @@ public class Stage extends Element{
 	float count = 1;
 	ArrayList<Primitive> primitives;
 	
+	PVector camera;
+	
 	Stage(int x, int y, int w, int h, AniSketch p)
 	{
 		super(x,y,w,h,p);
+		
+		this.camera = new PVector(x,y);
+		
 		default_style = new Style(p);
 		//default_style.fill(255,70,0,255); // Orange
 		default_style.fill(150,150,150,255);
@@ -32,6 +37,9 @@ public class Stage extends Element{
 	
 	void draw()
 	{
+		this.camera.x = x;
+		this.camera.y = y;
+		
 		//test.setHeightTop(p.random(155));//p.frameCount/10f);
 		p.clip(x, y, w, h);
 		default_style.apply(); // Apply style for Stage window

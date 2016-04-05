@@ -7,16 +7,20 @@ public class Primitive
 	Stage stage;
 	SpriteLibrary.Sprite sprite;
 	
+	// Primitive Properties
 	float x, y; // Centered x,y
 	float w, h;
+	float t, b, l, r; //
 	float rotation;
 	PVector pivot; // Pivot point x,y relative to the object's x,y center
+	
 	PVector pivot_offset; // Offset required to move the object to give the appearance that the pivot's center point is moving, instead of the object itself. Expressed in cartesian coords.
 	// PVector position_offset; // General position offset parameter. Currently used for position correction after setting a new pivot.
 	PVector[] bounding_points; // The calculated "live" position of the 4 bounding points that make up the primitive.
 	
 	Primitive parent;
 	
+	// Handles
 	Handle wh_top_left;
 	Handle wh_bottom_left;
 	Handle wh_bottom_right;
@@ -51,6 +55,11 @@ public class Primitive
 		this.y = y;
 		this.w = w;
 		this.h = h;
+		this.t = h/2;
+		this.b = h/2;
+		this.l = w/2;
+		this.r = w/2;
+		
 		this.stage = stage;
 		this.p = p;
 		this.selected = false;
@@ -68,6 +77,7 @@ public class Primitive
 		calculateBoundingPoints();
 		drawBoundingBox();
 		drawPivot();
+		
 		if(selected)
 		{
 			drawHandles();
@@ -107,9 +117,10 @@ public class Primitive
 	//=====================//
 	// DRAWING / RENDERING //
 	//=====================//
-	public void drawRect(float x, float y, float t, float b, float l, float r)
+	
+	public void drawStretchRect(float x, float y, float t, float b, float l, float r)
 	{
-		// Draws a box at x,y with t,b,l,r being offsets from the center of xy
+		// Draws a box at x,y with t,b,l,r being offsets that define the edges from the center of x,y
 		//        t 
 		//    _________
 		//   |         |
@@ -117,8 +128,9 @@ public class Primitive
 		//   |_________| 
 		//
 		//        b	
+		p.quad(x-l, y-t, x+r, y-t, x+r, y+b, x-l, y+b);
 	}
-	
+
 	public void drawHandles()
 	{
 		wh_top_left.drawHandle();
@@ -133,6 +145,15 @@ public class Primitive
 	
 	public void drawBoundingBox()
 	{
+		
+		p.pushMatrix();
+		p.translate(stage.camera.x+x, stage.camera.y+y);
+		p.rotate(PApplet.radians(rotation));
+		
+		drawStretchRect(0, 0, t, b, l, r);
+		p.popMatrix();
+		 
+		/*
 		p.pushMatrix();
 		
 		if(parent != null)
@@ -185,8 +206,8 @@ public class Primitive
 		p.strokeWeight(1);
 		p.rect(0, 0, w, h);
 		p.rectMode(PApplet.CORNER);
-		
 		p.popMatrix();
+		*/
 	}
 	
 	public void drawPivot()
@@ -264,6 +285,32 @@ public class Primitive
 	
 	public void calculateBoundingPoints()
 	{
+		// Top Left Bounding Point
+		bounding_points[0] = new PVector(-l, -t); 
+
+		// Bottom Left Bounding Point
+		bounding_points[1] = new PVector(-l, b); 
+
+		// Bottom Right Bounding Point
+		bounding_points[2] = new PVector(r, b); 
+
+		// Top Right Bounding Point
+		bounding_points[3] = new PVector(r, -t); 
+
+		// Calculations that are applied to all points 
+		for(PVector bounding_point: bounding_points)
+		{
+			bounding_point = bounding_point.rotate(PApplet.radians(rotation));
+			bounding_point = bounding_point.add(stage.camera.x+x, stage.camera.y+y);
+			
+			// Draw bounding point
+			p.ellipse(bounding_point.x, bounding_point.y, 5, 5);
+		}
+		
+		
+		
+		
+		/*
 		// Top left
 		bounding_points[0] = new PVector(-w/2, -h/2); 
 		bounding_points[0] = bounding_points[0].add(pivot.x, pivot.y);
@@ -316,6 +363,7 @@ public class Primitive
 			bounding_points[3] = bounding_points[3].add(parent.x+parent_pos_offset.x, parent.y+parent_pos_offset.y);
 		}
 		//p.ellipse(bounding_points[3].x, bounding_points[3].y, 5, 5);
+		*/
 	}
 
 	//================//
