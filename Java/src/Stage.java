@@ -26,7 +26,7 @@ public class Stage extends Element{
 		test_child = new Primitive(400,250,100,100,this,p);
 		
 		
-		test_child.setParent(test_parent);
+		//test_child.setParent(test_parent);
 		//test_child.setPivot(-50, 0);
 	}
 	
