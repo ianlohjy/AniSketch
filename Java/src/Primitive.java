@@ -122,8 +122,6 @@ public class Primitive
 	public void drawBoundingBox()
 	{
 		p.pushMatrix();
-		p.translate(stage.x, stage.y);
-		p.translate(x, y);
 		
 		if(parent != null)
 		{
@@ -133,13 +131,20 @@ public class Primitive
 			//p.println("PARENT XY " + parent.x, parent.y);
 			//p.println("PARENT OFFSET " + parent_pos_offset.x, parent_pos_offset.y);
 			//p.translate(parent.x + parent_pos_offset.x, parent.y + parent_pos_offset.y);
+			//p.rotate(parent.rotation);
+			//p.rotate(p.radians(parent.rotation));
 		}
-		
+		p.translate(stage.x, stage.y);
+		p.translate(x, y);
 		p.translate(-pivot_offset.x, -pivot_offset.y);
 		
 		p.rotate(PApplet.radians(rotation));
-		p.translate(pivot.x, pivot.y);
+		if(parent != null)
+		{
+			p.rotate(p.radians(parent.rotation));
+		}
 		
+		p.translate(pivot.x, pivot.y);
 		p.translate(local_position_offset.x, local_position_offset.y);
 		
 		p.rectMode(PApplet.CENTER);

@@ -27,7 +27,7 @@ public class Stage extends Element{
 		
 		
 		test_child.setParent(test_parent);
-		test_child.setPivot(-50, 0);
+		//test_child.setPivot(-50, 0);
 	}
 	
 	void draw()
