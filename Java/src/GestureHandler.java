@@ -32,7 +32,7 @@ public class GestureHandler {
 	{
 		gesture_state_report = new GestureStateReport();
 		gesture_engine = new GestureEngine();
-		gesture_engine.loadGestureTemplatesFrom("./gestures/", true);
+		gesture_engine.loadGestureTemplatesFrom("./gestures/", false);
 	}
 	
 	public void setupStyles()
