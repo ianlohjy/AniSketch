@@ -107,6 +107,18 @@ public class Primitive
 	//=====================//
 	// DRAWING / RENDERING //
 	//=====================//
+	public void drawRect(float x, float y, float t, float b, float l, float r)
+	{
+		// Draws a box at x,y with t,b,l,r being offsets from the center of xy
+		//        t 
+		//    _________
+		//   |         |
+		// l |  (x,y)  | r
+		//   |_________| 
+		//
+		//        b	
+	}
+	
 	public void drawHandles()
 	{
 		wh_top_left.drawHandle();
