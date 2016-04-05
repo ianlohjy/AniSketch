@@ -78,7 +78,15 @@ public class Primitive
 		}
 		
 		// Draw the primitive's x,y position without offsets
-		// p.ellipse(stage.x+x, stage.y+y, 5, 5);
+		if(parent == null)
+		{
+			p.ellipse(stage.x+x, stage.y+y, 5, 5);
+		}
+		else
+		{
+			p.ellipse(stage.x+x-parent_init_pos.x+parent_pos_offset.x+parent.x, stage.y+y-parent_init_pos.y+parent_pos_offset.y+parent.y, 5, 5);
+		}
+		
 	}
 	
 	//=======//
@@ -464,14 +472,16 @@ public class Primitive
 			transform_offset  = new PVector(x_input-x, y_input-y); // Unused & does not account for parenting
 			transform_mode    = ROTATE;
 			
-			float transform_angle_x = x_input-x-stage.x+pivot_offset.x;
-			float transform_angle_y = y_input-y-stage.y+pivot_offset.y;
+			float transform_angle_x = x_input - (x + stage.x - pivot_offset.x);
+			float transform_angle_y = y_input - (y + stage.y - pivot_offset.y);
 			
 			if(parent != null) 
 			{
-				transform_angle_x = x_input - (x-parent_init_pos.x + stage.x + pivot_offset.x + parent.x + parent_pos_offset.x);
-				transform_angle_y = y_input - (y-parent_init_pos.y + stage.y + pivot_offset.y + parent.y + parent_pos_offset.y);
+				transform_angle_x = x_input - (x-parent_init_pos.x + stage.x - pivot_offset.x + parent.x + parent_pos_offset.x);
+				transform_angle_y = y_input - (y-parent_init_pos.y + stage.y - pivot_offset.y + parent.y + parent_pos_offset.y);
 			}
+			
+			p.println("Angle Pos " + transform_angle_x + " " + transform_angle_y);
 			
 			transform_rotate_last_angle = PApplet.degrees(PApplet.atan2(transform_angle_x, transform_angle_y));
 		}
@@ -484,8 +494,8 @@ public class Primitive
 			
 			if(parent != null) 
 			{
-				transform_angle_x = x_input - (x-parent_init_pos.x + stage.x + pivot_offset.x + parent.x + parent_pos_offset.x);
-				transform_angle_y = y_input - (y-parent_init_pos.y + stage.y + pivot_offset.y + parent.y + parent_pos_offset.y);
+				transform_angle_x = x_input - (x-parent_init_pos.x + stage.x - pivot_offset.x + parent.x + parent_pos_offset.x);
+				transform_angle_y = y_input - (y-parent_init_pos.y + stage.y - pivot_offset.y + parent.y + parent_pos_offset.y);
 			}
 
 			float current_transform_angle    = PApplet.degrees(PApplet.atan2(transform_angle_x, transform_angle_y));		
@@ -701,12 +711,31 @@ public class Primitive
 	
 	public void setPivotUsingGlobalPosition(float x_input, float y_input)	
 	{	
+		/*
+		float transform_angle_x = x_input - (x + stage.x - pivot_offset.x);
+		float transform_angle_y = y_input - (y + stage.y - pivot_offset.y);
+		
+		if(parent != null) 
+		{
+			transform_angle_x = x_input - (x-parent_init_pos.x + stage.x - pivot_offset.x + parent.x + parent_pos_offset.x);
+			transform_angle_y = y_input - (y-parent_init_pos.y + stage.y - pivot_offset.y + parent.y + parent_pos_offset.y);
+		}
+		*/
+		
 		//=================================================================================//
 		// Same as setPivot() but uses a global point to set the pivot (ie.mouse position) //
 		//=================================================================================//
 		
 		// Find the vector relative to the current pivot point
-		PVector new_pivot = new PVector(x_input-stage.x-x+pivot_offset.x, y_input-stage.y-y+pivot_offset.y);
+		float new_pivot_x = x_input - (x + stage.x - pivot_offset.x);
+		float new_pivot_y = y_input - (y + stage.y - pivot_offset.y);
+		
+		if(parent != null)
+		{
+			new_pivot_x = x_input - (x + stage.x - pivot_offset.x - parent_init_pos.x + parent.x + parent_pos_offset.x);
+			new_pivot_y = y_input - (y + stage.y - pivot_offset.y - parent_init_pos.y + parent.y + parent_pos_offset.y);
+		}
+		PVector new_pivot = new PVector(new_pivot_x, new_pivot_y);
 		
 		// Rotate vector back to zero the primitive's rotation
 		new_pivot = new_pivot.rotate(PApplet.radians(-rotation));
@@ -726,7 +755,19 @@ public class Primitive
 		//===============================================================//
 		
 		// Find the vector between the input and the original x position (without offsets and pivot adjustments)
-		PVector position_offset = new PVector(x_input-(stage.x+x), y_input-(stage.y+y));
+		
+		float offset_x = x_input-(stage.x+x);
+		float offset_y = y_input-(stage.y+y);
+		
+		if(parent != null)
+		{
+			offset_x = x_input - (x + stage.x - parent_init_pos.x + parent.x + parent_pos_offset.x);
+			offset_y = y_input - (y + stage.y - parent_init_pos.y + parent.y + parent_pos_offset.y);
+		//	//new_pivot_x = x_input - (x + stage.x - pivot_offset.x - parent_init_pos.x + parent.x + parent_pos_offset.x);
+		//	//new_pivot_y = y_input - (y + stage.y - pivot_offset.y - parent_init_pos.y + parent.y + parent_pos_offset.y);
+		}
+		
+		PVector position_offset = new PVector(offset_x, offset_y);
 		
 		// We take the new pivot offset vector, and rotate it by the primitive's rotation
 		new_pivot = new_pivot.rotate(PApplet.radians(rotation));
@@ -736,16 +777,28 @@ public class Primitive
 		
 		// Apply the positional offset to x & y
 		// (For now this offset is baked in)
-		this.x += position_offset.x;
-		this.y += position_offset.y;
+		
+		if(parent == null)
+		{
+			this.x += position_offset.x;
+			this.y += position_offset.y;
+		}
+		else
+		{
+			this.x += position_offset.x;
+			this.y += position_offset.y;
+		}
+		
+		
 	}
 	
 	public void setParent(Primitive parent)
 	{
+		// These values represent the offset needed to 
 		parent_pos_offset = new PVector(this.x-parent.x, this.y-parent.y);
 		parent_init_pos = new PVector(this.x, this.y);
-		//this.x = 0;
-		//this.y = 0;
+		
+		
 		this.parent = parent;
 		p.println("PARENTED TO " + parent);
 		p.println("Initial position when parented " + parent_init_pos);
