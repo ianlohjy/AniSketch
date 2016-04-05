@@ -7,8 +7,8 @@ import processing.event.MouseEvent;
 public class Stage extends Element{
 
 	Style default_style;
-	Primitive test;
-	Primitive test2;
+	Primitive test_child;
+	Primitive test_parent;
 	float count = 1;
 	ArrayList<Primitive> primitives;
 	
@@ -20,15 +20,10 @@ public class Stage extends Element{
 		default_style.fill(150,150,150,255);
 		
 		primitives = new ArrayList<Primitive>();
-		addPrimitive(250,200,100,200,this,p);
+		//addPrimitive(250,200,100,200,this,p);
 		
-		test = new Primitive(250,250,100,100,this,p);
-		//test.rotation = 150;
-		test.setPivot(150,150);
-		p.println("TEST POS is " + test.x + " " + test.y);
-		test.setPivot(0,100);
-		p.println("TEST POS is " + test.x + " " + test.y);
-		
+		test_parent = new Primitive(250,250,100,200,this,p);
+		test_child = new Primitive(400,250,100,100,this,p);
 	}
 	
 	void draw()
@@ -38,10 +33,11 @@ public class Stage extends Element{
 		default_style.apply(); // Apply style for Stage window
 		
 		p.rect(x, y, w, h);
-		test.update();
+		
+		test_child.update();
+		test_parent.update();
 		
 		updatePrimitives();
-		
 		p.noClip();
 	}
 
@@ -66,7 +62,8 @@ public class Stage extends Element{
 			{
 				primitives.get(p).checkMouseEvent(e);
 			}
-			test.checkMouseEvent(e);
+			test_child.checkMouseEvent(e);
+			test_parent.checkMouseEvent(e);
 		}
 	}
 }
