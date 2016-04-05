@@ -141,7 +141,7 @@ public class Primitive
 		p.rotate(PApplet.radians(rotation));
 		if(parent != null)
 		{
-			p.rotate(p.radians(parent.rotation));
+			p.rotate( p.radians(parent.rotation) );
 		}
 		
 		p.translate(pivot.x, pivot.y);
