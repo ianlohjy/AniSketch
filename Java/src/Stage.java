@@ -16,12 +16,13 @@ public class Stage extends Element{
 	{
 		super(x,y,w,h,p);
 		default_style = new Style(p);
-		default_style.fill(255,70,0,255);
+		//default_style.fill(255,70,0,255); // Orange
+		default_style.fill(150,150,150,255);
 		
 		primitives = new ArrayList<Primitive>();
 		addPrimitive(250,200,100,200,this,p);
 		
-		test = new Primitive(50,50,100,100,this,p);
+		test = new Primitive(250,250,100,100,this,p);
 		//test.rotation = 150;
 		test.setPivot(150,150);
 		p.println("TEST POS is " + test.x + " " + test.y);
@@ -32,7 +33,7 @@ public class Stage extends Element{
 	
 	void draw()
 	{
-		//test.w = p.frameCount/15f;
+		//test.setHeightTop(p.random(155));//p.frameCount/10f);
 		p.clip(x, y, w, h);
 		default_style.apply(); // Apply style for Stage window
 		

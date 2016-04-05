@@ -31,8 +31,10 @@ public class Primitive
 	
 	// Transform parameters and flags
 	PVector transform_offset; // General parameter for holding initial data from further transforms
+	PVector transform_init_wh;
 	int transform_mode;
 	float transform_rotate_last_angle;
+	PVector local_position_offset; // Position offset, local to the rotation
 	
 	final static int NONE = 0;
 	final static int MOVE = 1;
@@ -54,6 +56,7 @@ public class Primitive
 		pivot = new PVector(0,0);
 		pivot_offset = new PVector(0,0);
 		setupHandles();
+		local_position_offset = new PVector();
 	}
 	
 	public void update()
@@ -110,8 +113,12 @@ public class Primitive
 		p.translate(stage.x, stage.y);
 		p.translate(x, y);
 		p.translate(-pivot_offset.x, -pivot_offset.y);
+		
+		
 		p.rotate(PApplet.radians(rotation));
 		p.translate(pivot.x, pivot.y);
+		
+		p.translate(local_position_offset.x, local_position_offset.y);
 		
 		p.rectMode(PApplet.CENTER);
 		p.noFill();
@@ -204,6 +211,7 @@ public class Primitive
 		// Top left
 		bounding_points[0] = new PVector(-w/2, -h/2); 
 		bounding_points[0] = bounding_points[0].add(pivot.x, pivot.y);
+		bounding_points[0] = bounding_points[0].add(local_position_offset.x, local_position_offset.y);
 		bounding_points[0] = bounding_points[0].rotate(PApplet.radians(rotation));
 		bounding_points[0] = bounding_points[0].add(-pivot_offset.x, -pivot_offset.y);
 		bounding_points[0] = bounding_points[0].add(stage.x + x, stage.y + y);
@@ -211,6 +219,7 @@ public class Primitive
 		// Bottom left
 		bounding_points[1] = new PVector(-w/2, h/2); 
 		bounding_points[1] = bounding_points[1].add(pivot.x, pivot.y);
+		bounding_points[1] = bounding_points[1].add(local_position_offset.x, local_position_offset.y);
 		bounding_points[1] = bounding_points[1].rotate(PApplet.radians(rotation));
 		bounding_points[1] = bounding_points[1].add(-pivot_offset.x, -pivot_offset.y);
 		bounding_points[1] = bounding_points[1].add(stage.x + x, stage.y + y);
@@ -218,6 +227,7 @@ public class Primitive
 		// Bottom right
 		bounding_points[2] = new PVector(w/2, h/2); 
 		bounding_points[2] = bounding_points[2].add(pivot.x, pivot.y);
+		bounding_points[2] = bounding_points[2].add(local_position_offset.x, local_position_offset.y);
 		bounding_points[2] = bounding_points[2].rotate(PApplet.radians(rotation));
 		bounding_points[2] = bounding_points[2].add(-pivot_offset.x, -pivot_offset.y);
 		bounding_points[2] = bounding_points[2].add(stage.x + x, stage.y + y);
@@ -225,6 +235,7 @@ public class Primitive
 		// Top right
 		bounding_points[3] = new PVector(w/2, -h/2); 
 		bounding_points[3] = bounding_points[3].add(pivot.x, pivot.y);
+		bounding_points[3] = bounding_points[3].add(local_position_offset.x, local_position_offset.y);
 		bounding_points[3] = bounding_points[3].rotate(PApplet.radians(rotation));
 		bounding_points[3] = bounding_points[3].add(-pivot_offset.x, -pivot_offset.y);
 		bounding_points[3] = bounding_points[3].add(stage.x + x, stage.y + y);
@@ -263,7 +274,11 @@ public class Primitive
 				}
 				
 				// REGISTER GESTURE EVENT //
-				if(within_bounds && e.getButton() == 39)
+				if(within_bounds && e.getButton() == 39 && selected)
+				{
+					p.gesture_handler.registerObject(this, e);
+				} 
+				else if(selected)
 				{
 					p.gesture_handler.registerObject(this, e);
 				}
@@ -276,7 +291,11 @@ public class Primitive
 				endTranslate(e.getX(), e.getY());
 				
 				// REGISTER GESTURE EVENT //
-				if(within_bounds && e.getButton() == 39)
+				if(within_bounds && e.getButton() == 39 && selected)
+				{
+					p.gesture_handler.registerObject(this, e);
+				}
+				else if(selected)
 				{
 					p.gesture_handler.registerObject(this, e);
 				}
@@ -435,8 +454,10 @@ public class Primitive
 	
 	public void doWidthHeight(float x_input, float y_input, Handle handle)
 	{ // Does translation of primitive based on the position of x_start & y_start
+		// Needs to be cleaned up
 		if(transform_mode == NONE) // If translate has not been started, initialise it
 		{
+			transform_init_wh = new PVector(w,h);
 			transform_offset  = new PVector(handle.handle_center.x, handle.handle_center.y);
 			transform_mode    = WIDTH_HEIGHT;
 			
@@ -446,27 +467,37 @@ public class Primitive
 		{
 			PVector transform_amount = new PVector(x_input-transform_offset.x, y_input-transform_offset.y);
 			transform_amount = transform_amount.rotate(PApplet.radians(-rotation));
-			PApplet.println("Trasform Amount" + transform_amount);
+			PApplet.println("Transform Amount" + transform_amount);
 			
 			if(handle.handle_postion == Handle.TOP_LEFT)
 			{
-				this.h -= transform_amount.y;
-				this.w -= transform_amount.x;
+				setHeightTop(transform_init_wh.y - transform_amount.y);
+				setHeightLeft(transform_init_wh.x - transform_amount.x);
 			}
 			if(handle.handle_postion == Handle.TOP_RIGHT)
+				
 			{
-				this.h -= transform_amount.y;
-				this.w += transform_amount.x;
+				setHeightTop(transform_init_wh.y - transform_amount.y);
+				setHeightRight(transform_init_wh.x + transform_amount.x);
+				
+				//this.h -= transform_amount.y;
+				//this.w += transform_amount.x;
 			}
 			if(handle.handle_postion == Handle.BOTTOM_RIGHT)
 			{
-				this.h += transform_amount.y;
-				this.w += transform_amount.x;
+				setHeightBottom(transform_init_wh.y + transform_amount.y);
+				setHeightRight(transform_init_wh.x + transform_amount.x);
+				
+				//this.h += transform_amount.y;
+				//this.w += transform_amount.x;
 			}
 			if(handle.handle_postion == Handle.BOTTOM_LEFT)
 			{
-				this.h += transform_amount.y;
-				this.w -= transform_amount.x;
+				setHeightBottom(transform_init_wh.y + transform_amount.y);
+				setHeightLeft(transform_init_wh.x - transform_amount.x);
+				
+				//this.h += transform_amount.y;
+				//this.w -= transform_amount.x;
 			}
 			
 			if(this.w < 30)
@@ -479,7 +510,7 @@ public class Primitive
 			}
 			
 			handle.updateHandlePosition();
-			transform_offset  = new PVector(handle.handle_center.x, handle.handle_center.y);
+			//transform_offset  = new PVector(handle.handle_center.x, handle.handle_center.y);
 		}
 	}
 	
@@ -490,6 +521,89 @@ public class Primitive
 			transform_mode = NONE;
 		}
 	}
+	
+	public void setHeightTop(float amount)
+	{
+		if(amount < 30)
+		{
+			amount = 30;
+		}
+		
+		float difference = this.h - amount;
+		local_position_offset.y += difference/2;
+		this.h = amount;
+		p.println(amount);
+		
+	}
+	
+	public void setHeightLeft(float amount)
+	{
+		if(amount < 30)
+		{
+			amount = 30;
+		}
+		
+		float difference = this.w - amount;
+		local_position_offset.x += difference/2;
+		this.w = amount;
+		p.println(amount);
+		
+	}
+	
+	public void setHeightRight(float amount)
+	{
+		if(amount < 30)
+		{
+			amount = 30;
+		}
+		
+		float difference = this.w - amount;
+		local_position_offset.x -= difference/2;
+		this.w = amount;
+		p.println(amount);
+		
+	}
+	
+	public void setHeightBottom(float amount)
+	{
+		if(amount < 30)
+		{
+			amount = 30;
+		}
+		
+		float difference = this.h - amount;
+		local_position_offset.y -= difference/2;
+		this.h = amount;
+		p.println(amount);
+	}
+	
+	
+	/* Depreciated
+	public void stretchTransformTop(float amount)
+	{
+		this.h += amount;
+		local_position_offset.y -= (amount/2f);
+	}
+	
+	public void stretchTransformBottom(float amount)
+	{
+		this.h += amount;
+		local_position_offset.y += (amount/2f);
+	}
+	
+	public void stretchTransformLeft(float amount)
+	{
+		this.w += amount;
+		local_position_offset.x -= (amount/2f);
+	}
+	
+	public void stretchTransformRight(float amount)
+	{
+		this.w += amount;
+		local_position_offset.x += (amount/2f);
+	}
+	
+	*/
 	
 	//=========//
 	// EDITING //
