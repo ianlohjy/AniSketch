@@ -150,7 +150,7 @@ public class Primitive
 		p.translate(stage.camera.x+x, stage.camera.y+y);
 		p.rotate(PApplet.radians(rotation));
 		
-		drawStretchRect(0, 0, t, b, l, r);
+		drawStretchRect(pivot.x, pivot.y, t, b, l, r);
 		p.popMatrix();
 		 
 		/*
@@ -300,16 +300,14 @@ public class Primitive
 		// Calculations that are applied to all points 
 		for(PVector bounding_point: bounding_points)
 		{
+			bounding_point = bounding_point.add(pivot);
 			bounding_point = bounding_point.rotate(PApplet.radians(rotation));
 			bounding_point = bounding_point.add(stage.camera.x+x, stage.camera.y+y);
 			
 			// Draw bounding point
 			p.ellipse(bounding_point.x, bounding_point.y, 5, 5);
 		}
-		
-		
-		
-		
+	}
 		/*
 		// Top left
 		bounding_points[0] = new PVector(-w/2, -h/2); 
@@ -364,7 +362,6 @@ public class Primitive
 		}
 		//p.ellipse(bounding_points[3].x, bounding_points[3].y, 5, 5);
 		*/
-	}
 
 	//================//
 	// EVENT HANDLING //
@@ -750,28 +747,24 @@ public class Primitive
 	//=========//
 	// EDITING //
 	//=========//
-	public void setPivot(float x_input, float y_input)
+	public void setPivot(float new_pivot_x, float new_pivot_y)
 	{
 		// Sets pivot relative to center of object
 		// Check if new pivot values are the same, ignore changes if they are
 		// Offset (ALL?, this seems to be what 3ds max does) x/y values to maintain offset
 
-		if(x_input != pivot.x || y_input != pivot.y)
-		{
-			PVector offset_amount;
-			//float x_pivot_difference = x_input-pivot.x;
-			//float y_pivot_difference = y_input-pivot.y;
-			
-			pivot.x = x_input;
-			pivot.y = y_input;
-			
-			//offset_amount = new PVector(x_pivot_difference, y_pivot_difference);
-			offset_amount = new PVector(x_input, y_input);
-			offset_amount = offset_amount.rotate(PApplet.radians(this.rotation));
-			
-			pivot_offset.x = offset_amount.x;
-			pivot_offset.y = offset_amount.y;
-		}
+		// Changing pivot position actually means:
+
+		PVector pivot_difference = new PVector();
+		pivot_difference.x = new_pivot_x - pivot.x;
+		pivot_difference.y = new_pivot_y - pivot.y;
+		
+		pivot.x = new_pivot_x;
+		pivot.y = new_pivot_y;
+		
+		pivot_difference = pivot_difference.rotate(PApplet.radians(this.rotation));
+		this.x -= pivot_difference.x;
+		this.y -= pivot_difference.y;
 	}
 	
 	public void setPivotUsingGlobalPosition(float x_input, float y_input)	

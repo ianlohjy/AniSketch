@@ -8,9 +8,18 @@
 
 2.	Primitive.doWidthHeight() needs to be cleaned up
 
-//========================//
-// PRIMITIVE ORGANISATION //
-//========================//
+//============================//
+// NEW PRIMITIVE ORGANISATION //
+//============================//
+
+New Primitive properties have been simplified in order to optimize calculations.
+The following is the properties for the new Primitive class:
+
+- x, y position
+- rotation
+- t, b, l, r - defines the shape of the Primitive, by offsets from x,y.
+- pivot.x, pivot.y - defines pivot offset from x, y
+- w, h - width and height values, derived from t, b, l, r
 
 
 //==============================//
