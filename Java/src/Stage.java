@@ -37,7 +37,7 @@ public class Stage extends Element{
 	
 	void draw()
 	{
-		test_child.setPivot(0, p.frameCount/5);
+		//test_child.setPivot(0, p.frameCount);
 		this.camera.x = x;
 		this.camera.y = y;
 		

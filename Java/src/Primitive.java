@@ -35,9 +35,15 @@ public class Primitive
 	
 	// Transform parameters and flags
 	PVector transform_offset; // General parameter for holding initial data from further transforms
-	PVector transform_init_wh;
+	//PVector transform_init_wh;
 	int transform_mode;
 	float transform_rotate_last_angle;
+	
+	float transform_init_t;
+	float transform_init_b;
+	float transform_init_l;
+	float transform_init_r;
+	
 	PVector local_position_offset; // Position offset, local to the rotation
 	
 	final static int NONE = 0;
@@ -145,7 +151,6 @@ public class Primitive
 	
 	public void drawBoundingBox()
 	{
-		
 		p.pushMatrix();
 		p.translate(stage.camera.x+x, stage.camera.y+y);
 		p.rotate(PApplet.radians(rotation));
@@ -597,12 +602,33 @@ public class Primitive
 		// Needs to be cleaned up
 		if(transform_mode == NONE) // If translate has not been started, initialise it
 		{
-			transform_init_wh = new PVector(w,h);
-			transform_offset  = new PVector(handle.handle_center.x, handle.handle_center.y);
+			if(handle.handle_postion == Handle.TOP_LEFT)
+			{
+				transform_init_t  = t;
+				transform_init_l  = l;
+			}
+			else if(handle.handle_postion == Handle.BOTTOM_LEFT)
+			{
+				transform_init_b  = b;
+				transform_init_l  = l;
+			}
+			if(handle.handle_postion == Handle.BOTTOM_RIGHT)
+			{
+				transform_init_b  = b;
+				transform_init_r  = r;
+			}
+			else if(handle.handle_postion == Handle.TOP_RIGHT)
+			{
+				transform_init_t  = t;
+				transform_init_r  = r;
+			}
+			
+			transform_offset  = handle.handle_center;
 			transform_mode    = WIDTH_HEIGHT;
 			
 			PApplet.println("Started width height");
 		}
+		
 		if(transform_mode == WIDTH_HEIGHT)
 		{
 			PVector transform_amount = new PVector(x_input-transform_offset.x, y_input-transform_offset.y);
@@ -611,46 +637,26 @@ public class Primitive
 			
 			if(handle.handle_postion == Handle.TOP_LEFT)
 			{
-				setHeightTop(transform_init_wh.y - transform_amount.y);
-				setHeightLeft(transform_init_wh.x - transform_amount.x);
+				setLeft(transform_init_l - transform_amount.x);
+				setTop(transform_init_t - transform_amount.y);
 			}
 			if(handle.handle_postion == Handle.TOP_RIGHT)
-				
 			{
-				setHeightTop(transform_init_wh.y - transform_amount.y);
-				setHeightRight(transform_init_wh.x + transform_amount.x);
-				
-				//this.h -= transform_amount.y;
-				//this.w += transform_amount.x;
+				setRight(transform_init_r + transform_amount.x);
+				setTop(transform_init_t - transform_amount.y);
 			}
 			if(handle.handle_postion == Handle.BOTTOM_RIGHT)
 			{
-				setHeightBottom(transform_init_wh.y + transform_amount.y);
-				setHeightRight(transform_init_wh.x + transform_amount.x);
-				
-				//this.h += transform_amount.y;
-				//this.w += transform_amount.x;
+				setRight(transform_init_r + transform_amount.x);
+				setBottom(transform_init_b + transform_amount.y);
 			}
 			if(handle.handle_postion == Handle.BOTTOM_LEFT)
 			{
-				setHeightBottom(transform_init_wh.y + transform_amount.y);
-				setHeightLeft(transform_init_wh.x - transform_amount.x);
-				
-				//this.h += transform_amount.y;
-				//this.w -= transform_amount.x;
-			}
-			
-			if(this.w < 30)
-			{
-				this.w = 30;
-			}
-			if(this.h < 30)
-			{
-				this.h = 30;
+				setLeft(transform_init_l - transform_amount.x);
+				setBottom(transform_init_b + transform_amount.y);
 			}
 			
 			handle.updateHandlePosition();
-			//transform_offset  = new PVector(handle.handle_center.x, handle.handle_center.y);
 		}
 	}
 	
@@ -662,59 +668,40 @@ public class Primitive
 		}
 	}
 	
-	public void setHeightTop(float amount)
+	public void setTop(float amount)
 	{
-		if(amount < 30)
+		if( (amount+b) < 30)
 		{
-			amount = 30;
+			amount = 30-b;
 		}
-		
-		float difference = this.h - amount;
-		local_position_offset.y += difference/2;
-		this.h = amount;
-		p.println(amount);
-		
+		t = amount;
 	}
 	
-	public void setHeightLeft(float amount)
+	public void setLeft(float amount)
 	{
-		if(amount < 30)
+		if( (amount+r) < 30)
 		{
-			amount = 30;
+			amount = 30-r;
 		}
-		
-		float difference = this.w - amount;
-		local_position_offset.x += difference/2;
-		this.w = amount;
-		p.println(amount);
-		
+		l = amount;
 	}
 	
-	public void setHeightRight(float amount)
+	public void setRight(float amount)
 	{
-		if(amount < 30)
+		if( (amount+l) < 30)
 		{
-			amount = 30;
+			amount = 30-l;
 		}
-		
-		float difference = this.w - amount;
-		local_position_offset.x -= difference/2;
-		this.w = amount;
-		p.println(amount);
-		
+		r = amount;
 	}
 	
-	public void setHeightBottom(float amount)
+	public void setBottom(float amount)
 	{
-		if(amount < 30)
+		if( (amount+t) < 30)
 		{
-			amount = 30;
+			amount = 30-t;
 		}
-		
-		float difference = this.h - amount;
-		local_position_offset.y -= difference/2;
-		this.h = amount;
-		p.println(amount);
+		b = amount;
 	}
 
 	/* Depreciated
@@ -846,8 +833,6 @@ public class Primitive
 			this.x += position_offset.x;
 			this.y += position_offset.y;
 		}
-		
-		
 	}
 	
 	public void setParent(Primitive parent)
