@@ -1,4 +1,5 @@
 import processing.core.PApplet;
+import processing.event.MouseEvent;
 
 public class Sheet extends Element{
 
@@ -20,6 +21,14 @@ public class Sheet extends Element{
 		default_style.apply();
 		p.rect(x, y, w, h);
 		p.noClip();
+	}
+	
+	void checkMouseEvent(MouseEvent e)
+	{
+		if(withinBounds(e.getX(), e.getY()))
+		{
+			p.println("INSIDE STAGE");
+		}
 	}
 	
 }

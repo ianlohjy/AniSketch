@@ -52,8 +52,14 @@ public class Primitive
 	final static int WIDTH_HEIGHT = 3;
 	
 	// Parenting and attachment values
-	PVector parent_pos_offset; 
-	PVector parent_init_pos; // The x/y position when object was parented
+	PVector parent_offset; // Distance between parent and child
+	PVector parent_local_offset; // x,y position of child when parented. Subtract this value from the 'parented' position to get local coordinates
+	
+	Style style_default;
+	Style style_hover;
+	Style style_selected;
+	Style style_outline;
+	Style style_outline_selected;
 	
 	Primitive(float x, float y, float w, float h, Stage stage, AniSketch p)
 	{
@@ -76,6 +82,7 @@ public class Primitive
 		pivot_offset = new PVector(0,0);
 		setupHandles();
 		local_position_offset = new PVector();
+		setupStyles();
 	}
 	
 	public void update()
@@ -96,13 +103,41 @@ public class Primitive
 		// Draw the primitive's x,y position without offsets
 		if(parent == null)
 		{
-			p.ellipse(stage.x+x, stage.y+y, 5, 5);
+			p.ellipse(stage.camera.x+x, stage.camera.y+y, 5, 5);
 		}
 		else
 		{
-			p.ellipse(stage.x+x-parent_init_pos.x+parent_pos_offset.x+parent.x, stage.y+y-parent_init_pos.y+parent_pos_offset.y+parent.y, 5, 5);
+			p.ellipse(stage.camera.x+x-parent_local_offset.x+parent_offset.x+parent.x, stage.camera.y+y-parent_local_offset.y+parent_offset.y+parent.y, 5, 5);
 		}
 		
+	}
+	
+	public void setupStyles()
+	{
+		style_default = new Style(p);
+		style_default.noFill();
+		style_default.stroke(0,0,0,100);
+		style_default.strokeWeight(1);
+		
+		style_hover = new Style(p);
+		style_hover.noFill();
+		style_hover.stroke(0,0,0,200);
+		style_hover.strokeWeight(1);
+		
+		style_selected = new Style(p);
+		style_selected.noFill();
+		style_selected.stroke(0,0,0,255);
+		style_selected.strokeWeight(1);
+		
+		style_outline = new Style(p);
+		style_outline.noFill();
+		style_outline.stroke(255,255,255,50);
+		style_outline.strokeWeight(5);
+		
+		style_outline_selected = new Style(p);
+		style_outline_selected.noFill();
+		style_outline_selected.stroke(255,255,255,100);
+		style_outline_selected.strokeWeight(5);
 	}
 	
 	//=======//
@@ -153,78 +188,46 @@ public class Primitive
 	{
 		p.pushMatrix();
 		p.translate(stage.camera.x+x, stage.camera.y+y);
-		p.rotate(PApplet.radians(rotation));
-		
-		drawStretchRect(pivot.x, pivot.y, t, b, l, r);
-		p.popMatrix();
-		 
-		/*
-		p.pushMatrix();
 		
 		if(parent != null)
 		{
-			//p.translate(parent_init_pos.x+parent.x, parent_init_pos.y+parent.y);
-			p.translate(-parent_init_pos.x, -parent_init_pos.y);
-			p.translate(parent.x+parent_pos_offset.x, parent.y+parent_pos_offset.y);
-			//p.println("PARENT XY " + parent.x, parent.y);
-			//p.println("PARENT OFFSET " + parent_pos_offset.x, parent_pos_offset.y);
-			//p.translate(parent.x + parent_pos_offset.x, parent.y + parent_pos_offset.y);
-			//p.rotate(parent.rotation);
-			//p.rotate(p.radians(parent.rotation));
+			p.translate(-parent_local_offset.x, -parent_local_offset.y);
+			p.translate(parent.x+parent_offset.x, parent.y+parent_offset.y);
+			p.rotate(PApplet.radians(parent.rotation));
 		}
-		p.translate(stage.x, stage.y);
-		p.translate(x, y);
-		p.translate(-pivot_offset.x, -pivot_offset.y);
-		
 		p.rotate(PApplet.radians(rotation));
-		if(parent != null)
-		{
-			p.rotate(p.radians(parent.rotation));
-		}
 		
-		p.translate(pivot.x, pivot.y);
-		p.translate(local_position_offset.x, local_position_offset.y);
-		
-		p.rectMode(PApplet.CENTER);
-		p.noFill();
-		if(hover)
-		{
-			p.strokeWeight(5);
-			p.stroke(255, 100);
-			p.rect(0, 0, w, h);
-			
-			p.stroke(0, 150);
-		}
-		else
-		{
-			p.stroke(0, 150);
-		}
+		style_default.apply();
 		
 		if(selected)
 		{
-			p.strokeWeight(5);
-			p.stroke(255, 200);
-			p.rect(0, 0, w, h);
-			p.stroke(0, 255);
+			style_outline_selected.apply();
+			drawStretchRect(pivot.x, pivot.y, t, b, l, r);
+			style_selected.apply();
 		}
+		if(hover)
+		{
+			// Draw an outline
+			style_outline.apply();
+			drawStretchRect(pivot.x, pivot.y, t, b, l, r);
+			style_hover.apply();
+		}
+
+		drawStretchRect(pivot.x, pivot.y, t, b, l, r);
 		
-		p.strokeWeight(1);
-		p.rect(0, 0, w, h);
-		p.rectMode(PApplet.CORNER);
 		p.popMatrix();
-		*/
 	}
 	
 	public void drawPivot()
 	{
 		p.pushMatrix();
-		p.translate(stage.x + x, stage.y + y);
+		p.translate(stage.camera.x + x, stage.camera.y + y);
 		p.translate(-pivot_offset.x, -pivot_offset.y);
 		
 		if(parent != null) 
 		{ 
-			p.translate(-parent_init_pos.x, -parent_init_pos.y);
-			p.translate(parent.x+parent_pos_offset.x, parent.y+parent_pos_offset.y);
+			p.translate(-parent_local_offset.x, -parent_local_offset.y);
+			p.translate(parent.x+parent_offset.x, parent.y+parent_offset.y);
 		}
 		
 		p.noFill();
@@ -240,17 +243,20 @@ public class Primitive
 	{
 		p.noFill();
 		p.stroke(0);
-		p.strokeWeight(2);
+		p.strokeWeight(1);
 		
-		float pivot_x = stage.x+x-pivot_offset.x;
-		float pivot_y = stage.y+y-pivot_offset.y;
+		float pivot_x;
+		float pivot_y;
 		
 		if(parent != null) 
-		{ 
-			//p.translate(-parent_init_pos.x, -parent_init_pos.y);
-			//p.translate(parent.x+parent_pos_offset.x, parent.y+parent_pos_offset.y);
-			pivot_x += -parent_init_pos.x + parent.x + parent_pos_offset.x;
-			pivot_y += -parent_init_pos.y + parent.y + parent_pos_offset.y;
+		{ 	
+			pivot_x = stage.camera.x + x - pivot_offset.x - parent_local_offset.x + parent.x + parent_offset.x;
+			pivot_y = stage.camera.y + y - pivot_offset.y - parent_local_offset.y + parent.y + parent_offset.y;
+		}
+		else
+		{
+			pivot_x = stage.camera.x + x - pivot_offset.x;
+			pivot_y = stage.camera.y + y - pivot_offset.y;
 		}
 		
 		p.line(p.mouseX, p.mouseY, pivot_x, pivot_y);
@@ -306,67 +312,25 @@ public class Primitive
 		for(PVector bounding_point: bounding_points)
 		{
 			bounding_point = bounding_point.add(pivot);
+			
+			if(parent != null)
+			{
+				bounding_point = bounding_point.rotate(PApplet.radians(parent.rotation));
+			}
+			
 			bounding_point = bounding_point.rotate(PApplet.radians(rotation));
 			bounding_point = bounding_point.add(stage.camera.x+x, stage.camera.y+y);
+			
+			if(parent != null)
+			{
+				bounding_point = bounding_point.add(-parent_local_offset.x, -parent_local_offset.y);
+				bounding_point = bounding_point.add(parent.x+parent_offset.x, parent.y+parent_offset.y);
+			}
 			
 			// Draw bounding point
 			p.ellipse(bounding_point.x, bounding_point.y, 5, 5);
 		}
 	}
-		/*
-		// Top left
-		bounding_points[0] = new PVector(-w/2, -h/2); 
-		bounding_points[0] = bounding_points[0].add(pivot.x, pivot.y);
-		bounding_points[0] = bounding_points[0].add(local_position_offset.x, local_position_offset.y);
-		bounding_points[0] = bounding_points[0].rotate(PApplet.radians(rotation));
-		bounding_points[0] = bounding_points[0].add(-pivot_offset.x, -pivot_offset.y);
-		bounding_points[0] = bounding_points[0].add(stage.x + x, stage.y + y);
-		if(parent != null) 
-		{ 
-			bounding_points[0] = bounding_points[0].add(-parent_init_pos.x, -parent_init_pos.y);
-			bounding_points[0] = bounding_points[0].add(parent.x+parent_pos_offset.x, parent.y+parent_pos_offset.y);
-		}
-		//p.ellipse(bounding_points[0].x, bounding_points[0].y, 5, 5);
-		// Bottom left
-		bounding_points[1] = new PVector(-w/2, h/2); 
-		bounding_points[1] = bounding_points[1].add(pivot.x, pivot.y);
-		bounding_points[1] = bounding_points[1].add(local_position_offset.x, local_position_offset.y);
-		bounding_points[1] = bounding_points[1].rotate(PApplet.radians(rotation));
-		bounding_points[1] = bounding_points[1].add(-pivot_offset.x, -pivot_offset.y);
-		bounding_points[1] = bounding_points[1].add(stage.x + x, stage.y + y);
-		if(parent != null) 
-		{ 
-			bounding_points[1] = bounding_points[1].add(-parent_init_pos.x, -parent_init_pos.y);
-			bounding_points[1] = bounding_points[1].add(parent.x+parent_pos_offset.x, parent.y+parent_pos_offset.y);
-		}
-		//p.ellipse(bounding_points[1].x, bounding_points[1].y, 5, 5);
-		// Bottom right
-		bounding_points[2] = new PVector(w/2, h/2); 
-		bounding_points[2] = bounding_points[2].add(pivot.x, pivot.y);
-		bounding_points[2] = bounding_points[2].add(local_position_offset.x, local_position_offset.y);
-		bounding_points[2] = bounding_points[2].rotate(PApplet.radians(rotation));
-		bounding_points[2] = bounding_points[2].add(-pivot_offset.x, -pivot_offset.y);
-		bounding_points[2] = bounding_points[2].add(stage.x + x, stage.y + y);
-		if(parent != null) 
-		{ 
-			bounding_points[2] = bounding_points[2].add(-parent_init_pos.x, -parent_init_pos.y);
-			bounding_points[2] = bounding_points[2].add(parent.x+parent_pos_offset.x, parent.y+parent_pos_offset.y);
-		}
-		//p.ellipse(bounding_points[2].x, bounding_points[2].y, 5, 5);
-		// Top right
-		bounding_points[3] = new PVector(w/2, -h/2); 
-		bounding_points[3] = bounding_points[3].add(pivot.x, pivot.y);
-		bounding_points[3] = bounding_points[3].add(local_position_offset.x, local_position_offset.y);
-		bounding_points[3] = bounding_points[3].rotate(PApplet.radians(rotation));
-		bounding_points[3] = bounding_points[3].add(-pivot_offset.x, -pivot_offset.y);
-		bounding_points[3] = bounding_points[3].add(stage.x + x, stage.y + y);
-		if(parent != null) 
-		{ 
-			bounding_points[3] = bounding_points[3].add(-parent_init_pos.x, -parent_init_pos.y);
-			bounding_points[3] = bounding_points[3].add(parent.x+parent_pos_offset.x, parent.y+parent_pos_offset.y);
-		}
-		//p.ellipse(bounding_points[3].x, bounding_points[3].y, 5, 5);
-		*/
 
 	//================//
 	// EVENT HANDLING //
@@ -539,15 +503,14 @@ public class Primitive
 			transform_offset  = new PVector(x_input-x, y_input-y); // Unused & does not account for parenting
 			transform_mode    = ROTATE;
 			
-			float transform_angle_x = x_input - (x + stage.x - pivot_offset.x);
-			float transform_angle_y = y_input - (y + stage.y - pivot_offset.y);
+			float transform_angle_x = x_input - (x + stage.camera.x - pivot_offset.x);
+			float transform_angle_y = y_input - (y + stage.camera.y - pivot_offset.y);
 			
 			if(parent != null) 
 			{
-				transform_angle_x = x_input - (x-parent_init_pos.x + stage.x - pivot_offset.x + parent.x + parent_pos_offset.x);
-				transform_angle_y = y_input - (y-parent_init_pos.y + stage.y - pivot_offset.y + parent.y + parent_pos_offset.y);
-			}
-			
+				transform_angle_x = x_input - ((x + stage.camera.x - pivot_offset.x) + (-parent_local_offset.x + parent.x + parent_offset.x));
+				transform_angle_y = y_input - ((y + stage.camera.y - pivot_offset.y) + (-parent_local_offset.y + parent.y + parent_offset.y));
+			}	
 			p.println("Angle Pos " + transform_angle_x + " " + transform_angle_y);
 			
 			transform_rotate_last_angle = PApplet.degrees(PApplet.atan2(transform_angle_x, transform_angle_y));
@@ -555,16 +518,18 @@ public class Primitive
 		if(transform_mode == ROTATE)
 		{
 			transform_offset  = new PVector(x_input-x, y_input-y); // Unused & does not account for parenting
-			
-			float transform_angle_x = x_input-x-stage.x+pivot_offset.x;
-			float transform_angle_y = y_input-y-stage.y+pivot_offset.y;
+
+			float transform_angle_x = x_input - (x + stage.camera.x - pivot_offset.x);
+			float transform_angle_y = y_input - (y + stage.camera.y - pivot_offset.y);
 			
 			if(parent != null) 
 			{
-				transform_angle_x = x_input - (x-parent_init_pos.x + stage.x - pivot_offset.x + parent.x + parent_pos_offset.x);
-				transform_angle_y = y_input - (y-parent_init_pos.y + stage.y - pivot_offset.y + parent.y + parent_pos_offset.y);
+				transform_angle_x = x_input - ((x + stage.camera.x - pivot_offset.x) + (-parent_local_offset.x + parent.x + parent_offset.x));
+				transform_angle_y = y_input - ((y + stage.camera.y - pivot_offset.y) + (-parent_local_offset.y + parent.y + parent_offset.y));
 			}
-
+			
+			//p.ellipse(transform_angle_x, transform_angle_x, 16, 16);
+			
 			float current_transform_angle    = PApplet.degrees(PApplet.atan2(transform_angle_x, transform_angle_y));		
 			
 			if(current_transform_angle > 0 && transform_rotate_last_angle < 0)
@@ -602,22 +567,22 @@ public class Primitive
 		// Needs to be cleaned up
 		if(transform_mode == NONE) // If translate has not been started, initialise it
 		{
-			if(handle.handle_postion == Handle.TOP_LEFT)
+			if(handle.handle_position == Handle.TOP_LEFT)
 			{
 				transform_init_t  = t;
 				transform_init_l  = l;
 			}
-			else if(handle.handle_postion == Handle.BOTTOM_LEFT)
+			else if(handle.handle_position == Handle.BOTTOM_LEFT)
 			{
 				transform_init_b  = b;
 				transform_init_l  = l;
 			}
-			if(handle.handle_postion == Handle.BOTTOM_RIGHT)
+			if(handle.handle_position == Handle.BOTTOM_RIGHT)
 			{
 				transform_init_b  = b;
 				transform_init_r  = r;
 			}
-			else if(handle.handle_postion == Handle.TOP_RIGHT)
+			else if(handle.handle_position == Handle.TOP_RIGHT)
 			{
 				transform_init_t  = t;
 				transform_init_r  = r;
@@ -635,22 +600,22 @@ public class Primitive
 			transform_amount = transform_amount.rotate(PApplet.radians(-rotation));
 			PApplet.println("Transform Amount" + transform_amount);
 			
-			if(handle.handle_postion == Handle.TOP_LEFT)
+			if(handle.handle_position == Handle.TOP_LEFT)
 			{
 				setLeft(transform_init_l - transform_amount.x);
 				setTop(transform_init_t - transform_amount.y);
 			}
-			if(handle.handle_postion == Handle.TOP_RIGHT)
+			if(handle.handle_position == Handle.TOP_RIGHT)
 			{
 				setRight(transform_init_r + transform_amount.x);
 				setTop(transform_init_t - transform_amount.y);
 			}
-			if(handle.handle_postion == Handle.BOTTOM_RIGHT)
+			if(handle.handle_position == Handle.BOTTOM_RIGHT)
 			{
 				setRight(transform_init_r + transform_amount.x);
 				setBottom(transform_init_b + transform_amount.y);
 			}
-			if(handle.handle_postion == Handle.BOTTOM_LEFT)
+			if(handle.handle_position == Handle.BOTTOM_LEFT)
 			{
 				setLeft(transform_init_l - transform_amount.x);
 				setBottom(transform_init_b + transform_amount.y);
@@ -703,33 +668,6 @@ public class Primitive
 		}
 		b = amount;
 	}
-
-	/* Depreciated
-	public void stretchTransformTop(float amount)
-	{
-		this.h += amount;
-		local_position_offset.y -= (amount/2f);
-	}
-	
-	public void stretchTransformBottom(float amount)
-	{
-		this.h += amount;
-		local_position_offset.y += (amount/2f);
-	}
-	
-	public void stretchTransformLeft(float amount)
-	{
-		this.w += amount;
-		local_position_offset.x -= (amount/2f);
-	}
-	
-	public void stretchTransformRight(float amount)
-	{
-		this.w += amount;
-		local_position_offset.x += (amount/2f);
-	}
-	
-	*/
 	
 	//=========//
 	// EDITING //
@@ -777,8 +715,8 @@ public class Primitive
 		
 		if(parent != null)
 		{
-			new_pivot_x = x_input - (x + stage.x - pivot_offset.x - parent_init_pos.x + parent.x + parent_pos_offset.x);
-			new_pivot_y = y_input - (y + stage.y - pivot_offset.y - parent_init_pos.y + parent.y + parent_pos_offset.y);
+			//new_pivot_x = x_input - (x + stage.x - pivot_offset.x - parent_init_pos.x + parent.x + parent_pos_offset.x);
+			//new_pivot_y = y_input - (y + stage.y - pivot_offset.y - parent_init_pos.y + parent.y + parent_pos_offset.y);
 		}
 		PVector new_pivot = new PVector(new_pivot_x, new_pivot_y);
 		
@@ -840,14 +778,12 @@ public class Primitive
 	public void setParent(Primitive parent)
 	{
 		// These values represent the offset needed to 
-		parent_pos_offset = new PVector(this.x-parent.x, this.y-parent.y);
-		parent_init_pos = new PVector(this.x, this.y);
-		
+		parent_offset = new PVector(this.x-parent.x, this.y-parent.y);
+		parent_local_offset = new PVector(this.x, this.y);
 		
 		this.parent = parent;
 		p.println("PARENTED TO " + parent);
-		p.println("Initial position when parented " + parent_init_pos);
-		p.println("Offset between parent and child " + parent_pos_offset);
+		p.println("Offset between parent and child " + parent_offset);
 	}
 	
 	
@@ -870,7 +806,7 @@ public class Primitive
 		Style width_height_style_selected;
 		
 		boolean selected, hover;
-		int handle_postion;
+		int handle_position;
 		int handle_type;
 		int width_height_handle_size = 10;
 		int rotation_handle_size = 10;
@@ -880,7 +816,7 @@ public class Primitive
 		
 		Handle(int handle_type, int handle_position)
 		{
-			this.handle_postion = handle_position;
+			this.handle_position = handle_position;
 			this.handle_type = handle_type;
 			this.selected = false;
 			this.hover = false;
@@ -892,11 +828,11 @@ public class Primitive
 		{
 			rotation_style_default = new Style(p);
 			rotation_style_default.noFill();
-			rotation_style_default.stroke(0, 0, 0, 50);
+			rotation_style_default.stroke(0, 0, 0, 100);
 			rotation_style_default.strokeWeight(2);
 			
 			width_height_style_default = new Style(p);
-			width_height_style_default.fill(0, 0, 0, 50);
+			width_height_style_default.fill(0, 0, 0, 100);
 			width_height_style_default.noStroke();
 			
 			rotation_style_selected = new Style(p);
@@ -920,6 +856,7 @@ public class Primitive
 			{
 				drawRotationHandles();
 			}
+			p.ellipse(handle_center.x, handle_center.y, 5, 5);
 		}
 		
 		void drawRotationHandles()
@@ -951,6 +888,10 @@ public class Primitive
 			p.rectMode(PApplet.CENTER);
 			p.translate(handle_center.x, handle_center.y);
 			p.rotate(PApplet.radians(rotation));
+			if(parent != null)
+			{
+				p.rotate(PApplet.radians(parent.rotation));
+			}
 			p.rect(0, 0, width_height_handle_size, width_height_handle_size);
 			p.rectMode(PApplet.CORNER);
 			p.popMatrix();
@@ -1042,61 +983,95 @@ public class Primitive
 		void updateHandlePosition()
 		{
 			// Updates the handle's position for drawing and mouse event checking
+			// There must be a cleaner way to write this...
 			if(handle_type == ROTATION)
 			{
 				handle_center = new PVector();
 				
-				if(handle_postion == TOP_LEFT)
+				if(handle_position == TOP_LEFT)
 				{
 					handle_center = handle_center.add(-width_height_handle_size, -width_height_handle_size);
 					handle_center = handle_center.rotate(PApplet.radians(rotation));
+					if(parent != null)
+					{
+						handle_center = handle_center.rotate(PApplet.radians(parent.rotation));
+					}
 					handle_center = handle_center.add(bounding_points[0].x, bounding_points[0].y);
 				}
-				else if(handle_postion == BOTTOM_LEFT)
+				else if(handle_position == BOTTOM_LEFT)
 				{
 					handle_center = handle_center.add(-width_height_handle_size, width_height_handle_size);
 					handle_center = handle_center.rotate(PApplet.radians(rotation));
+					if(parent != null)
+					{
+						handle_center = handle_center.rotate(PApplet.radians(parent.rotation));
+					}
 					handle_center = handle_center.add(bounding_points[1].x, bounding_points[1].y);
 				}
-				else if(handle_postion == BOTTOM_RIGHT)
+				else if(handle_position == BOTTOM_RIGHT)
 				{
 					handle_center = handle_center.add(width_height_handle_size, width_height_handle_size);
 					handle_center = handle_center.rotate(PApplet.radians(rotation));
+					if(parent != null)
+					{
+						handle_center = handle_center.rotate(PApplet.radians(parent.rotation));
+					}
 					handle_center = handle_center.add(bounding_points[2].x, bounding_points[2].y);
 				}
-				else if(handle_postion == TOP_RIGHT)
+				else if(handle_position == TOP_RIGHT)
 				{
 					handle_center = handle_center.add(width_height_handle_size, -width_height_handle_size);
 					handle_center = handle_center.rotate(PApplet.radians(rotation));
+					if(parent != null)
+					{
+						handle_center = handle_center.rotate(PApplet.radians(parent.rotation));
+					}
 					handle_center = handle_center.add(bounding_points[3].x, bounding_points[3].y);
 				}
+				
 			}
 			else if(handle_type == WIDTH_HEIGHT)
 			{
 				handle_center = new PVector();
 				
-				if(handle_postion == TOP_LEFT)
+				if(handle_position == TOP_LEFT)
 				{
 					handle_center = handle_center.add(width_height_handle_size/2, width_height_handle_size/2);
 					handle_center = handle_center.rotate(PApplet.radians(rotation));
+					if(parent != null)
+					{
+						handle_center = handle_center.rotate(PApplet.radians(parent.rotation));
+					}
 					handle_center = handle_center.add(bounding_points[0].x, bounding_points[0].y);
 				}
-				else if(handle_postion == BOTTOM_LEFT)
+				else if(handle_position == BOTTOM_LEFT)
 				{
 					handle_center = handle_center.add(width_height_handle_size/2, -width_height_handle_size/2);
 					handle_center = handle_center.rotate(PApplet.radians(rotation));
+					if(parent != null)
+					{
+						handle_center = handle_center.rotate(PApplet.radians(parent.rotation));
+					}
 					handle_center = handle_center.add(bounding_points[1].x, bounding_points[1].y);
 				}
-				else if(handle_postion == BOTTOM_RIGHT)
+				else if(handle_position == BOTTOM_RIGHT)
 				{
 					handle_center = handle_center.add(-width_height_handle_size/2, -width_height_handle_size/2);
 					handle_center = handle_center.rotate(PApplet.radians(rotation));
+					if(parent != null)
+					{
+						handle_center = handle_center.rotate(PApplet.radians(parent.rotation));
+					}
 					handle_center = handle_center.add(bounding_points[2].x, bounding_points[2].y);
 				}
-				else if(handle_postion == TOP_RIGHT)
+				else if(handle_position == TOP_RIGHT)
 				{
 					handle_center = handle_center.add(-width_height_handle_size/2, width_height_handle_size/2);
 					handle_center = handle_center.rotate(PApplet.radians(rotation));
+					if(parent != null)
+					{
+						handle_center = handle_center.rotate(PApplet.radians(parent.rotation));
+					}
 					handle_center = handle_center.add(bounding_points[3].x, bounding_points[3].y);
 				}
 			}

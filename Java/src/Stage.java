@@ -22,6 +22,7 @@ public class Stage extends Element{
 		
 		default_style = new Style(p);
 		//default_style.fill(255,70,0,255); // Orange
+		//default_style.fill(250,228,78,255); // Mellow Yellow
 		default_style.fill(150,150,150,255);
 		
 		primitives = new ArrayList<Primitive>();
@@ -30,8 +31,7 @@ public class Stage extends Element{
 		test_parent = new Primitive(250,250,100,200,this,p);
 		test_child = new Primitive(400,250,100,100,this,p);
 		
-		
-		//test_child.setParent(test_parent);
+		test_child.setParent(test_parent);
 		test_child.setPivot(0, 50);
 	}
 	
