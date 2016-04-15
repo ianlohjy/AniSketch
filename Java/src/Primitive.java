@@ -801,6 +801,7 @@ public class Primitive
 		
 		// Find the vector between the input and the original x position (without offsets and pivot adjustments)
 		
+		/*
 		float offset_x = x_input-(stage.x+x);
 		float offset_y = y_input-(stage.y+y);
 		
@@ -833,6 +834,7 @@ public class Primitive
 			this.x += position_offset.x;
 			this.y += position_offset.y;
 		}
+		*/
 	}
 	
 	public void setParent(Primitive parent)

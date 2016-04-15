@@ -21,9 +21,16 @@ The following is the properties for the new Primitive class:
 - pivot.x, pivot.y - defines pivot offset from x, y
 - w, h - width and height values, derived from t, b, l, r
 
-
 //==============================//
 // PARENTING IN PRIMITIVE CLASS //
 //==============================//
 
 ...
+
+//==============//
+// STYLUS INPUT //
+//==============//
+
+There seems to be some input dealy from Windows's stylus handling. 
+JWinPointer gives us accces to lower level stylus events and data that should circumvent this
+http://www.michaelmcguffin.com/code/JWinPointer/
