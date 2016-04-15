@@ -18,7 +18,7 @@ public class Primitive
 	// PVector position_offset; // General position offset parameter. Currently used for position correction after setting a new pivot.
 	PVector[] bounding_points; // The calculated "live" position of the 4 bounding points that make up the primitive.
 	
-	Primitive parent;
+	
 	
 	// Handles
 	Handle wh_top_left;
@@ -52,8 +52,11 @@ public class Primitive
 	final static int WIDTH_HEIGHT = 3;
 	
 	// Parenting and attachment values
+	Primitive parent;
+	PVector parent_start_offset; 
 	PVector parent_offset; // Distance between parent and child
 	PVector parent_local_offset; // x,y position of child when parented. Subtract this value from the 'parented' position to get local coordinates
+	float parent_rotation_offset;
 	
 	Style style_default;
 	Style style_hover;
@@ -88,6 +91,7 @@ public class Primitive
 	public void update()
 	{
 		calculateBoundingPoints();
+		calculateParentOffset();
 		drawBoundingBox();
 		drawPivot();
 		
@@ -103,11 +107,11 @@ public class Primitive
 		// Draw the primitive's x,y position without offsets
 		if(parent == null)
 		{
-			p.ellipse(stage.camera.x+x, stage.camera.y+y, 5, 5);
+			p.ellipse(stage.camera.x + x, stage.camera.y + y, 25, 25);
 		}
 		else
 		{
-			p.ellipse(stage.camera.x+x-parent_local_offset.x+parent_offset.x+parent.x, stage.camera.y+y-parent_local_offset.y+parent_offset.y+parent.y, 5, 5);
+			p.ellipse(stage.camera.x+x-parent_local_offset.x+parent_offset.x+parent.x, stage.camera.y+y-parent_local_offset.y+parent_offset.y+parent.y, 25, 25);
 		}
 		
 	}
@@ -598,6 +602,12 @@ public class Primitive
 		{
 			PVector transform_amount = new PVector(x_input-transform_offset.x, y_input-transform_offset.y);
 			transform_amount = transform_amount.rotate(PApplet.radians(-rotation));
+			
+			if(parent != null)
+			{
+				transform_amount = transform_amount.rotate(PApplet.radians(-parent.rotation));
+			}
+			
 			PApplet.println("Transform Amount" + transform_amount);
 			
 			if(handle.handle_position == Handle.TOP_LEFT)
@@ -778,12 +788,37 @@ public class Primitive
 	public void setParent(Primitive parent)
 	{
 		// These values represent the offset needed to 
-		parent_offset = new PVector(this.x-parent.x, this.y-parent.y);
+		parent_start_offset = new PVector(this.x-parent.x, this.y-parent.y); // Initial positional offset
 		parent_local_offset = new PVector(this.x, this.y);
-		
+		parent_rotation_offset = this.rotation - parent.rotation;
 		this.parent = parent;
+		
+		calculateParentOffset();
+		
 		p.println("PARENTED TO " + parent);
 		p.println("Offset between parent and child " + parent_offset);
+	}
+	
+	public PVector calculateParentOffset()
+	{
+		if(parent != null)
+		{
+			PVector new_offset = parent_start_offset.copy();
+			//new_offset = new_offset.add(pivot);
+			new_offset = new_offset.rotate(PApplet.radians(parent.rotation - parent_rotation_offset));
+			parent_offset = new_offset;
+			p.println(parent_offset);
+			
+			//p.stroke(0);
+			//p.ellipse(parent.x, parent.y, 25, 25);
+			p.line(parent.x + stage.camera.x, parent.y + stage.camera.y, parent.x+stage.camera.x+new_offset.x, parent.y+stage.camera.y+new_offset.y);
+			
+			return parent_offset;
+		}
+		else
+		{
+			return null;
+		}
 	}
 	
 	
