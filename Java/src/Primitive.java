@@ -480,15 +480,29 @@ public class Primitive
 	{ // Does translation of primitive based on the position of x_start & y_start
 		if(transform_mode == NONE) // If translate has not been started, initialise it
 		{
-			transform_offset  = new PVector(x_input-x, y_input-y);
+			transform_offset  = new PVector(x_input-x, y_input-y);			
 			transform_mode    = MOVE;
 			
 			PApplet.println("Started translate");
 		}
 		if(transform_mode == MOVE)
 		{
-			x = x_input - transform_offset.x;
-			y = y_input - transform_offset.y;
+			float amount_x = this.x - (x_input - transform_offset.x);
+			float amount_y = this.y - (y_input - transform_offset.y);
+			
+			this.x = this.x - amount_x;
+			this.y = this.y - amount_y;
+						
+			if(parent != null)
+			{
+				p.println(parent_local_offset);
+				
+				parent_local_offset = new PVector(this.x, this.y);
+				PVector amount = new PVector(-amount_x, -amount_y);
+				amount = amount.rotate(PApplet.radians(-parent.rotation));
+				
+				parent_start_offset = parent_start_offset.add(amount);
+			}
 		}
 	}
 	
@@ -807,7 +821,7 @@ public class Primitive
 			//new_offset = new_offset.add(pivot);
 			new_offset = new_offset.rotate(PApplet.radians(parent.rotation - parent_rotation_offset));
 			parent_offset = new_offset;
-			p.println(parent_offset);
+			//p.println(parent_offset);
 			
 			//p.stroke(0);
 			//p.ellipse(parent.x, parent.y, 25, 25);
