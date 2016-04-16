@@ -111,6 +111,7 @@ public class Primitive
 		}
 		else
 		{
+			//p.println("PO: " + parent_offset + "LO:" + parent_local_offset + "X: " + x);
 			p.ellipse(stage.camera.x+x-parent_local_offset.x+parent_offset.x+parent.x, stage.camera.y+y-parent_local_offset.y+parent_offset.y+parent.y, 25, 25);
 		}
 		
@@ -622,7 +623,7 @@ public class Primitive
 				transform_amount = transform_amount.rotate(PApplet.radians(-parent.rotation));
 			}
 			
-			PApplet.println("Transform Amount" + transform_amount);
+			//PApplet.println("Transform Amount" + transform_amount);
 			
 			if(handle.handle_position == Handle.TOP_LEFT)
 			{
@@ -714,6 +715,14 @@ public class Primitive
 		pivot_difference = pivot_difference.rotate(PApplet.radians(this.rotation));
 		this.x -= pivot_difference.x;
 		this.y -= pivot_difference.y;
+		
+		if(parent != null)
+		{
+			p.println("!!!!!!!!!!!!!!!!!!!!!!!!!!");
+			parent_start_offset = parent_start_offset.add(-pivot_difference.x, -pivot_difference.y);
+			parent_local_offset = parent_local_offset.add(-pivot_difference.x, -pivot_difference.y);
+			calculateParentOffset();
+		}
 	}
 	
 	public void setPivotUsingGlobalPosition(float x_input, float y_input)	
@@ -734,16 +743,20 @@ public class Primitive
 		//=================================================================================//
 		
 		// Find the vector relative to the current pivot point
-		float new_pivot_x = x_input - (x + stage.x - pivot_offset.x);
-		float new_pivot_y = y_input - (y + stage.y - pivot_offset.y);
+		float new_pivot_x = x_input - (x + stage.camera.x);
+		float new_pivot_y = y_input - (y + stage.camera.y);
 		
 		if(parent != null)
 		{
 			//new_pivot_x = x_input - (x + stage.x - pivot_offset.x - parent_init_pos.x + parent.x + parent_pos_offset.x);
 			//new_pivot_y = y_input - (y + stage.y - pivot_offset.y - parent_init_pos.y + parent.y + parent_pos_offset.y);
 		}
-		PVector new_pivot = new PVector(new_pivot_x, new_pivot_y);
+		else
+		{
+			
+		}
 		
+		PVector new_pivot = new PVector(new_pivot_x, new_pivot_y);
 		// Rotate vector back to zero the primitive's rotation
 		new_pivot = new_pivot.rotate(PApplet.radians(-rotation));
 		
@@ -814,7 +827,8 @@ public class Primitive
 	}
 	
 	public PVector calculateParentOffset()
-	{
+	{	
+		// This parent offset is 'parent_start_offset' + parent rotation accounted for
 		if(parent != null)
 		{
 			PVector new_offset = parent_start_offset.copy();

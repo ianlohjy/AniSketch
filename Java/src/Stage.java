@@ -8,6 +8,7 @@ public class Stage extends Element{
 
 	Style default_style;
 	Primitive test_child;
+	Primitive test_subchild;
 	Primitive test_parent;
 	float count = 1;
 	ArrayList<Primitive> primitives;
@@ -30,9 +31,14 @@ public class Stage extends Element{
 		
 		test_parent = new Primitive(250,250,100,200,this,p);
 		test_child = new Primitive(400,250,100,100,this,p);
+		test_subchild = new Primitive(600,250,100,100,this,p);
 		
 		test_child.setPivot(0, 50);
 		test_child.setParent(test_parent);
+		//test_parent.setPivot(0, 50);
+		
+		test_subchild.setPivot(0, 50);
+		test_subchild.setParent(test_child);
 		
 	}
 	
@@ -48,6 +54,7 @@ public class Stage extends Element{
 		
 		p.rect(x, y, w, h);
 		
+		test_subchild.update();
 		test_child.update();
 		test_parent.update();
 		
@@ -77,6 +84,7 @@ public class Stage extends Element{
 				primitives.get(p).checkMouseEvent(e);
 			}
 			test_child.checkMouseEvent(e);
+			test_subchild.checkMouseEvent(e);
 			test_parent.checkMouseEvent(e);
 		}
 	}
