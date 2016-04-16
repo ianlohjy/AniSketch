@@ -33,13 +33,12 @@ public class Stage extends Element{
 		test_child = new Primitive(400,250,100,100,this,p);
 		test_subchild = new Primitive(600,250,100,100,this,p);
 		
-		test_child.setPivot(0, 50);
+		//test_child.setPivot(0, 50);
 		test_child.setParent(test_parent);
 		//test_parent.setPivot(0, 50);
 		
 		test_subchild.setPivot(0, 50);
 		test_subchild.setParent(test_child);
-		
 	}
 	
 	void draw()
