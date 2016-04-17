@@ -1,0 +1,36 @@
+//===============//
+// OPTIMIZATIONS //
+//===============//
+
+1.  Most angles are stored as degrees, since its easier to visualize it. 
+	We can convert this to radians later on, since all of Processing's 
+	calculations are in radians.
+
+2.	Primitive.doWidthHeight() needs to be cleaned up
+
+//============================//
+// NEW PRIMITIVE ORGANISATION //
+//============================//
+
+New Primitive properties have been simplified in order to optimize calculations.
+The following is the properties for the new Primitive class:
+
+- x, y position
+- rotation
+- t, b, l, r - defines the shape of the Primitive, by offsets from x,y.
+- pivot.x, pivot.y - defines pivot offset from x, y
+- w, h - width and height values, derived from t, b, l, r
+
+//==============================//
+// PARENTING IN PRIMITIVE CLASS //
+//==============================//
+
+...
+
+//==============//
+// STYLUS INPUT //
+//==============//
+
+There seems to be some input dealy from Windows's stylus handling. 
+JWinPointer gives us accces to lower level stylus events and data that should circumvent this
+http://www.michaelmcguffin.com/code/JWinPointer/

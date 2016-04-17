@@ -25,9 +25,9 @@ public class MainWindows {
 	final static int RIGHT_HAND = 1;
 	int handedness = RIGHT_HAND;
 	
-	PApplet p;		
+	AniSketch p;		
 			
-	MainWindows(PApplet p){
+	MainWindows(AniSketch p){
 		this.p = p;
 		setupDividers();
 		setupWindows();
@@ -140,6 +140,15 @@ public class MainWindows {
 	{
 		horizontal_divider.checkMouseEvent(e);
 		vertical_divider.checkMouseEvent(e);
+		if(!horizontal_divider.pressed && !vertical_divider.pressed)
+		{
+			stage.checkMouseEvent(e);
+			sheet.checkMouseEvent(e);
+		}
+	}
+	
+	void handleGestureResponse(GestureEngine.GestureResponse gesture_response)
+	{
 		
 	}
 	

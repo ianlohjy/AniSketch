@@ -1,4 +1,5 @@
 import processing.core.PApplet;
+import processing.event.MouseEvent;
 
 public class Divider extends Element{
 
@@ -19,7 +20,7 @@ public class Divider extends Element{
 	
 	Object parent;
 	
-	Divider(PApplet p, Object parent)
+	Divider(AniSketch p, Object parent)
 	{
 		super(0,0,0,0,p);
 		
@@ -103,9 +104,10 @@ public class Divider extends Element{
 		}
 	}
 	
-	void mouseInputResponse()
+	@Override
+	void mouseInputResponse(MouseEvent e)
 	{
-		if(pressed)
+		if(pressed && e.getButton() == 37)
 		{
 			if(type == VERTICAL)
 			{

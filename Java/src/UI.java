@@ -14,7 +14,7 @@ public class UI extends Element{
 	
 	Element parent;
 	
-	UI(PApplet p)
+	UI(AniSketch p)
 	{
 		super(0,0,0,0,p);
 		default_style = new Style(p);

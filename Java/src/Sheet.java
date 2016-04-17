@@ -1,10 +1,14 @@
 import processing.core.PApplet;
+import processing.event.MouseEvent;
 
 public class Sheet extends Element{
 
 	Style default_style;
 	
-	Sheet(int x, int y, int w, int h, PApplet p)
+	float x_camera_offset;
+	float y_camera_offset;
+	
+	Sheet(int x, int y, int w, int h, AniSketch p)
 	{
 		super(x,y,w,h,p);
 		default_style = new Style(p);
@@ -13,8 +17,18 @@ public class Sheet extends Element{
 	
 	void draw()
 	{
+		p.clip(x, y, w, h);
 		default_style.apply();
 		p.rect(x, y, w, h);
+		p.noClip();
+	}
+	
+	void checkMouseEvent(MouseEvent e)
+	{
+		if(withinBounds(e.getX(), e.getY()))
+		{
+			p.println("INSIDE STAGE");
+		}
 	}
 	
 }

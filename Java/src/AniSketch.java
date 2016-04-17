@@ -1,16 +1,12 @@
 
-
-
 import javax.swing.JFrame;
 
 import java.awt.Dimension;
 import java.awt.event.*;
 
-
 import processing.awt.PSurfaceAWT.SmoothCanvas;
 import processing.core.*;
 import processing.event.MouseEvent;
-
 
 public class AniSketch extends PApplet 
 {
@@ -20,8 +16,7 @@ public class AniSketch extends PApplet
 	int cur_width;
 	int cur_height;
 	
-	//UI hori_resize_bar;
-	
+	GestureHandler gesture_handler;
 	MainWindows main_windows;
 	
 	public static void main(String args[])
@@ -31,6 +26,7 @@ public class AniSketch extends PApplet
 	
 	public void settings()
 	{
+		println("TEST");
 		size(init_resolution[0],init_resolution[1]);
 	}
 	
@@ -69,9 +65,10 @@ public class AniSketch extends PApplet
 	
 	public void setup()
 	{
-		//frameRate(30);
+		frameRate(250);
 		initialisePAppletFrame();
 		initialiseMainWindows();
+		initialiseGestureHandler();
 	}
 	
 	public void draw()
@@ -79,8 +76,15 @@ public class AniSketch extends PApplet
 		background(200);
 		screenResized();
 		main_windows.update();
+		gesture_handler.update();
+		text("Framerate " + (int)frameRate, 5, 15);
 	}
 
+	public void initialiseGestureHandler()
+	{
+		gesture_handler = new GestureHandler(this);
+	}
+	
 	public void setupWindows()
 	{
 		
@@ -89,7 +93,12 @@ public class AniSketch extends PApplet
 	public void passMouseEvents(MouseEvent e)
 	{
 		main_windows.checkMouseEvent(e);
-		
+		gesture_handler.checkMouseEvent(e);
+	}
+	
+	public void mouseClicked(MouseEvent e)
+	{
+		passMouseEvents(e);
 	}
 	
 	public void mousePressed(MouseEvent e)
@@ -109,8 +118,23 @@ public class AniSketch extends PApplet
 	
 	public void mouseDragged(MouseEvent e)
 	{
-		//println(e.getAction());
 		passMouseEvents(e);
 	}
+	
+	public class TestWindow extends PApplet{
+		
+		public void settings()
+		{
+			size(500,500);
+			println("SDA");
+		}
+		
+		public void draw()
+		{
+			ellipse(5,5,5,5);
+			
+		}
+	}
+
 	
 }

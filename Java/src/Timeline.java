@@ -3,7 +3,7 @@ import processing.core.PApplet;
 public class Timeline extends Element{
 	Style default_style;
 	
-	Timeline(int x, int y, int w, int h, PApplet p)
+	Timeline(int x, int y, int w, int h, AniSketch p)
 	{
 		super(x,y,w,h,p);
 		default_style = new Style(p);
