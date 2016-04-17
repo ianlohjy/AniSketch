@@ -189,7 +189,6 @@ public class Primitive
 				this.y = this.y + centroid_diff.y;
 			}
 			
-			
 			// UPDATE LAST KNOWN PARENT PROPERTIES
 			parent_last_x = parent.x;
 			parent_last_y = parent.y;
