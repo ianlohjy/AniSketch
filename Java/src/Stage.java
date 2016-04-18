@@ -7,11 +7,12 @@ import processing.event.MouseEvent;
 public class Stage extends Element{
 
 	Style default_style;
-	Primitive test_child;
-	Primitive test_subchild;
-	Primitive test_parent;
+	//Primitive test_child;
+	//Primitive test_subchild;
+	//Primitive test_parent;
 	float count = 1;
 	ArrayList<Primitive> primitives;
+	ArrayList<Primitive> primitive_delete_list;
 	
 	PVector camera;
 	
@@ -29,23 +30,39 @@ public class Stage extends Element{
 		primitives = new ArrayList<Primitive>();
 		//addPrimitive(250,200,100,200,this,p);
 		
-		test_parent = new Primitive(250,250,100,200,this,p);
-		test_child = new Primitive(400,250,100,100,this,p);
-		test_subchild = new Primitive(600,250,100,100,this,p);
+		//test_parent = new Primitive(0,0,100,200,this,p);
+		//test_child = new Primitive(400,250,100,100,this,p);
+		//test_subchild = new Primitive(600,250,100,100,this,p);
 		
 		//test_child.setPivot(0, 50);
-		test_child.setParent(test_parent);
+		//test_child.setParent(test_parent);
 		//test_parent.setPivot(0, 50);
 		
-		test_subchild.setPivot(0, 50);
-		test_subchild.setParent(test_child);
+		//test_subchild.setPivot(0, 50);
+		//test_subchild.setParent(test_child);
+
+	}
+	
+	
+	void deletePrimitive(Primitive to_delete)
+	{
+		int index_to_delete = primitives.indexOf(to_delete);
+		
+		if(index_to_delete != -1)
+		{
+			primitives.remove(index_to_delete);
+		}
+		else
+		{
+			PApplet.println("Primitive does not exist on stage. Cannot delete");
+		}
 	}
 	
 	void draw()
 	{
+		
 		//test_child.setPivot(0, p.frameCount);
-		this.camera.x = x;
-		this.camera.y = y;
+		//p.println(camera.x);
 		
 		//test.setHeightTop(p.random(155));//p.frameCount/10f);
 		p.clip(x, y, w, h);
@@ -53,16 +70,31 @@ public class Stage extends Element{
 		
 		p.rect(x, y, w, h);
 		
-		test_subchild.update();
-		test_child.update();
-		test_parent.update();
+		//test_subchild.update();
+		//test_child.update();
+		//test_parent.update();
 		
 		updatePrimitives();
 		p.noClip();
+		//p.println(p.mouseX - x);
 	}
 
+	void handleDelete()
+	{
+		for(int p=0; p<primitives.size(); p++)
+		{
+			if(primitives.get(p).marked_for_deletion)
+			{
+				deletePrimitive(primitives.get(p));
+				p--;
+			}
+		}		
+	}
+	
 	void updatePrimitives()
 	{
+		handleDelete();
+		
 		for(int p=0; p<primitives.size(); p++)
 		{
 			primitives.get(p).update();
@@ -82,9 +114,6 @@ public class Stage extends Element{
 			{
 				primitives.get(p).checkMouseEvent(e);
 			}
-			test_child.checkMouseEvent(e);
-			test_subchild.checkMouseEvent(e);
-			test_parent.checkMouseEvent(e);
 		}
 	}
 }

@@ -27,7 +27,7 @@ public class Sheet extends Element{
 	{
 		if(withinBounds(e.getX(), e.getY()))
 		{
-			p.println("INSIDE STAGE");
+			//p.println("INSIDE STAGE");
 		}
 	}
 	

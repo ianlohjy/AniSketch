@@ -39,9 +39,9 @@ public class MainWindows {
 	
 	void setupWindows()
 	{
-		sheet  = new Sheet(0,0,0,0,p);
-		stage  = new Stage(0,0,0,0,p);
-		timeline = new Timeline(0,0,0,0,p);
+		sheet  = new Sheet(0,0,vertical_divider.x,horizontal_divider.y,p);
+		stage  = new Stage(vertical_divider.x,0,p.width-vertical_divider.x,horizontal_divider.y,p);
+		timeline = new Timeline(0,horizontal_divider.y,p.width,p.height-horizontal_divider.y,p);
 		
 		updateWindowPositions();
 	}

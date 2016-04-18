@@ -21,6 +21,7 @@ public class Primitive
 	float t, b, l, r; // The top, bottom, left & right edges of the bounding boxes, relative to the x,y position
 	PVector[] bounding_points; // The calculated "true" position of the 4 bounding points that make up the primitive.
 	SpriteLibrary.Sprite sprite; // *Unused at the moment* Sprite Object
+	boolean marked_for_deletion = false;
 	
 	//=========// 
 	// HANDLES //
@@ -454,7 +455,7 @@ public class Primitive
 				}
 				
 				// REGISTER GESTURE EVENT //
-				if(within_bounds && e.getButton() == 39 && selected)
+				if(within_bounds && e.getButton() == 39)// && selected)
 				{
 					p.gesture_handler.registerObject(this, e);
 				} 
@@ -471,14 +472,14 @@ public class Primitive
 				endTranslate(e.getX(), e.getY());
 				
 				// REGISTER GESTURE EVENT //
-				if(within_bounds && e.getButton() == 39 && selected)
+				if(within_bounds && e.getButton() == 39)// && selected)
 				{
 					p.gesture_handler.registerObject(this, e);
 				}
-				else if(selected)
-				{
-					p.gesture_handler.registerObject(this, e);
-				}
+				//else if(selected)
+				//{
+				//	p.gesture_handler.registerObject(this, e);
+				//}
 				////////////////////////////
 			}
 			else if(e.getAction() == 3) // When mouse is clicked (down then up)
@@ -922,6 +923,17 @@ public class Primitive
 		parent_last_h = parent.t + parent.b;
 		
 		this.parent = parent;
+		parent.children.add(this);
+	}
+	
+	public void delete()
+	{	
+		// Unparent children
+		for(Primitive child: children)
+		{
+			child.parent = null;
+		}
+		marked_for_deletion = true;
 	}
 	
 	/*
