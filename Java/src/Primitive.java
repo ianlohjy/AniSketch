@@ -131,7 +131,7 @@ public class Primitive
 			float parent_cur_w = parent.l + parent.r;
 			float parent_cur_h = parent.t + parent.b;
 			// Draw centroid
-			p.ellipse(parent_cur_centroid.x+stage.camera.x, parent_cur_centroid.y+stage.camera.y, 15, 15);
+			// p.ellipse(parent_cur_centroid.x+stage.camera.x, parent_cur_centroid.y+stage.camera.y, 15, 15);
 			
 			// TRANSLATION CHANGE
 			float x_diff = parent.x - parent_last_x;
@@ -379,23 +379,30 @@ public class Primitive
 	
 	public boolean withinBounds(float input_x, float input_y)
 	{
-		if(!isPointLeftOfLine(bounding_points[0], bounding_points[1], input_x, input_y))
-		{
-			if(!isPointLeftOfLine(bounding_points[1], bounding_points[2], input_x, input_y))
+		try{
+			if(!isPointLeftOfLine(bounding_points[0], bounding_points[1], input_x, input_y))
 			{
-				if(!isPointLeftOfLine(bounding_points[2], bounding_points[3], input_x, input_y))
+				if(!isPointLeftOfLine(bounding_points[1], bounding_points[2], input_x, input_y))
 				{
-					if(!isPointLeftOfLine(bounding_points[3], bounding_points[0], input_x, input_y))
+					if(!isPointLeftOfLine(bounding_points[2], bounding_points[3], input_x, input_y))
 					{
-						return true;
+						if(!isPointLeftOfLine(bounding_points[3], bounding_points[0], input_x, input_y))
+						{
+							return true;
+						}
 					}
+					return false;
 				}
 				return false;
 			}
-			return false;
+			else
+			{
+				return false;
+			}
 		}
-		else
+		catch(Exception e)
 		{
+			System.err.println("BOUNDING BOX CHECK FAILED");
 			return false;
 		}
 	}
@@ -924,6 +931,11 @@ public class Primitive
 		
 		this.parent = parent;
 		parent.children.add(this);
+	}
+	
+	public void unparent()
+	{
+		parent = null;
 	}
 	
 	public void delete()

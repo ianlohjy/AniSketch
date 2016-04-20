@@ -48,6 +48,8 @@ public class GestureHandler {
 	
 	public void checkMouseEvent(MouseEvent e)
 	{
+		//p.println(e.isAltDown());
+		
 		if(e.getButton() == 39)
 		{ // If its a right click
 			if(e.getAction() == 1)
@@ -105,12 +107,23 @@ public class GestureHandler {
 		{
 			switch (response.bestGesture.gestureName) {
 			
+			case "CANCEL":
+				if(state.startObjectSize() == 1)
+				{
+					if(state.start_point_objects.get(0).mouse_state_selected && state.start_point_objects.get(0).isPrimitive())
+					{
+						Primitive found_object = (Primitive)state.start_point_objects.get(0).object;
+            			found_object.unparent();
+					}
+				}
+			break;
+			
             case "CIRCLE":
             	if(state.startObjectSize() == 1 && state.endObjectSize() == 0 || state.endObjectSize() == 1)
             	{
             		if(state.start_point_objects.get(0).isPrimitive() && state.start_point_objects.get(0).selected())
             		{
-	            		if(candidate.initialSize[0] <= 30 && candidate.initialSize[1] <= 30)
+	            		if(candidate.initialSize[0] <= 200 && candidate.initialSize[1] <= 200)
 	            		{
 	            			Primitive found_object = (Primitive)state.start_point_objects.get(0).object;
 	            			found_object.setPivotUsingGlobalPosition(candidate.centroid.x, candidate.centroid.y);
@@ -194,7 +207,7 @@ public class GestureHandler {
 		}
 		// If the gesture score is too low
 		// Check to see if the it is more or less a straight line
-		else if(checkAngleVarience(drawn_points) < 15)
+		else if(checkAngleVarience(drawn_points) < 30)
 		{
 			PApplet.println("SAME OBJECTS? " + state.ifSameObject());
 			PApplet.println("Gesture is likely a straight line");
@@ -236,7 +249,7 @@ public class GestureHandler {
 		}
 		
 		average_angle_variance = average_angle_variance/(points.size()-1);
-		//PApplet.println( "ANGLE VARIANCE IS " + PApplet.degrees(average_angle_variance );
+		PApplet.println( "ANGLE VARIANCE IS " + PApplet.degrees(average_angle_variance) );
 		return PApplet.degrees(average_angle_variance);
 	}
 	
@@ -302,6 +315,9 @@ public class GestureHandler {
 		
 		if(drawn_points.size()>1)
 		{
+			p.fill(255,255);
+			p.noStroke();
+			p.ellipse(drawn_points.get(0).x, drawn_points.get(0).y, 10, 10);
 			p.beginShape();
 			for(int i=0; i<drawn_points.size(); i++)
 			{
