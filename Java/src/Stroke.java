@@ -58,14 +58,27 @@ public class Stroke {
 	{
 		p.stroke(0,150);
 		p.strokeWeight(2);
+		p.noFill();
 		
-		if(points != null && points.size()>1)
+		if(points != null)
 		{
-			for(int l=0; l<points.size()-1; l++)
-			{	
-				p.line(points.get(l).x, points.get(l).y, points.get(l+1).x, points.get(l+1).y);
+			if(points.size()>1 && points.size()<4)
+			{
+				for(int l=0; l<points.size()-1; l++)
+				{	
+					p.line(points.get(l).x, points.get(l).y, points.get(l+1).x, points.get(l+1).y);
+				}
 			}
-			
+			else if(points.size() >= 4)
+			{
+				p.beginShape();
+				
+				for(int l=0; l<points.size(); l++)
+				{	
+					p.curveVertex(points.get(l).x, points.get(l).y);
+				}
+				p.endShape();
+			}
 			drawCursor();
 		}
 	}
