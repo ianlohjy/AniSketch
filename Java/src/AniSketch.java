@@ -6,6 +6,7 @@ import java.awt.event.*;
 
 import processing.awt.PSurfaceAWT.SmoothCanvas;
 import processing.core.*;
+import processing.event.KeyEvent;
 import processing.event.MouseEvent;
 
 public class AniSketch extends PApplet 
@@ -18,6 +19,7 @@ public class AniSketch extends PApplet
 	
 	GestureHandler gesture_handler;
 	MainWindows main_windows;
+	AnimationController animation;
 	
 	public static void main(String args[])
 	{
@@ -66,17 +68,26 @@ public class AniSketch extends PApplet
 	public void setup()
 	{
 		frameRate(250);
+		initialiseAnimationController(); // Animation Controller needs to be initialised first
 		initialisePAppletFrame();
 		initialiseMainWindows();
 		initialiseGestureHandler();
+		
+	}
+	
+	public void initialiseAnimationController()
+	{
+		animation = new AnimationController(this);
 	}
 	
 	public void draw()
 	{
 		background(200);
 		screenResized();
+		animation.update();
 		main_windows.update();
 		gesture_handler.update();
+		
 		text("Framerate " + (int)frameRate, 5, 15);
 	}
 
@@ -121,20 +132,9 @@ public class AniSketch extends PApplet
 		passMouseEvents(e);
 	}
 	
-	public class TestWindow extends PApplet{
-		
-		public void settings()
-		{
-			size(500,500);
-			println("SDA");
-		}
-		
-		public void draw()
-		{
-			ellipse(5,5,5,5);
-			
-		}
+	public void keyPressed(KeyEvent e) 
+	{
+		animation.checkKeyEvent(e);
 	}
-
 	
 }
