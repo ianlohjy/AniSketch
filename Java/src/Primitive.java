@@ -9,6 +9,7 @@ public class Primitive
 	//===========//
 	// ESSENTIAL //
 	//===========//
+	AnimationController a;
 	AniSketch p;
 	Stage stage;
 	
@@ -71,6 +72,18 @@ public class Primitive
 	float parent_last_w, parent_last_h;
 	PVector parent_last_centroid; // Bounding box center
 	
+	//=====================//
+	// KEY DELTA RECORDING //
+	//=====================//
+	boolean delta_recording_start = false;
+	float delta_local_x;
+	float delta_local_y;
+	float delta_rotation;
+	float delta_t;
+	float delta_b;
+	float delta_l;
+	float delta_r;
+	
 	//========//
 	// STYLES //
 	//========//
@@ -80,9 +93,10 @@ public class Primitive
 	Style style_outline;
 	Style style_outline_selected;
 	
-	Primitive(float x, float y, float w, float h, Stage stage, AniSketch p)
+	Primitive(float x, float y, float w, float h, Stage stage, AnimationController a, AniSketch p)
 	{
 		this.p = p;
+		this.a = a;
 		this.stage = stage;
 		
 		this.x = x;
@@ -204,6 +218,28 @@ public class Primitive
 		}
 	}
 	
+	public void startDeltaRecording()
+	{
+		p.println("DELTA STARTED");
+		// If there is an active key
+		if(!delta_recording_start)
+		{
+			delta_local_x = 0;
+			delta_local_y = 0;
+			delta_rotation = 0;
+			delta_t = 0;
+			delta_b = 0;
+			delta_l = 0;
+			delta_r = 0;
+			delta_recording_start = true;
+		}
+	}
+	
+	public void endDeltaRecording()
+	{ 
+		delta_recording_start = false;
+	}
+	
 	public void update()
 	{
 		calculateBoundingPoints();
@@ -225,7 +261,6 @@ public class Primitive
 		
 		//p.println("PO: " + parent_offset + "LO:" + parent_local_offset + "X: " + x);
 		//p.ellipse(stage.camera.x+x-parent_local_offset.x+parent_offset.x+parent.x, stage.camera.y+y-parent_local_offset.y+parent_offset.y+parent.y, 25, 25);
-
 	}
 	
 	public void setupStyles()
@@ -433,10 +468,16 @@ public class Primitive
 	//================//
 	// EVENT HANDLING //
 	//================//
-	public void checkMouseEvent(MouseEvent e)
+	public boolean checkMouseEvent(MouseEvent e, boolean ignore_selection)
 	{
 		boolean handles_mouse_event_state = false;
 		boolean within_bounds = withinBounds(e.getX(), e.getY());
+		
+		// For selection ranking
+		if(ignore_selection)
+		{
+			selected = false;
+		}
 		
 		// If the primitive is already selected, pass the mouse event to the handles first
 		if(selected)
@@ -453,7 +494,10 @@ public class Primitive
 				{
 					if(within_bounds) 
 					{
-						selected = true;
+						if(!ignore_selection)
+						{
+							selected = true;
+						}
 					}
 					else if(!within_bounds)
 					{
@@ -525,6 +569,8 @@ public class Primitive
 			//
 			// ...
 			//
+		
+		return !handles_mouse_event_state;
 	}
 	
 	public boolean checkMouseEventHandles(MouseEvent e)
@@ -587,18 +633,14 @@ public class Primitive
 			this.x = this.x - amount_x;
 			this.y = this.y - amount_y;
 			
-			/*
-			if(parent != null)
+			if(delta_recording_start) // DELTA RECORDING FOR KEYS
 			{
-				p.println(parent_local_offset);
+				PVector global_to_local = new PVector(-amount_x, -amount_y);
+				global_to_local = global_to_local.rotate(PApplet.radians(-rotation));
 				
-				parent_local_offset = new PVector(this.x, this.y);
-				PVector amount = new PVector(-amount_x, -amount_y);
-				amount = amount.rotate(PApplet.radians(-parent.rotation));
-				
-				parent_start_offset = parent_start_offset.add(amount);
+				delta_local_x += global_to_local.x;
+				delta_local_y += global_to_local.y;
 			}
-			*/
 		}
 	}
 	
@@ -619,13 +661,7 @@ public class Primitive
 			
 			float transform_angle_x = x_input - (x + stage.camera.x);
 			float transform_angle_y = y_input - (y + stage.camera.y);
-			/*
-			if(parent != null) 
-			{
-				transform_angle_x = x_input - ((x + stage.camera.x - pivot_offset.x) + (-parent_local_offset.x + parent.x + parent_offset.x));
-				transform_angle_y = y_input - ((y + stage.camera.y - pivot_offset.y) + (-parent_local_offset.y + parent.y + parent_offset.y));
-			}
-			*/	
+			
 			p.println("Angle Pos " + transform_angle_x + " " + transform_angle_y);
 			
 			transform_rotate_last_angle = PApplet.degrees(PApplet.atan2(transform_angle_x, transform_angle_y));
@@ -636,14 +672,6 @@ public class Primitive
 
 			float transform_angle_x = x_input - (x + stage.camera.x);
 			float transform_angle_y = y_input - (y + stage.camera.y);
-			/*
-			if(parent != null) 
-			{
-				transform_angle_x = x_input - ((x + stage.camera.x - pivot_offset.x) + (-parent_local_offset.x + parent.x + parent_offset.x));
-				transform_angle_y = y_input - ((y + stage.camera.y - pivot_offset.y) + (-parent_local_offset.y + parent.y + parent_offset.y));
-			}
-			*/
-			//p.ellipse(transform_angle_x, transform_angle_x, 16, 16);
 			
 			float current_transform_angle    = PApplet.degrees(PApplet.atan2(transform_angle_x, transform_angle_y));		
 			
@@ -660,6 +688,12 @@ public class Primitive
 			
 			float transform_angle_difference = current_transform_angle-transform_rotate_last_angle;
 			rotation -= transform_angle_difference;
+			
+			// DELTA RECORDING
+			if(delta_recording_start)
+			{
+				delta_rotation -= transform_angle_difference;
+			}
 			
 			//p.println("Last Angle " + transform_rotate_last_angle);
 			//p.println("Transform Difference " + transform_angle_difference);
@@ -714,31 +748,45 @@ public class Primitive
 			PVector transform_amount = new PVector(x_input-transform_offset.x, y_input-transform_offset.y);
 			transform_amount = transform_amount.rotate(PApplet.radians(-rotation));
 			
-			/*if(parent != null)
-			{
-				transform_amount = transform_amount.rotate(PApplet.radians(-parent.rotation));
-			}
-			*/
-			
 			//PApplet.println("Transform Amount" + transform_amount);
 			
 			if(handle.handle_position == Handle.TOP_LEFT)
 			{
+				if(delta_recording_start)
+				{
+					delta_l -= transform_amount.x; // DELTA RECORDING
+					delta_t -= transform_amount.y; // DELTA RECORDING
+				}
 				setLeft(transform_init_l - transform_amount.x);
 				setTop(transform_init_t - transform_amount.y);
 			}
 			if(handle.handle_position == Handle.TOP_RIGHT)
 			{
+				if(delta_recording_start)
+				{
+					delta_r += transform_amount.x; // DELTA RECORDING
+					delta_t -= transform_amount.y; // DELTA RECORDING
+				}
 				setRight(transform_init_r + transform_amount.x);
 				setTop(transform_init_t - transform_amount.y);
 			}
 			if(handle.handle_position == Handle.BOTTOM_RIGHT)
 			{
+				if(delta_recording_start)
+				{
+					delta_r += transform_amount.x; // DELTA RECORDING
+					delta_b += transform_amount.y; // DELTA RECORDING
+				}
 				setRight(transform_init_r + transform_amount.x);
 				setBottom(transform_init_b + transform_amount.y);
 			}
 			if(handle.handle_position == Handle.BOTTOM_LEFT)
 			{
+				if(delta_recording_start)
+				{
+					delta_l -= transform_amount.x; // DELTA RECORDING
+					delta_b += transform_amount.y; // DELTA RECORDING
+				}
 				setLeft(transform_init_l - transform_amount.x);
 				setBottom(transform_init_b + transform_amount.y);
 			}

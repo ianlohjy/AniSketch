@@ -140,7 +140,7 @@ public class GestureHandler {
                 	{
             			Stage stage = p.main_windows.stage;
             			Sheet sheet = p.main_windows.sheet;
-            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p);
+            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.animation, p);
                 	}
             	}
             p.println("THIS IS A SQUARE");
@@ -153,7 +153,7 @@ public class GestureHandler {
                 	{
             			Stage stage = p.main_windows.stage;
             			Sheet sheet = p.main_windows.sheet;
-            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p);
+            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.animation, p);
                 	}
             	}
             p.println("THIS IS A SQUARE");
@@ -166,7 +166,7 @@ public class GestureHandler {
                 	{
             			Stage stage = p.main_windows.stage;
             			Sheet sheet = p.main_windows.sheet;
-            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p);
+            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.animation, p);
                 	}
             	}
             p.println("THIS IS A RECT");
@@ -179,7 +179,7 @@ public class GestureHandler {
                 	{
             			Stage stage = p.main_windows.stage;
             			Sheet sheet = p.main_windows.sheet;
-            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p);
+            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.animation, p);
                 	}
             	}
             p.println("THIS IS A RECT");

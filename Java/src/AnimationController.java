@@ -34,7 +34,7 @@ public class AnimationController {
 		strokes = new ArrayList<Stroke>();
 		keys = new ArrayList<Key>();
 	}
-	
+
 	public void addKey(float x, float y, float d)
 	{
 		keys.add(new Key(x, y, d, p));

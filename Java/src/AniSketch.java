@@ -74,33 +74,6 @@ public class AniSketch extends PApplet
 		initialiseGestureHandler();
 	}
 	
-	/*
-	public void drawGaussian(int w, int h)
-	{
-		for(int x=0; x<w; x++)
-		{
-			for(int y=0; y<h; y++)
-			{
-				noFill();
-				
-				//fill(Utilities.gaussian1d(x,0,300)*255);
-				if((Utilities.gaussian1d(x,0,300)) > 0.01)
-				{
-					fill(255);
-				}
-				else
-				{
-					fill(0);
-				}
-				//fill(Utilities.gaussian1d(x,0,300)*255);
-				rect(x,y,1,1);
-			}
-		}
-		fill(255,0,0);
-		rect(0,0,900,20);
-	}
-	*/
-	
 	public void initialiseAnimationController()
 	{
 		animation = new AnimationController(this);

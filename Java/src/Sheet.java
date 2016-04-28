@@ -83,6 +83,14 @@ public class Sheet extends Element{
 	{
 		if(withinBounds(e.getX(), e.getY()))
 		{
+			for(Key key: a.keys)
+			{
+				key.checkMouseEvent(e);	
+			}
+		}		
+		/*
+		if(withinBounds(e.getX(), e.getY()))
+		{
 			if(e.getButton() == 37)
 			{ // If its a left click
 				if(e.getAction() == 1)// Mouse Pressed
@@ -106,6 +114,7 @@ public class Sheet extends Element{
 				}
 			}
 		}
+		*/
 	}
 	
 	/*
