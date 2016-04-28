@@ -2,10 +2,6 @@ import processing.core.PApplet;
 import processing.core.PVector;
 
 public class Utilities {
-
-	public Utilities()
-	{
-	}
 	
 	public static void dottedLine(float x1, float y1, float x2, float y2, float stroke, float spacing, PApplet p)
 	{
@@ -30,5 +26,24 @@ public class Utilities {
 			distance_travelled += space_vector.mag();
 		}	
 	}
+	
+	public static float gaussian1d(float position, float offset, float deviation)
+	{
+		// Gaussian function from https://en.wikipedia.org/wiki/Gaussian_function
+		// Returns the value (0-1) at 'position'
+		// Offset moves the center of the gaussian curve
+		// Deviation is the width of 1 standard deviation (You should expect close to 0 by the 3rd or 4th deviation [+-3s/+-4s] )
+		return PApplet.exp(-(((position-offset)*(position-offset))/(2*(deviation)*(deviation))));
+	}
+	
+	/*
+	public static void printGaussian(int range)
+	{
+		for(int i=0; i<range; i++)
+		{
+			PApplet.println(gaussian1d(i));
+		}
+	}
+	*/
 	
 }

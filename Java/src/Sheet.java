@@ -29,6 +29,8 @@ public class Sheet extends Element{
 		//drawn_points = new ArrayList<PVector>();
 		drawing = false;
 		this.a = a;
+		
+		a.addKey(200, 200, 150);
 	}
 	
 	void draw()
@@ -37,9 +39,18 @@ public class Sheet extends Element{
 		default_style.apply();
 		p.rect(x, y, w, h);
 		drawStrokes();
+		drawKeys();
 		p.noClip();
 		
 		update();
+	}
+	
+	void drawKeys()
+	{
+		for(Key key: a.keys)
+		{
+			key.draw();
+		}
 	}
 	
 	void drawStrokes()

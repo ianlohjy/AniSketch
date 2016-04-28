@@ -26,11 +26,18 @@ public class AnimationController {
 	boolean was_playing = false;
 	float last_recording_input_x = 0;
 	float last_recording_input_y = 0;
+	ArrayList<Key> keys;
 	
 	public AnimationController(AniSketch p) 
 	{
 		this.p = p;
 		strokes = new ArrayList<Stroke>();
+		keys = new ArrayList<Key>();
+	}
+	
+	public void addKey(float x, float y, float d)
+	{
+		keys.add(new Key(x, y, d, p));
 	}
 	
 	public void setCursor()
@@ -125,8 +132,6 @@ public class AnimationController {
 		}
 	}
 	
-	
-	
 	public void checkKeyEvent(KeyEvent e)
 	{
 		if(e.getKeyCode() == 32)
@@ -154,26 +159,6 @@ public class AnimationController {
 	{
 		playback = PAUSE;
 		p.println("ANIMATION PAUSED");
-	}
-	
-	public class MotionPoint
-	{
-		public MotionPoint()
-		{
-			
-		}
-	}
-	
-	public class Key
-	{
-		public Key()
-		{
-		}
-	}
-	
-	public class KeyGroup
-	{
-		
 	}
 	
 }

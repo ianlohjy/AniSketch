@@ -1,10 +1,10 @@
 
-import javax.swing.JFrame;
+//import javax.swing.JFrame;
 
-import java.awt.Dimension;
-import java.awt.event.*;
+//import java.awt.Dimension;
+//import java.awt.event.*;
 
-import processing.awt.PSurfaceAWT.SmoothCanvas;
+//import processing.awt.PSurfaceAWT.SmoothCanvas;
 import processing.core.*;
 import processing.event.KeyEvent;
 import processing.event.MouseEvent;
@@ -29,12 +29,12 @@ public class AniSketch extends PApplet
 	public void settings()
 	{
 		println("TEST");
-		size(init_resolution[0],init_resolution[1]);
+		size(init_resolution[0],init_resolution[1],P3D);
 	}
 	
 	public void screenResized()
 	{
-		if (cur_width != width || cur_height != height) 
+		if(cur_width != width || cur_height != height) 
 		{
 			println("RESIZED");
 			cur_width = width;
@@ -50,14 +50,14 @@ public class AniSketch extends PApplet
 		// This methods ensures that resizing happens smoothly and consistently.
 		// https://forum.processing.org/two/discussion/15398/limiting-window-resize-to-a-certain-minimum
 		
-		SmoothCanvas canvas = (SmoothCanvas)getSurface().getNative();
-		JFrame       jframe = (JFrame)canvas.getFrame();
+		//SmoothCanvas canvas = (SmoothCanvas)getSurface().getNative();
+		//JFrame       jframe = (JFrame)canvas.getFrame();
 		
-		jframe.setMinimumSize(new Dimension(min_resolution[0],min_resolution[1]));
-		getSurface().setResizable(true);
+		//jframe.setMinimumSize(new Dimension(min_resolution[0],min_resolution[1]));
 		
 		cur_width = width;
 		cur_height = height;
+		surface.setResizable(true);	
 	}
 	
 	public void initialiseMainWindows()
@@ -68,12 +68,38 @@ public class AniSketch extends PApplet
 	public void setup()
 	{
 		frameRate(250);
-		initialiseAnimationController(); // Animation Controller needs to be initialised first
 		initialisePAppletFrame();
+		initialiseAnimationController(); // Animation Controller needs to be initialised first
 		initialiseMainWindows();
 		initialiseGestureHandler();
-		
 	}
+	
+	/*
+	public void drawGaussian(int w, int h)
+	{
+		for(int x=0; x<w; x++)
+		{
+			for(int y=0; y<h; y++)
+			{
+				noFill();
+				
+				//fill(Utilities.gaussian1d(x,0,300)*255);
+				if((Utilities.gaussian1d(x,0,300)) > 0.01)
+				{
+					fill(255);
+				}
+				else
+				{
+					fill(0);
+				}
+				//fill(Utilities.gaussian1d(x,0,300)*255);
+				rect(x,y,1,1);
+			}
+		}
+		fill(255,0,0);
+		rect(0,0,900,20);
+	}
+	*/
 	
 	public void initialiseAnimationController()
 	{
@@ -89,6 +115,7 @@ public class AniSketch extends PApplet
 		gesture_handler.update();
 		
 		text("Framerate " + (int)frameRate, 5, 15);
+		
 	}
 
 	public void initialiseGestureHandler()
