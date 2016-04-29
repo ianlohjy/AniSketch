@@ -41,9 +41,7 @@ public class Key {
 		this.p = p;
 		
 		deltas = new ArrayList<DeltaData>();
-		color[0] = p.random(255);
-		color[1] = p.random(255);
-		color[2] = p.random(255);
+		color = Utilities.randomColorPallete();
 		cacheCircle(24);
 	}
 	
@@ -115,7 +113,6 @@ public class Key {
 	
 	public void draw()
 	{
-		
 		p.fill(color[0],color[1],color[2],255);
 		
 		p.noStroke();

@@ -130,6 +130,14 @@ public class GestureHandler {
 	            		}	
             		}
             	}
+            	else if(p.main_windows.sheet.withinBounds((int)response.startPoint.x, (int)response.startPoint.y))
+            	{
+            		if(p.main_windows.sheet.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
+                	{
+            			Sheet sheet = p.main_windows.sheet;
+            			p.animation.addKey(candidate.centroid.x, candidate.centroid.y, (candidate.initialSize[0]+candidate.initialSize[1])/2);
+                	}
+            	}
             p.println("THIS IS A CIRCLE");
             break;
             
@@ -139,7 +147,6 @@ public class GestureHandler {
             		if(p.main_windows.stage.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
                 	{
             			Stage stage = p.main_windows.stage;
-            			Sheet sheet = p.main_windows.sheet;
             			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.animation, p);
                 	}
             	}
@@ -152,7 +159,6 @@ public class GestureHandler {
             		if(p.main_windows.stage.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
                 	{
             			Stage stage = p.main_windows.stage;
-            			Sheet sheet = p.main_windows.sheet;
             			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.animation, p);
                 	}
             	}
@@ -165,7 +171,6 @@ public class GestureHandler {
             		if(p.main_windows.stage.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
                 	{
             			Stage stage = p.main_windows.stage;
-            			Sheet sheet = p.main_windows.sheet;
             			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.animation, p);
                 	}
             	}
@@ -178,7 +183,6 @@ public class GestureHandler {
             		if(p.main_windows.stage.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
                 	{
             			Stage stage = p.main_windows.stage;
-            			Sheet sheet = p.main_windows.sheet;
             			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.animation, p);
                 	}
             	}
