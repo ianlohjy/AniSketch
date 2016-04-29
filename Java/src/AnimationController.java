@@ -99,7 +99,6 @@ public class AnimationController {
 
 	public void update()
 	{
-
 		if(playback == PLAY)
 		{
 			// Check to see if a tick has passed

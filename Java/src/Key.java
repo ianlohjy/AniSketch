@@ -32,6 +32,8 @@ public class Key {
 	// Transform Data
 	PVector transform_offset; // General purpose var for holding transform info
 
+	// SELECTION // 
+	long last_time_selected = 0;
 	
 	Key(float x, float y, float d, AniSketch p)
 	{
@@ -42,9 +44,10 @@ public class Key {
 		
 		deltas = new ArrayList<DeltaData>();
 		color = Utilities.randomColorPallete();
-		cacheCircle(24);
+		cacheCircle(30);
 	}
 	
+	// SETUP //
 	public void cacheCircle(int sides)
 	{
 		shape = new float[sides+1][2];
@@ -56,6 +59,7 @@ public class Key {
 		}
 	}
 	
+	// DEBUGGING //
 	public void printDeltaData()
 	{
 		for(DeltaData data: deltas)
@@ -64,6 +68,10 @@ public class Key {
 		}
 	}
 	
+	// DATA HANDLING //
+	
+	// Add the stored deltas from a primtive to the key, and reset the stored deltas from the primitive to 0
+	// If the primitive data does not exist, it is created first
 	public void mergeDeltasFromPrimitive(Primitive primitive)
 	{
 		DeltaData found_data = doesDeltaDataExistForPrimitive(primitive);
@@ -80,8 +88,9 @@ public class Key {
 		}
 	}
 	
+	// Removes the data object for a primitive (usually in cases where the primitive is deleted)
 	public void removeDeltaDataForPrimitive(Primitive primitive)
-	{
+	{	
 		for(DeltaData data: deltas)
 		{
 			DeltaData found_data = doesDeltaDataExistForPrimitive(primitive);
@@ -106,35 +115,61 @@ public class Key {
 		return null;
 	}
 	
+	// MAIN //
 	public void update()
 	{
-		
+		draw();
 	}
 	
+	// DRAWING // 
 	public void draw()
 	{
-		p.fill(color[0],color[1],color[2],255);
-		
 		p.noStroke();
+		p.fill(color[0],color[1],color[2],255);		
+		// Insert center vertex
 		p.beginShape(p.TRIANGLE_FAN);
-		//p.stroke(0,255);
 		p.vertex(x,y);
 		
-		p.fill(color[0],color[1],color[2],0);
-		//p.stroke(0,0);
+		//p.fill(color[0],color[1],color[2],0);
+		p.fill(color[0]+150,color[1]+150,color[2]+150);
 		for(float[] point: shape)
 		{
 			p.vertex((d/2*point[0]) + x,(d/2*point[1]) + y);
 		}
 		p.endShape();
 		
-		if(hover || selected)
+		if(hover)
 		{
 			p.noFill();
-			p.strokeWeight(2);
-			p.stroke(0);
+			p.strokeWeight(3);
+			p.stroke(230);
 			p.ellipse(x,y,d,d);
 		}
+		
+		if(selected)
+		{
+			p.noFill();
+			p.strokeWeight(3);
+			p.stroke(50);
+			p.ellipse(x,y,d,d);
+		}
+		
+		p.noStroke();
+		if(p.main_windows.sheet.active_key_selection == this)
+		{
+			p.fill(255,0,0);
+		}
+		else
+		{
+			p.fill(0,0,0);
+		}
+		
+		p.rectMode(p.CENTER);
+		p.rect(x, y, 5, 5);
+		p.rectMode(p.CORNER);
+		
+		p.text(Long.toString(last_time_selected), x, y);
+		//p.println(last_time_selected);
 	}
 	
 	public float getWeight(float x_input, float y_input)
@@ -181,23 +216,67 @@ public class Key {
 		}
 	}
 	
-	public void checkMouseEvent(MouseEvent e)
+	// SELECTION HANDLING //
+	public boolean lastSelectionTimeIsLowest(ArrayList<Key> selectable_keys)
+	{
+		// Checks if the current Key's last selected time is the lowest of all selectable keys
+		// Returns true if it is the lowest
+		p.println("HI " + selectable_keys.size());
+		for(Key other_keys: selectable_keys)
+		{
+			p.println("HI");
+			//p.println(other_keys.last_time_selected);
+			if(other_keys.last_time_selected < this.last_time_selected)
+			{
+				
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public boolean selectableKeysContainsKey(ArrayList<Key> selectable_keys, Key key)
+	{
+		return selectable_keys.contains(key);
+	}
+	
+	public int[] checkMouseEvent(MouseEvent e, Key active_key_selection, ArrayList<Key> selectable_keys, boolean allow_switching)
 	{
 		boolean within_bounds = withinBounds(e.getX(), e.getY());
+		// Mouse state communicates how the Key has processed the mouse event
+		// mouse_status[0] = if the mouse is within the bounds of the object
+		// mouse_status[1] = if the Key has become the active selection
 		
+		int[] mouse_status = {0,0}; 
+		
+	
 		if(e.getAction() == 1)// Mouse Pressed
 		{
 			if(e.getButton() == 37) // If it was a left-click
 			{
+				// If withing bounds
 				if(within_bounds)
 				{
-					selected = true;
-					p.main_windows.stage.goToActiveKey(this);
+					// If the active key is NOT selectable 
+					if(!selectableKeysContainsKey(selectable_keys, active_key_selection))
+					{
+						// If there is no active key OR the active key is out of bounds
+						if(active_key_selection == null || !active_key_selection.withinBounds(e.getX(), e.getY()))
+						{
+							if(lastSelectionTimeIsLowest(selectable_keys))
+							{
+								selected = true;
+								last_time_selected = System.currentTimeMillis();
+								mouse_status[1] = 1;
+								p.println("PRESS");
+							}
+						}
+					}
 				}
 				else
 				{
 					selected = false;
-					p.main_windows.stage.exitActiveKey();
+					mouse_status[1] = -1;
 				}
 			}
 		}
@@ -210,6 +289,42 @@ public class Key {
 		}
 		else if(e.getAction() == 3) // Mouse Clicked
 		{
+			if(e.getButton() == 37) // If it was a left-click
+			{			
+				// Clicking will cycle through selections
+				if(within_bounds)
+				{
+					if(active_key_selection == this)
+					{
+						p.println("CLICK");
+						if(selectableKeysContainsKey(selectable_keys, this) && selectable_keys.size() != 1)
+						{
+							selected = false;
+							mouse_status[1] = -1;
+						}
+						//selected = false;
+						//mouse_status[1] = 0;
+					}
+					else
+					{
+						if(lastSelectionTimeIsLowest(selectable_keys))
+						{
+							if(allow_switching)
+							{
+								for(Key other_keys: selectable_keys)
+								{
+									other_keys.selected = false;
+								}
+								
+								selected = true;
+								last_time_selected = System.currentTimeMillis();
+								mouse_status[1] = 1;
+								p.println("PRESS");
+							}
+						}
+					}
+				}
+			}
 		}
 		else if(e.getAction() == 4) // Mouse Dragged
 		{
@@ -240,18 +355,29 @@ public class Key {
 				hover = false;
 			}
 		}
+		
+		if(within_bounds)
+		{
+			mouse_status[0] = 1;
+		}
+		else
+		{
+			mouse_status[0] = -1;
+		}
+		
+		return mouse_status;
 	}
 	
 	class DeltaData
 	{
 		
 		Primitive primitive;
-		float lx, ly, t, l, b, r, rotation;
+		float x, y, t, l, b, r, rotation;
 		
 		DeltaData(Primitive primitive)
 		{
-			this.lx = 0;
-			this.ly = 0;
+			this.x = 0; // Typically, delta x and y are local to the primitive
+			this.y = 0;
 			this.l = 0;
 			this.r = 0;
 			this.t = 0;
@@ -275,8 +401,8 @@ public class Key {
 		void mergeCurrentStoredDeltas()
 		{
 			
-			this.lx += primitive.delta_local_x;
-			this.ly += primitive.delta_local_y;
+			this.x += primitive.delta_local_x;
+			this.y += primitive.delta_local_y;
 			this.l += primitive.delta_l;
 			this.r += primitive.delta_r;
 			this.t += primitive.delta_t;
@@ -296,8 +422,8 @@ public class Key {
 		{
 			PApplet.println("DELTA DATA");
 			PApplet.println("==========");	
-			PApplet.println("LOCAL X  | " + this.lx);
-			PApplet.println("LOCAL Y  | " + this.ly);
+			PApplet.println("LOCAL X  | " + this.x);
+			PApplet.println("LOCAL Y  | " + this.y);
 			PApplet.println("ROTATION | " + this.rotation);
 			PApplet.println("TOP      | " + this.t);
 			PApplet.println("BOTTOM   | " + this.b);

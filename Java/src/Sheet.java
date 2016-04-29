@@ -21,6 +21,12 @@ public class Sheet extends Element{
 	int mouse_state = UP;
 	AnimationController a;
 	
+	// SELECTION //
+	Key active_key_selection; // Currently selected key (There can only be one key selected at a time)
+	int number_keys_under_mouse = 0;
+	ArrayList<Key> possible_selections;
+	
+	
 	Sheet(int x, int y, int w, int h, AniSketch p, AnimationController a)
 	{
 		super(x,y,w,h,p);
@@ -29,7 +35,7 @@ public class Sheet extends Element{
 		//drawn_points = new ArrayList<PVector>();
 		drawing = false;
 		this.a = a;
-		
+		possible_selections = new ArrayList<Key>();
 		a.addKey(200, 200, 150);
 	}
 	
@@ -39,8 +45,13 @@ public class Sheet extends Element{
 		default_style.apply();
 		p.rect(x, y, w, h);
 		drawStrokes();
+		p.blendMode(p.MULTIPLY);
 		drawKeys();
+		p.blendMode(p.NORMAL);
 		p.noClip();
+		p.fill(0);
+		
+		p.text("Number of keys under mouse: " + possible_selections.size(), 5, this.h - 10);
 		
 		update();
 	}
@@ -79,15 +90,57 @@ public class Sheet extends Element{
 		//drawMotionLine();
 	}
 	
+	// If an object is selected, we wont select anything new UNLESS it is a click
+	// Mouse event checking needs to return a true 
+	
 	void checkMouseEvent(MouseEvent e)
 	{
-		if(withinBounds(e.getX(), e.getY()))
+		// Check event, if it is a click, we know to change selection, 
+		// 
+		boolean within_bounds = withinBounds(e.getX(), e.getY());
+		boolean allow_selection_switch = false;
+		ArrayList<Key> t_possible_selections = new ArrayList<Key>();
+		int[] mouse_status;
+		
+		boolean selection_has_switched = false;
+
+		// Check key mouse selection incrementally
+		// If there is an active key selection, DO NOT switch selection unless:
+		// 1. A mouse click event is detected
+		// 2. Or the active key selection is NOT in the selectable object list
+		// If there is no active selection:
+		// 1. The key with the oldest last selected time becomes the new selected key
+		
+		if(within_bounds)
 		{
 			for(Key key: a.keys)
-			{
-				key.checkMouseEvent(e);	
+			{	
+				mouse_status = key.checkMouseEvent(e, active_key_selection, possible_selections, !selection_has_switched);	
+				
+				if(mouse_status[0] == 1)
+				{
+					t_possible_selections.add(key);
+				}
+				
+				if(mouse_status[1] == 1)
+				{
+					if(!selection_has_switched)
+					{
+						p.println("SWITCHING ACTIVE KEY");
+						//found_selection = true;
+						active_key_selection = key;
+					}
+					selection_has_switched = true;
+				}	
+				else if(mouse_status[1] == -1 && active_key_selection == key)
+				{
+					active_key_selection = null;
+				}
 			}
-		}		
+		}
+		possible_selections = t_possible_selections;
+		p.main_windows.stage.goToActiveKey(active_key_selection);
+		
 		/*
 		if(withinBounds(e.getX(), e.getY()))
 		{

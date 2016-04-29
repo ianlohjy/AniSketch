@@ -70,11 +70,14 @@ public class Stage extends Element{
 			}
 		}
 		
-		// Reset and begin a new delta recording for all primitives
-		for(Primitive primitive: primitives)
+		if(active_key != null)
 		{
-			primitive.startDeltaRecording();
-		}		
+			// Reset and begin a new delta recording for all primitives
+			for(Primitive primitive: primitives)
+			{
+				primitive.startDeltaRecording();
+			}
+		}
 	}
 	
 	void deletePrimitive(Primitive to_delete)

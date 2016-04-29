@@ -220,8 +220,13 @@ public class Primitive
 	
 	public void startDeltaRecording()
 	{
-		p.println("DELTA STARTED");
+		if(delta_recording_start)
+		{
+			p.println("DELTA RECORDING RUNNING");
+		}
+		//p.println("DELTA STARTED");
 		// If there is an active key
+		
 		if(!delta_recording_start)
 		{
 			delta_local_x = 0;
