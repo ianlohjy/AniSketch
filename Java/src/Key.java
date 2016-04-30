@@ -166,6 +166,10 @@ public class Key {
 			found_data.setBottom(value);
 			return;
 			
+			case Primitive.PROP_ROTATION:
+			found_data.setRotation(value);
+			return;
+			
 			default:
 			return;
 		}

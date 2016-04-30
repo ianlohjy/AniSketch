@@ -30,6 +30,7 @@ public class AniSketch extends PApplet
 	{
 		println("TEST");
 		size(init_resolution[0],init_resolution[1],P3D);
+		smooth(8);
 	}
 	
 	public void screenResized()
