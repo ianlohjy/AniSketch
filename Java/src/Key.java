@@ -13,7 +13,7 @@ public class Key {
 	float[] color = new float[3];
 	
 	AniSketch p;
-	ArrayList<DeltaData> deltas;
+	ArrayList<PrimitiveData> primitive_data;
 	
 	float[][] shape;
 
@@ -42,7 +42,7 @@ public class Key {
 		this.d = d;
 		this.p = p;
 		
-		deltas = new ArrayList<DeltaData>();
+		primitive_data = new ArrayList<PrimitiveData>();
 		color = Utilities.randomColorPallete();
 		cacheCircle(30);
 	}
@@ -62,9 +62,9 @@ public class Key {
 	// DEBUGGING //
 	public void printDeltaData()
 	{
-		for(DeltaData data: deltas)
+		for(PrimitiveData data: primitive_data)
 		{
-			data.printDeltaData();
+			data.printData();
 		}
 	}
 	
@@ -72,40 +72,40 @@ public class Key {
 	
 	// Add the stored deltas from a primtive to the key, and reset the stored deltas from the primitive to 0
 	// If the primitive data does not exist, it is created first
-	public void mergeDeltasFromPrimitive(Primitive primitive)
+	public void mergeDataFromPrimitive(Primitive primitive)
 	{
-		DeltaData found_data = doesDeltaDataExistForPrimitive(primitive);
+		PrimitiveData found_data = primitiveDataExists(primitive);
 		
 		if(found_data == null)
 		{
-			DeltaData new_data = new DeltaData(primitive);
+			PrimitiveData new_data = new PrimitiveData(primitive);
 			new_data.mergeCurrentStoredDeltas();
-			deltas.add(new_data);
+			primitive_data.add(new_data);
 		}
 		else if(found_data != null)
 		{
 			found_data.mergeCurrentStoredDeltas();
 		}
 	}
-	
+		
 	// Removes the data object for a primitive (usually in cases where the primitive is deleted)
-	public void removeDeltaDataForPrimitive(Primitive primitive)
+	public void removeDataObjectForPrimitive(Primitive primitive)
 	{	
-		for(DeltaData data: deltas)
+		for(PrimitiveData data: primitive_data)
 		{
-			DeltaData found_data = doesDeltaDataExistForPrimitive(primitive);
+			PrimitiveData found_data = primitiveDataExists(primitive);
 			
 			if(found_data != null)
 			{
-				deltas.remove(deltas.indexOf(found_data));
+				primitive_data.remove(primitive_data.indexOf(found_data));
 			}
 		}
 	}
 	
 	// Checks if delta data for a primitive already exists
-	public DeltaData doesDeltaDataExistForPrimitive(Primitive primitive)
+	public PrimitiveData primitiveDataExists(Primitive primitive)
 	{
-		for(DeltaData data: deltas)
+		for(PrimitiveData data: primitive_data)
 		{
 			if(data.matchesPrimitive(primitive))
 			{
@@ -113,6 +113,62 @@ public class Key {
 			}
 		}
 		return null;
+	}
+	
+	// Set the data property for a primitive
+	public PrimitiveData getData(Primitive primitive)
+	{
+		PrimitiveData found_data = primitiveDataExists(primitive);
+		
+		if(found_data == null)
+		{
+			return null;
+		}
+		else
+		{
+			return found_data;
+		}
+	}
+	
+	// Set the data property for a primitive
+	public void setDataProperty(Primitive primitive, int property, float value)
+	{
+		PrimitiveData found_data = primitiveDataExists(primitive);
+		if(found_data == null)
+		{
+			found_data = new PrimitiveData(primitive);
+			primitive_data.add(found_data);
+		}
+		
+		switch(property) 
+		{
+			case Primitive.PROP_X:
+			found_data.setX(value);
+			return;
+			
+			case Primitive.PROP_Y:
+			found_data.setY(value);
+			return;
+			
+			case Primitive.PROP_LEFT:
+			found_data.setLeft(value);
+			return;
+			
+			case Primitive.PROP_RIGHT:
+			found_data.setRight(value);
+			return;
+			
+			case Primitive.PROP_TOP:
+			found_data.setTop(value);
+			return;
+			
+			case Primitive.PROP_BOTTOM:
+			found_data.setBottom(value);
+			return;
+			
+			default:
+			return;
+		}
 	}
 	
 	// MAIN //
@@ -368,13 +424,14 @@ public class Key {
 		return mouse_status;
 	}
 	
-	class DeltaData
+	class PrimitiveData
 	{
 		
 		Primitive primitive;
-		float x, y, t, l, b, r, rotation;
+		float x, y, t, l, b, r, rt;
+		//float x, y, t, l, b, r, rotation;
 		
-		DeltaData(Primitive primitive)
+		PrimitiveData(Primitive primitive)
 		{
 			this.x = 0; // Typically, delta x and y are local to the primitive
 			this.y = 0;
@@ -382,8 +439,43 @@ public class Key {
 			this.r = 0;
 			this.t = 0;
 			this.b = 0;
-			this.rotation = 0;
+			this.rt = 0;
 			this.primitive = primitive;
+		}
+		
+		void setX(float value)
+		{
+			this.x = value;
+		}
+		
+		void setY(float value)
+		{
+			this.y = value;
+		}
+		
+		void setLeft(float value)
+		{
+			this.l = value;
+		}
+		
+		void setRight(float value)
+		{
+			this.r = value;
+		}
+		
+		void setTop(float value)
+		{
+			this.t = value;
+		}
+		
+		void setBottom(float value)
+		{
+			this.b = value;
+		}
+		
+		void setRotation(float value)
+		{
+			this.rt = value;
 		}
 		
 		boolean matchesPrimitive(Primitive primitive)
@@ -400,14 +492,13 @@ public class Key {
 		
 		void mergeCurrentStoredDeltas()
 		{
-			
 			this.x += primitive.delta_local_x;
 			this.y += primitive.delta_local_y;
 			this.l += primitive.delta_l;
 			this.r += primitive.delta_r;
 			this.t += primitive.delta_t;
 			this.b += primitive.delta_b;
-			this.rotation += primitive.delta_rotation;
+			this.rt += primitive.delta_rotation;
 			
 			this.primitive.delta_local_x = 0;
 			this.primitive.delta_local_y = 0;
@@ -418,18 +509,17 @@ public class Key {
 			this.primitive.delta_rotation = 0;
 		}
 		
-		void printDeltaData()
+		void printData()
 		{
-			PApplet.println("DELTA DATA");
-			PApplet.println("==========");	
+			PApplet.println("PRIMITIVE DATA");
+			PApplet.println("==============");	
 			PApplet.println("LOCAL X  | " + this.x);
 			PApplet.println("LOCAL Y  | " + this.y);
-			PApplet.println("ROTATION | " + this.rotation);
+			PApplet.println("ROTATION | " + this.rt);
 			PApplet.println("TOP      | " + this.t);
 			PApplet.println("BOTTOM   | " + this.b);
 			PApplet.println("LEFT     | " + this.l);
 			PApplet.println("RIGHT    | " + this.r);
-			
 		}
 		
 	}

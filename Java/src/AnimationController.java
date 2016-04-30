@@ -26,18 +26,20 @@ public class AnimationController {
 	boolean was_playing = false;
 	float last_recording_input_x = 0;
 	float last_recording_input_y = 0;
-	ArrayList<Key> keys;
+	ArrayList<Key> delta_keys;
+	Key default_key;
 	
 	public AnimationController(AniSketch p) 
 	{
 		this.p = p;
 		strokes = new ArrayList<Stroke>();
-		keys = new ArrayList<Key>();
+		delta_keys = new ArrayList<Key>();
+		default_key = new Key(0, 0, 0, p);
 	}
 
 	public void addKey(float x, float y, float d)
 	{
-		keys.add(new Key(x, y, d, p));
+		delta_keys.add(new Key(x, y, d, p));
 	}
 	
 	public void setCursor()
@@ -158,6 +160,5 @@ public class AnimationController {
 	{
 		playback = PAUSE;
 		p.println("ANIMATION PAUSED");
-	}
-	
+	}	
 }

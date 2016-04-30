@@ -43,13 +43,27 @@ public class Stage extends Element{
 		{
 			for(Primitive primitive: primitives)
 			{
-				active_key.mergeDeltasFromPrimitive(primitive);
+				active_key.mergeDataFromPrimitive(primitive);
 				primitive.endDeltaRecording();
 				active_key.printDeltaData();
 			}	
 		}
+		
+		// For each primitive, reset its properties with the default key
+		for(Primitive primitive: primitives)
+		{
+			primitive.setPropertiesFromKey(p.animation.default_key);
+		}
+		
 		// Set active key to null
-		active_key = null;
+		active_key = null;		
+	}
+	
+	// Overrides primitive properties with the values of a key 
+	void setDeltaKeyPropertiesToPrimitive(Key default_key, Key delta_key, Primitive primitive)
+	{
+		primitive.setPropertiesFromKey(default_key);
+		primitive.addPropertiesFromKey(delta_key);
 	}
 	
 	void goToActiveKey(Key key)
@@ -57,8 +71,8 @@ public class Stage extends Element{
 		// If the key we are going to is NOT already the active key
 		if(active_key != key)
 		{
-			// If there is no active key, set the new key
-			if(active_key == null)
+			// If there is no active key, set the new key. This will only be triggered once per key switch
+			if(active_key == null) 
 			{
 				active_key = key;
 			}
@@ -67,6 +81,11 @@ public class Stage extends Element{
 			{
 				exitActiveKey();
 				active_key = key;
+			}
+			// For each primitive, override its property values to the default_key + active_key
+			for(Primitive primitive: primitives)
+			{
+				setDeltaKeyPropertiesToPrimitive(p.animation.default_key, active_key, primitive);
 			}
 		}
 		

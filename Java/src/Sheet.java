@@ -58,7 +58,7 @@ public class Sheet extends Element{
 	
 	void drawKeys()
 	{
-		for(Key key: a.keys)
+		for(Key key: a.delta_keys)
 		{
 			key.draw();
 		}
@@ -113,7 +113,7 @@ public class Sheet extends Element{
 		
 		if(within_bounds)
 		{
-			for(Key key: a.keys)
+			for(Key key: a.delta_keys)
 			{	
 				mouse_status = key.checkMouseEvent(e, active_key_selection, possible_selections, !selection_has_switched);	
 				

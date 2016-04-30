@@ -84,6 +84,19 @@ public class Primitive
 	float delta_l;
 	float delta_r;
 	
+	//===================//
+	// PROPERTY CONSTANT //
+	//===================//
+	
+	static final int PROP_ALL_EXCEPT_SPRITE = -1;
+	static final int PROP_X        			= 0;
+	static final int PROP_Y        			= 1;
+	static final int PROP_ROTATION 			= 2;
+	static final int PROP_LEFT     			= 3;
+	static final int PROP_RIGHT    			= 4;
+	static final int PROP_TOP      			= 5;
+	static final int PROP_BOTTOM   			= 6;
+	
 	//========//
 	// STYLES //
 	//========//
@@ -115,6 +128,66 @@ public class Primitive
 		setupHandles();
 		setupStyles();
 		children = new ArrayList<Primitive>();
+		
+		setPropertiesToDefaultKey();
+	}
+	
+	public void addPropertiesFromKey(Key key)
+	{
+		if(key != null)
+		{
+			p.println("ADDING PROPERTIES FROM KEY " + key + " TO PRIMITIVE " + this);
+			Key.PrimitiveData found_data = key.primitiveDataExists(this);
+	
+			if(found_data != null)
+			{
+				this.x += found_data.x;
+				this.y += found_data.y;
+				this.rotation += found_data.rt;
+				this.t += found_data.t;
+				this.b += found_data.b;
+				this.l += found_data.l;
+				this.r += found_data.r;
+			}
+		}
+	}
+	
+	public void setPropertiesFromKey(Key key)
+	{
+		Key.PrimitiveData found_data = key.primitiveDataExists(this);
+		
+		if(found_data != null)
+		{
+			this.x = found_data.x;
+			this.y = found_data.y;
+			this.rotation = found_data.rt;
+			this.t = found_data.t;
+			this.b = found_data.b;
+			this.l = found_data.l;
+			this.r = found_data.r;
+		}
+	}
+	
+	public void setPropertiesToKey(Key key)
+	{
+		key.setDataProperty(this, PROP_X, this.x);
+		key.setDataProperty(this, PROP_Y, this.y);
+		key.setDataProperty(this, PROP_ROTATION, this.rotation);
+		key.setDataProperty(this, PROP_TOP, this.t);
+		key.setDataProperty(this, PROP_LEFT, this.l);
+		key.setDataProperty(this, PROP_BOTTOM, this.b);
+		key.setDataProperty(this, PROP_RIGHT, this.r);
+	}
+	
+	public void setPropertiesToDefaultKey()
+	{
+		if(stage.active_key == null)
+		{
+			if(stage.active_key == null)
+			{
+				setPropertiesToKey(a.default_key);
+			}
+		}
 	}
 	
 	public void enableParentControl()
@@ -248,9 +321,6 @@ public class Primitive
 	public void update()
 	{
 		calculateBoundingPoints();
-		drawBoundingBox();
-		drawPivot();
-		
 		if(selected)
 		{
 			drawHandles();
@@ -260,10 +330,16 @@ public class Primitive
 			drawRotationGizmo();
 		}
 		
-		// Draw the primitive's x,y position without offsets
+		drawDefaultKeyPosition();
+		drawBoundingBox();
+		drawPivot();
 		
 		enableParentControl();
 		
+		if(stage.active_key == null)
+		{
+			setPropertiesToDefaultKey();
+		}
 		//p.println("PO: " + parent_offset + "LO:" + parent_local_offset + "X: " + x);
 		//p.ellipse(stage.camera.x+x-parent_local_offset.x+parent_offset.x+parent.x, stage.camera.y+y-parent_local_offset.y+parent_offset.y+parent.y, 25, 25);
 	}
@@ -272,12 +348,12 @@ public class Primitive
 	{
 		style_default = new Style(p);
 		style_default.noFill();
-		style_default.stroke(0,0,0,100);
+		style_default.stroke(0,0,0,255);
 		style_default.strokeWeight(1);
 		
 		style_hover = new Style(p);
 		style_hover.noFill();
-		style_hover.stroke(0,0,0,200);
+		style_hover.stroke(0,0,0,255);
 		style_hover.strokeWeight(1);
 		
 		style_selected = new Style(p);
@@ -340,13 +416,41 @@ public class Primitive
 		rt_top_right.drawHandle();
 	}
 	
+	public void drawDefaultKeyPosition()
+	{
+		Key.PrimitiveData def_data = a.default_key.getData(this);
+		
+		if(def_data == null)
+		{
+			return;
+		}
+		
+		p.pushMatrix();
+		p.translate(stage.camera.x + def_data.x, stage.camera.y + def_data.y);
+		
+		p.rotate(PApplet.radians(def_data.rt));
+		
+		p.noFill();
+		p.stroke(255,50);
+		p.strokeWeight(2);
+		//style_default.apply();
+		
+		//style_outline_selected.apply();
+		
+		drawStretchRect(pivot.x, pivot.y, def_data.t, def_data.b, def_data.l, def_data.r);
+		
+		//style_selected.apply();
+		
+		p.popMatrix();
+	}
+	
 	public void drawBoundingBox()
 	{
 		p.pushMatrix();
 		p.translate(stage.camera.x+x, stage.camera.y+y);
 		
 		p.rotate(PApplet.radians(rotation));
-		
+
 		style_default.apply();
 		
 		if(selected)
@@ -362,7 +466,6 @@ public class Primitive
 			drawStretchRect(pivot.x, pivot.y, t, b, l, r);
 			style_hover.apply();
 		}
-
 		drawStretchRect(pivot.x, pivot.y, t, b, l, r);
 		
 		p.popMatrix();
