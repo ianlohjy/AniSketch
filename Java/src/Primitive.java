@@ -193,32 +193,88 @@ public class Primitive
 		}
 	}
 	
-	void enableParentControl(Primitive parent)
+	public boolean hasChildren()
 	{
-		resetLastParentOffset(parent);
-		parent_control = true;
+		if(children.size() > 0)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	public void forceUpdateParentControlToAllChildren()
+	{
+		// Applies the parent effects to all children in the tree, in order. This includes all subchildren as well
+		
+		
+		
+		if(children.size() > 0)
+		{
+			p.println("Updating parent effects for all subchildren");
+			
+			ArrayList<Primitive> update_order = new ArrayList<Primitive>(); // Update order is important to ensure that parent controls are applied correctly
+			ArrayList<Primitive> children_in_cur_level = (ArrayList<Primitive>)children.clone();
+			
+			while(children_in_cur_level.size() != 0)
+			{
+				ArrayList<Primitive> children_in_next_level = new ArrayList<Primitive>();
+				
+				for(Primitive child: children_in_next_level)
+				{
+					update_order.add(child);
+					if(child.children.size() > 0)
+					{
+						for(Primitive subchild: child.children)
+						{
+							children_in_next_level.add(subchild);
+						}
+					}
+				}
+				children_in_cur_level = children_in_next_level;
+			}
+			
+			for(Primitive primitives_to_update: update_order)
+			{
+				primitives_to_update.parentControl();
+			}
+		}
+	}
+	
+	void enableParentControl()
+	{
+		if(parent != null)
+		{
+			resetLastParentOffset();
+			parent_control = true;
+		}
 	}
 	
 	// Sets the last parent to the current parent properties
 	// Parent controls are based on checking changes to the parent properties
 	// By setting the last checked parent properties to the current parent properties, we avoid child objects jumping around the next time the child is parented
-	void resetLastParentOffset(Primitive parent)
+	void resetLastParentOffset()
 	{
-		parent_last_x = parent.x;
-		parent_last_y = parent.y;
-		parent_last_rot = parent.rotation;
-		
-		parent_last_t = parent.t;
-		parent_last_l = parent.l;
-		parent_last_b = parent.b;
-		parent_last_r = parent.r;
-		
-		parent_last_centroid = new PVector( parent.pivot.x + ((-parent.l+parent.r)/2), parent.pivot.y + ((-parent.t+parent.b)/2) );
-		parent_last_centroid = parent_last_centroid.rotate(PApplet.radians(parent.rotation));
-		parent_last_centroid = parent_last_centroid.add(parent.x,parent.y);
-		
-		parent_last_w = parent.l + parent.r;
-		parent_last_h = parent.t + parent.b;
+		if(parent != null)
+		{
+			parent_last_x = parent.x;
+			parent_last_y = parent.y;
+			parent_last_rot = parent.rotation;
+			
+			parent_last_t = parent.t;
+			parent_last_l = parent.l;
+			parent_last_b = parent.b;
+			parent_last_r = parent.r;
+			
+			parent_last_centroid = new PVector( parent.pivot.x + ((-parent.l+parent.r)/2), parent.pivot.y + ((-parent.t+parent.b)/2) );
+			parent_last_centroid = parent_last_centroid.rotate(PApplet.radians(parent.rotation));
+			parent_last_centroid = parent_last_centroid.add(parent.x,parent.y);
+			
+			parent_last_w = parent.l + parent.r;
+			parent_last_h = parent.t + parent.b;
+		}
 	}
 	
 	void disableParentControl()
@@ -268,29 +324,6 @@ public class Primitive
 				float l_diff = parent.l - parent_last_l;
 				float r_diff = parent.r - parent_last_r;
 	
-				// TRANSLATION CONTROL
-				// If a change in parent position was detected
-				if(x_diff !=0 || y_diff !=0)
-				{
-					// Add the position difference to the child
-					this.x = this.x + x_diff; 
-					this.y = this.y + y_diff;
-				}
-				
-				// ROTATION CONTROL
-				// If the rotation has been changed
-				if(rot_diff != 0)
-				{
-					PVector child_to_parent = new PVector(this.x - parent.x, this.y - parent.y); // Get the vector betwen pivot points
-					PVector rot_vector = child_to_parent.copy();
-					rot_vector = rot_vector.rotate(PApplet.radians(rot_diff)); // Rotate the vector by the change in rotation
-					rot_vector = rot_vector.sub(child_to_parent); // Find the change in position needed
-					// Apply the position change, add rotation difference to the current rotation
-					this.x = this.x + rot_vector.x; 
-					this.y = this.y + rot_vector.y;
-					this.rotation = this.rotation + rot_diff;
-				}
-				
 				// CENTROID & SHAPE CONTROL
 				// If there has a been a change in the shape of the parent
 				if(l_diff != 0 || r_diff != 0 || t_diff != 0 || b_diff != 0)
@@ -312,6 +345,29 @@ public class Primitive
 					// Apply the difference to child's position
 					this.x = this.x + centroid_diff.x;
 					this.y = this.y + centroid_diff.y;
+				}
+				
+				// TRANSLATION CONTROL
+				// If a change in parent position was detected
+				if(x_diff !=0 || y_diff !=0)
+				{
+					// Add the position difference to the child
+					this.x = this.x + x_diff; 
+					this.y = this.y + y_diff;
+				}
+				
+				// ROTATION CONTROL
+				// If the rotation has been changed
+				if(rot_diff != 0)
+				{
+					PVector child_to_parent = new PVector(this.x - parent.x, this.y - parent.y); // Get the vector betwen pivot points
+					PVector rot_vector = child_to_parent.copy();
+					rot_vector = rot_vector.rotate(PApplet.radians(rot_diff)); // Rotate the vector by the change in rotation
+					rot_vector = rot_vector.sub(child_to_parent); // Find the change in position needed
+					// Apply the position change, add rotation difference to the current rotation
+					this.x = this.x + rot_vector.x; 
+					this.y = this.y + rot_vector.y;
+					this.rotation = this.rotation + rot_diff;
 				}
 				
 				// UPDATE LAST KNOWN PARENT PROPERTIES
@@ -1125,7 +1181,7 @@ public class Primitive
 	public void setParent(Primitive parent)
 	{
 		this.parent = parent;
-		enableParentControl(parent);
+		enableParentControl();
 		
 		parent.children.add(this);
 	}

@@ -67,22 +67,78 @@ public class Stage extends Element{
 		// Then, if the primitives have a parent, re-enable parent control
 		for(Primitive primitive: primitives)
 		{
-			if(primitive.parent != null)
-			{
-				primitive.enableParentControl(primitive.parent);
-			}
+			primitive.enableParentControl();
+
 		}
 		
 		// Set active key to null
 		active_key = null;		
 	}
 	
-	// Overrides primitive properties with the values of a key 
-	void setDeltaKeyPropertiesToPrimitive(Key default_key, Key delta_key, Primitive primitive)
+	// Overrides primitive properties with the values of a key
+	void applyDeltaKeyToAllPrimitivesInOrder(Key default_key, Key delta_key)
 	{
-		primitive.setPropertiesFromKey(default_key);
-		primitive.addPropertiesFromKey(delta_key);
+		// For all primitives, apply the default key to start off with
+		// Find a list of primitives that DO NOT have parents. These top-level primitives are the objects that we will apply the key first
+		// Step through the top-level primitives, applying deltas to the children. At each stage of the delta application, recusively apply parentControl() to update the children positions
+		// It is useful to think about the primitive parent-child organisation as a tree - starting from the "roots" we iterate through the branches until we do not have anything left to iterate
+		//resetLastParentOffset
+		
+		p.println("Applying default key to all primitives");
+		for(Primitive all_primitives: primitives)
+		{
+			all_primitives.setPropertiesFromKey(default_key);
+		}
+		
+		for(Primitive all_primitives: primitives)
+		{
+			all_primitives.resetLastParentOffset();
+		}
+		
+		ArrayList<Primitive> delta_update_order = new ArrayList<Primitive>();
+		ArrayList<Primitive> current_primitive_branch = new ArrayList<Primitive>();
+		
+		for(Primitive those_primitives: primitives)
+		{
+			if(those_primitives.parent == null)
+			{
+				current_primitive_branch.add(those_primitives);
+			}
+		}
+		
+		p.println("Creating ordered delta update list");
+		while(current_primitive_branch.size() > 0)
+		{
+			ArrayList<Primitive> next_primitive_branch = new ArrayList<Primitive>();
+			
+			for(Primitive current_primitive: current_primitive_branch)
+			{
+				delta_update_order.add(current_primitive);
+				
+				if(current_primitive.hasChildren())
+				{
+					for(Primitive subchildren: current_primitive.children)
+					{
+						next_primitive_branch.add(subchildren);
+					}
+				}
+			}
+			current_primitive_branch = next_primitive_branch;
+		}
+		
+		p.println("Applying deltas in order");
+		for(Primitive primitive_to_update: delta_update_order)
+		{
+			primitive_to_update.addPropertiesFromKey(delta_key);
+			if(primitive_to_update.hasChildren())
+			{
+				primitive_to_update.forceUpdateParentControlToAllChildren();
+			}
+		}
+		
 	}
+	
+	
 	
 	void goToActiveKey(Key key)
 	{
@@ -103,7 +159,7 @@ public class Stage extends Element{
 			// For each primitive, override its property values to the default_key + active_key
 			for(Primitive primitive: primitives)
 			{
-				setDeltaKeyPropertiesToPrimitive(p.animation.default_key, active_key, primitive);
+				applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, active_key);
 			}
 		}
 		
