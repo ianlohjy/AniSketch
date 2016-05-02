@@ -2,7 +2,7 @@ TODO:
 Keys need to be cleaned whenever a primitive is deleted
 
 ISSUES:
-Active Key view somehow interprets, scaling, parenting, rotation, and pivot changes wrong. 
+Active Key view somehow interprets, scaling(X), parenting, rotation(X), and pivot changes wrong(X). 
 Probably a combination of:
 - Incorrect active key logging
 - Incorrect active key data application (For scaling)

@@ -62,6 +62,7 @@ public class Primitive
 	//================//
 	// PARENT CONTROL //
 	//================//
+	boolean parent_control = false;
 	Primitive parent;
 	ArrayList<Primitive> children;
 	// Parent transforms that are kept track of for parent control
@@ -76,6 +77,8 @@ public class Primitive
 	// KEY DELTA RECORDING //
 	//=====================//
 	boolean delta_recording_start = false;
+	float delta_x; // UNUSED
+	float delta_y; // UNUSED
 	float delta_local_x;
 	float delta_local_y;
 	float delta_rotation;
@@ -190,104 +193,139 @@ public class Primitive
 		}
 	}
 	
-	public void enableParentControl()
+	void enableParentControl(Primitive parent)
+	{
+		resetLastParentOffset(parent);
+		parent_control = true;
+	}
+	
+	// Sets the last parent to the current parent properties
+	// Parent controls are based on checking changes to the parent properties
+	// By setting the last checked parent properties to the current parent properties, we avoid child objects jumping around the next time the child is parented
+	void resetLastParentOffset(Primitive parent)
+	{
+		parent_last_x = parent.x;
+		parent_last_y = parent.y;
+		parent_last_rot = parent.rotation;
+		
+		parent_last_t = parent.t;
+		parent_last_l = parent.l;
+		parent_last_b = parent.b;
+		parent_last_r = parent.r;
+		
+		parent_last_centroid = new PVector( parent.pivot.x + ((-parent.l+parent.r)/2), parent.pivot.y + ((-parent.t+parent.b)/2) );
+		parent_last_centroid = parent_last_centroid.rotate(PApplet.radians(parent.rotation));
+		parent_last_centroid = parent_last_centroid.add(parent.x,parent.y);
+		
+		parent_last_w = parent.l + parent.r;
+		parent_last_h = parent.t + parent.b;
+	}
+	
+	void disableParentControl()
+	{
+		parent_control = false;
+	}
+	
+	public void parentControl()
 	{
 		// Parent controls allow the parent to acts a controller for the primitive
 		// This essentially constrains the primitive to the parent's properties
 		// Parent values that affect the child are x,y,rotation,shape changes
-		
-		if(parent != null)
+		if(parent_control)
 		{
-			// DRAW A DOTTED LINE FROM THE CHILD TO THE PARENT
-			style_default.apply();
-			Utilities.dottedLine(x+stage.camera.x, y+stage.camera.y, parent.x+stage.camera.x, parent.y+stage.camera.y, 5, 10, p);
-			
-			// CENTROID & SHAPE PRECALCULATION
-			// Find the centroid of the bounding box
-			//              _____
-			//             |     |
-			//          |- |  o  | <-- centroid
-			//  pivot __|  |_____|  
-			//          |           
-			//          |-    x <-- pivot/x/y
-			//
-			PVector parent_cur_centroid = new PVector( parent.pivot.x + ((-parent.l+parent.r)/2), parent.pivot.y + ((-parent.t+parent.b)/2) );
-			parent_cur_centroid = parent_cur_centroid.rotate(PApplet.radians(parent.rotation));
-			parent_cur_centroid = parent_cur_centroid.add(parent.x,parent.y);
-			// Find width and shape height		
-			float parent_cur_w = parent.l + parent.r;
-			float parent_cur_h = parent.t + parent.b;
-			// Draw centroid
-			// p.ellipse(parent_cur_centroid.x+stage.camera.x, parent_cur_centroid.y+stage.camera.y, 15, 15);
-			
-			// TRANSLATION CHANGE
-			float x_diff = parent.x - parent_last_x;
-			float y_diff = parent.y - parent_last_y;
-			// ROTATION CHANGE
-			float rot_diff = parent.rotation - parent_last_rot;
-			// CENTROID & SHAPE CHANGE
-			float t_diff = parent.t - parent_last_t;
-			float b_diff = parent.b - parent_last_b;
-			float l_diff = parent.l - parent_last_l;
-			float r_diff = parent.r - parent_last_r;
-
-			// TRANSLATION CONTROL
-			// If a change in parent position was detected
-			if(x_diff !=0 || y_diff !=0)
+			if(parent != null)
 			{
-				// Add the position difference to the child
-				this.x = this.x + x_diff; 
-				this.y = this.y + y_diff;
+				// DRAW A DOTTED LINE FROM THE CHILD TO THE PARENT
+				style_default.apply();
+				Utilities.dottedLine(x+stage.camera.x, y+stage.camera.y, parent.x+stage.camera.x, parent.y+stage.camera.y, 5, 10, p);
+				
+				// CENTROID & SHAPE PRECALCULATION
+				// Find the centroid of the bounding box
+				//              _____
+				//             |     |
+				//          |- |  o  | <-- centroid
+				//  pivot __|  |_____|  
+				//          |           
+				//          |-    x <-- pivot/x/y
+				//
+				PVector parent_cur_centroid = new PVector( parent.pivot.x + ((-parent.l+parent.r)/2), parent.pivot.y + ((-parent.t+parent.b)/2) );
+				parent_cur_centroid = parent_cur_centroid.rotate(PApplet.radians(parent.rotation));
+				parent_cur_centroid = parent_cur_centroid.add(parent.x,parent.y);
+				// Find width and shape height		
+				float parent_cur_w = parent.l + parent.r;
+				float parent_cur_h = parent.t + parent.b;
+				// Draw centroid
+				// p.ellipse(parent_cur_centroid.x+stage.camera.x, parent_cur_centroid.y+stage.camera.y, 15, 15);
+				
+				// TRANSLATION CHANGE
+				float x_diff = parent.x - parent_last_x;
+				float y_diff = parent.y - parent_last_y;
+				// ROTATION CHANGE
+				float rot_diff = parent.rotation - parent_last_rot;
+				// CENTROID & SHAPE CHANGE
+				float t_diff = parent.t - parent_last_t;
+				float b_diff = parent.b - parent_last_b;
+				float l_diff = parent.l - parent_last_l;
+				float r_diff = parent.r - parent_last_r;
+	
+				// TRANSLATION CONTROL
+				// If a change in parent position was detected
+				if(x_diff !=0 || y_diff !=0)
+				{
+					// Add the position difference to the child
+					this.x = this.x + x_diff; 
+					this.y = this.y + y_diff;
+				}
+				
+				// ROTATION CONTROL
+				// If the rotation has been changed
+				if(rot_diff != 0)
+				{
+					PVector child_to_parent = new PVector(this.x - parent.x, this.y - parent.y); // Get the vector betwen pivot points
+					PVector rot_vector = child_to_parent.copy();
+					rot_vector = rot_vector.rotate(PApplet.radians(rot_diff)); // Rotate the vector by the change in rotation
+					rot_vector = rot_vector.sub(child_to_parent); // Find the change in position needed
+					// Apply the position change, add rotation difference to the current rotation
+					this.x = this.x + rot_vector.x; 
+					this.y = this.y + rot_vector.y;
+					this.rotation = this.rotation + rot_diff;
+				}
+				
+				// CENTROID & SHAPE CONTROL
+				// If there has a been a change in the shape of the parent
+				if(l_diff != 0 || r_diff != 0 || t_diff != 0 || b_diff != 0)
+				{
+					float scale_factor_w = parent_cur_w/parent_last_w; // Find the ratio of change for the shape
+					float scale_factor_h = parent_cur_h/parent_last_h;
+					
+					PVector centroid_diff = parent_cur_centroid.copy().sub(parent_last_centroid); // Get the vector difference of the centroid's change.
+					centroid_diff = centroid_diff.rotate(PApplet.radians(-parent.rotation)); // Reset rotation from the vector
+					
+					PVector child_to_centroid = new PVector(parent_last_centroid.x - this.x, parent_last_centroid.y - this.y); // Find the vector between the child and centroid
+					child_to_centroid = child_to_centroid.rotate(PApplet.radians(-parent.rotation)); // Reset the rotation
+					
+					PVector child_to_centroid_scaled = new PVector(child_to_centroid.x*scale_factor_w, child_to_centroid.y*scale_factor_h); // Scale distance to centroid with the shape change ratio
+					PVector extra_distance = new PVector(child_to_centroid.x - child_to_centroid_scaled.x, child_to_centroid.y - child_to_centroid_scaled.y); // Get the difference between the original distance and the scaled to find the amount to add
+					centroid_diff = centroid_diff.add(extra_distance); // Add extra distance to centroid difference
+					centroid_diff = centroid_diff.rotate(PApplet.radians(parent.rotation)); // Rotate centroid difference vector to its original angle
+					
+					// Apply the difference to child's position
+					this.x = this.x + centroid_diff.x;
+					this.y = this.y + centroid_diff.y;
+				}
+				
+				// UPDATE LAST KNOWN PARENT PROPERTIES
+				parent_last_x = parent.x;
+				parent_last_y = parent.y;
+				parent_last_t = parent.t;
+				parent_last_b = parent.b;
+				parent_last_l = parent.l;
+				parent_last_r = parent.r;
+				parent_last_w = parent_cur_w;
+				parent_last_h = parent_cur_h;
+				parent_last_rot = parent.rotation;
+				parent_last_centroid = parent_cur_centroid; 
 			}
-			
-			// ROTATION CONTROL
-			// If the rotation has been changed
-			if(rot_diff != 0)
-			{
-				PVector child_to_parent = new PVector(this.x - parent.x, this.y - parent.y); // Get the vector betwen pivot points
-				PVector rot_vector = child_to_parent.copy();
-				rot_vector = rot_vector.rotate(PApplet.radians(rot_diff)); // Rotate the vector by the change in rotation
-				rot_vector = rot_vector.sub(child_to_parent); // Find the change in position needed
-				// Apply the position change, add rotation difference to the current rotation
-				this.x = this.x + rot_vector.x; 
-				this.y = this.y + rot_vector.y;
-				this.rotation = this.rotation + rot_diff;
-			}
-			
-			// CENTROID & SHAPE CONTROL
-			// If there has a been a change in the shape of the parent
-			if(l_diff != 0 || r_diff != 0 || t_diff != 0 || b_diff != 0)
-			{
-				float scale_factor_w = parent_cur_w/parent_last_w; // Find the ratio of change for the shape
-				float scale_factor_h = parent_cur_h/parent_last_h;
-				
-				PVector centroid_diff = parent_cur_centroid.copy().sub(parent_last_centroid); // Get the vector difference of the centroid's change.
-				centroid_diff = centroid_diff.rotate(PApplet.radians(-parent.rotation)); // Reset rotation from the vector
-				
-				PVector child_to_centroid = new PVector(parent_last_centroid.x - this.x, parent_last_centroid.y - this.y); // Find the vector between the child and centroid
-				child_to_centroid = child_to_centroid.rotate(PApplet.radians(-parent.rotation)); // Reset the rotation
-				
-				PVector child_to_centroid_scaled = new PVector(child_to_centroid.x*scale_factor_w, child_to_centroid.y*scale_factor_h); // Scale distance to centroid with the shape change ratio
-				PVector extra_distance = new PVector(child_to_centroid.x - child_to_centroid_scaled.x, child_to_centroid.y - child_to_centroid_scaled.y); // Get the difference between the original distance and the scaled to find the amount to add
-				centroid_diff = centroid_diff.add(extra_distance); // Add extra distance to centroid difference
-				centroid_diff = centroid_diff.rotate(PApplet.radians(parent.rotation)); // Rotate centroid difference vector to its original angle
-				
-				// Apply the difference to child's position
-				this.x = this.x + centroid_diff.x;
-				this.y = this.y + centroid_diff.y;
-			}
-			
-			// UPDATE LAST KNOWN PARENT PROPERTIES
-			parent_last_x = parent.x;
-			parent_last_y = parent.y;
-			parent_last_t = parent.t;
-			parent_last_b = parent.b;
-			parent_last_l = parent.l;
-			parent_last_r = parent.r;
-			parent_last_w = parent_cur_w;
-			parent_last_h = parent_cur_h;
-			parent_last_rot = parent.rotation;
-			parent_last_centroid = parent_cur_centroid; 
 		}
 	}
 	
@@ -334,7 +372,7 @@ public class Primitive
 		drawBoundingBox();
 		drawPivot();
 		
-		enableParentControl();
+		parentControl();
 		
 		if(stage.active_key == null)
 		{
@@ -743,11 +781,20 @@ public class Primitive
 			
 			if(delta_recording_start) // DELTA RECORDING FOR KEYS
 			{
-				PVector global_to_local = new PVector(-amount_x, -amount_y);
-				global_to_local = global_to_local.rotate(PApplet.radians(-rotation));
-				
-				delta_local_x += global_to_local.x;
-				delta_local_y += global_to_local.y;
+				if(false)
+				{
+					// Local position should be calculated IF a parent exists.
+					PVector global_to_local = new PVector(-amount_x, -amount_y);
+					global_to_local = global_to_local.rotate(PApplet.radians(-rotation));
+					
+					delta_local_x += global_to_local.x;
+					delta_local_y += global_to_local.y;
+				}
+				else
+				{
+					delta_local_x -= amount_x;
+					delta_local_y -= amount_y;
+				}
 			}
 		}
 	}
@@ -860,43 +907,47 @@ public class Primitive
 			
 			if(handle.handle_position == Handle.TOP_LEFT)
 			{
-				if(delta_recording_start)
-				{
-					delta_l -= transform_amount.x; // DELTA RECORDING
-					delta_t -= transform_amount.y; // DELTA RECORDING
-				}
 				setLeft(transform_init_l - transform_amount.x);
 				setTop(transform_init_t - transform_amount.y);
+				
+				if(delta_recording_start)
+				{
+					delta_l = this.l - transform_init_l; // DELTA RECORDING
+					delta_t = this.t - transform_init_t; // DELTA RECORDING
+				}
 			}
 			if(handle.handle_position == Handle.TOP_RIGHT)
 			{
-				if(delta_recording_start)
-				{
-					delta_r += transform_amount.x; // DELTA RECORDING
-					delta_t -= transform_amount.y; // DELTA RECORDING
-				}
 				setRight(transform_init_r + transform_amount.x);
 				setTop(transform_init_t - transform_amount.y);
+				
+				if(delta_recording_start)
+				{
+					delta_r = this.r - transform_init_r; // DELTA RECORDING
+					delta_t = this.t - transform_init_t; // DELTA RECORDING
+				}
 			}
 			if(handle.handle_position == Handle.BOTTOM_RIGHT)
 			{
-				if(delta_recording_start)
-				{
-					delta_r += transform_amount.x; // DELTA RECORDING
-					delta_b += transform_amount.y; // DELTA RECORDING
-				}
 				setRight(transform_init_r + transform_amount.x);
 				setBottom(transform_init_b + transform_amount.y);
+				
+				if(delta_recording_start)
+				{
+					delta_r = this.r - transform_init_r; // DELTA RECORDING
+					delta_b = this.b - transform_init_b; // DELTA RECORDING
+				}
 			}
 			if(handle.handle_position == Handle.BOTTOM_LEFT)
 			{
-				if(delta_recording_start)
-				{
-					delta_l -= transform_amount.x; // DELTA RECORDING
-					delta_b += transform_amount.y; // DELTA RECORDING
-				}
 				setLeft(transform_init_l - transform_amount.x);
 				setBottom(transform_init_b + transform_amount.y);
+				
+				if(delta_recording_start)
+				{
+					delta_l = this.l - transform_init_l; // DELTA RECORDING
+					delta_b = this.b - transform_init_b; // DELTA RECORDING
+				}
 			}
 			
 			handle.updateHandlePosition();
@@ -1069,28 +1120,14 @@ public class Primitive
 	
 	public void setParent(Primitive parent)
 	{
-		parent_last_x = parent.x;
-		parent_last_y = parent.y;
-		parent_last_rot = parent.rotation;
-		
-		parent_last_t = parent.t;
-		parent_last_l = parent.l;
-		parent_last_b = parent.b;
-		parent_last_r = parent.r;
-		
-		parent_last_centroid = new PVector( parent.pivot.x + ((-parent.l+parent.r)/2), parent.pivot.y + ((-parent.t+parent.b)/2) );
-		parent_last_centroid = parent_last_centroid.rotate(PApplet.radians(parent.rotation));
-		parent_last_centroid = parent_last_centroid.add(parent.x,parent.y);
-		
-		parent_last_w = parent.l + parent.r;
-		parent_last_h = parent.t + parent.b;
-		
 		this.parent = parent;
-		parent.children.add(this);
+		enableParentControl(parent);
+		//parent.children.add(this);
 	}
 	
 	public void unparent()
 	{
+		disableParentControl();
 		parent = null;
 	}
 	

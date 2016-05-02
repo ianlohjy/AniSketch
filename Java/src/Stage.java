@@ -50,9 +50,27 @@ public class Stage extends Element{
 		}
 		
 		// For each primitive, reset its properties with the default key
+		// The default key stores ABSOLUTE properties of the primitives
+		// so we need to disble parent controls so that any primitives with children
+		// do not accidentally affect their position when reset
+		for(Primitive primitive: primitives)
+		{
+			primitive.disableParentControl();
+		}
+		
+		// Next we apply properties from the default key
 		for(Primitive primitive: primitives)
 		{
 			primitive.setPropertiesFromKey(p.animation.default_key);
+		}
+		
+		// Then, if the primitives have a parent, re-enable parent control
+		for(Primitive primitive: primitives)
+		{
+			if(primitive.parent != null)
+			{
+				primitive.enableParentControl(primitive.parent);
+			}
 		}
 		
 		// Set active key to null
