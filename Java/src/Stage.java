@@ -45,8 +45,8 @@ public class Stage extends Element{
 			{
 				active_key.mergeDataFromPrimitive(primitive);
 				primitive.endDeltaRecording();
-				active_key.printDeltaData();
 			}	
+			active_key.printDeltaData();
 		}
 		
 		// For each primitive, reset its properties with the default key

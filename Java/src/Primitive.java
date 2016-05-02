@@ -506,6 +506,10 @@ public class Primitive
 		}
 		drawStretchRect(pivot.x, pivot.y, t, b, l, r);
 		
+		p.stroke(0);
+		p.fill(0);
+		p.text(this.toString(), 0, 0);
+		
 		p.popMatrix();
 	}
 	
@@ -1122,13 +1126,25 @@ public class Primitive
 	{
 		this.parent = parent;
 		enableParentControl(parent);
-		//parent.children.add(this);
+		
+		parent.children.add(this);
 	}
 	
 	public void unparent()
 	{
 		disableParentControl();
+		parent.removeChildFromChildren(this);
 		parent = null;
+	}
+	
+	public void removeChildFromChildren(Primitive child)
+	{
+		int child_index = children.indexOf(child);
+
+		if(child_index != -1)
+		{
+			children.remove(child_index);		
+		}
 	}
 	
 	public void delete()

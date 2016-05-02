@@ -62,6 +62,7 @@ public class Key {
 	// DEBUGGING //
 	public void printDeltaData()
 	{
+		p.println("NUMBER OF PRIMITIVE DATA OBJECTS: " + primitive_data.size());
 		for(PrimitiveData data: primitive_data)
 		{
 			data.printData();
@@ -515,15 +516,10 @@ public class Key {
 		
 		void printData()
 		{
-			PApplet.println("PRIMITIVE DATA");
-			PApplet.println("==============");	
-			PApplet.println("LOCAL X  | " + this.x);
-			PApplet.println("LOCAL Y  | " + this.y);
-			PApplet.println("ROTATION | " + this.rt);
-			PApplet.println("TOP      | " + this.t);
-			PApplet.println("BOTTOM   | " + this.b);
-			PApplet.println("LEFT     | " + this.l);
-			PApplet.println("RIGHT    | " + this.r);
+			PApplet.println("\nDATA FOR " + this.primitive);
+			PApplet.println("X/Y/ROT | " + this.x + ", " + this.y + ", " + this.rt);
+			PApplet.println("T/B/L/R | " + this.t + ", " + this.b + ", " + this.l + ", " + this.r);
+			
 		}
 		
 	}
