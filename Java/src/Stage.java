@@ -35,6 +35,12 @@ public class Stage extends Element{
 		
 		primitives = new ArrayList<Primitive>();
 		
+		addPrimitive(100, 500, 100, 100, this, p.animation, p);
+		addPrimitive(100, 400, 100, 100, this, p.animation, p);
+		//addPrimitive(100, 300, 100, 100, this, p.animation, p);
+		primitives.get(1).setParent(primitives.get(0));
+		//primitives.get(2).setParent(primitives.get(1));
+		
 	}
 	
 	void exitActiveKey()
@@ -84,15 +90,21 @@ public class Stage extends Element{
 		// It is useful to think about the primitive parent-child organisation as a tree - starting from the "roots" we iterate through the branches until we do not have anything left to iterate
 		//resetLastParentOffset
 		
+		for(Primitive all_primitives: primitives)
+		{
+			all_primitives.disableParentControl();
+		}
+		
 		p.println("Applying default key to all primitives");
 		for(Primitive all_primitives: primitives)
 		{
 			all_primitives.setPropertiesFromKey(default_key);
 		}
-		
+	
 		for(Primitive all_primitives: primitives)
 		{
 			all_primitives.resetLastParentOffset();
+			all_primitives.enableParentControl();
 		}
 		
 		ArrayList<Primitive> delta_update_order = new ArrayList<Primitive>();
@@ -126,14 +138,52 @@ public class Stage extends Element{
 			current_primitive_branch = next_primitive_branch;
 		}
 		
+		
 		p.println("Applying deltas in order");
 		for(Primitive primitive_to_update: delta_update_order)
-		{
-			primitive_to_update.addPropertiesFromKey(delta_key);
+		{	
+			//primitive_to_update.addAllPropertiesFromKey(delta_key);
+						
+			primitive_to_update.addPropertyFromKey(delta_key, Primitive.PROP_TOP);
+			primitive_to_update.addPropertyFromKey(delta_key, Primitive.PROP_BOTTOM);
+			primitive_to_update.addPropertyFromKey(delta_key, Primitive.PROP_LEFT);
+			primitive_to_update.addPropertyFromKey(delta_key, Primitive.PROP_RIGHT);
+			
 			if(primitive_to_update.hasChildren())
 			{
-				primitive_to_update.forceUpdateParentControlToAllChildren();
+				for(Primitive child: primitive_to_update.children)
+				{
+					child.parentControl();
+				}
+				//primitive_to_update.forceUpdateParentControlToAllChildren();
 			}
+			
+			primitive_to_update.addPropertyFromKey(delta_key, Primitive.PROP_X);
+			primitive_to_update.addPropertyFromKey(delta_key, Primitive.PROP_Y);
+			
+			if(primitive_to_update.hasChildren())
+			{
+				for(Primitive child: primitive_to_update.children)
+				{
+					child.parentControl();
+				}
+				//primitive_to_update.forceUpdateParentControlToAllChildren();
+			}
+			
+			primitive_to_update.addPropertyFromKey(delta_key, Primitive.PROP_ROTATION);
+			
+			if(primitive_to_update.hasChildren())
+			{
+				for(Primitive child: primitive_to_update.children)
+				{
+					child.parentControl();
+				}
+				
+				//primitive_to_update.forceUpdateParentControlToAllChildren();
+			}
+			
+			primitive_to_update.resetLastParentOffset();
+			
 		}
 		
 	}

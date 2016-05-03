@@ -109,6 +109,8 @@ public class Primitive
 	Style style_outline;
 	Style style_outline_selected;
 	
+	PVector total_translation = new PVector(0,0);
+	
 	Primitive(float x, float y, float w, float h, Stage stage, AnimationController a, AniSketch p)
 	{
 		this.p = p;
@@ -135,7 +137,59 @@ public class Primitive
 		setPropertiesToDefaultKey();
 	}
 	
-	public void addPropertiesFromKey(Key key)
+	public void addPropertyFromKey(Key key, int property)
+	{
+		if(key != null)
+		{
+			Key.PrimitiveData found_data = key.primitiveDataExists(this);
+	
+			if(found_data != null)
+			{
+				switch(property) 
+				{
+					case Primitive.PROP_X:
+					p.println("ADDING PROPERTY X FROM KEY " + key + " TO PRIMITIVE " + this);
+					this.x += found_data.x;
+					return;
+					
+					case Primitive.PROP_Y:
+					p.println("ADDING PROPERTY Y FROM KEY " + key + " TO PRIMITIVE " + this);
+					this.y += found_data.y;
+					return;
+					
+					case Primitive.PROP_LEFT:
+					p.println("ADDING PROPERTY L FROM KEY " + key + " TO PRIMITIVE " + this);	
+					this.l += found_data.l;
+					return;
+					
+					case Primitive.PROP_RIGHT:
+					p.println("ADDING PROPERTY R FROM KEY " + key + " TO PRIMITIVE " + this);
+					this.r += found_data.r;
+					return;
+					
+					case Primitive.PROP_TOP:
+					p.println("ADDING PROPERTY T FROM KEY " + key + " TO PRIMITIVE " + this);
+					this.t += found_data.t;
+					return;
+					
+					case Primitive.PROP_BOTTOM:
+					p.println("ADDING PROPERTY B FROM KEY " + key + " TO PRIMITIVE " + this);
+					this.b += found_data.b;
+					return;
+					
+					case Primitive.PROP_ROTATION:
+					p.println("ADDING PROPERTY RT FROM KEY " + key + " TO PRIMITIVE " + this);
+					this.rotation += found_data.rt;
+					return;
+					
+					default:
+					return;
+				}			
+			}
+		}
+	}
+	
+	public void addAllPropertiesFromKey(Key key)
 	{
 		if(key != null)
 		{
@@ -209,9 +263,9 @@ public class Primitive
 	{
 		// Applies the parent effects to all children in the tree, in order. This includes all subchildren as well
 		
+		int num_children = 0;
 		
-		
-		if(children.size() > 0)
+		if(hasChildren())
 		{
 			p.println("Updating parent effects for all subchildren");
 			
@@ -241,6 +295,8 @@ public class Primitive
 				primitives_to_update.parentControl();
 			}
 		}
+		
+		p.println("NUM OF DETECTED CHILDREN " + num_children);
 	}
 	
 	void enableParentControl()
@@ -295,24 +351,6 @@ public class Primitive
 				style_default.apply();
 				Utilities.dottedLine(x+stage.camera.x, y+stage.camera.y, parent.x+stage.camera.x, parent.y+stage.camera.y, 5, 10, p);
 				
-				// CENTROID & SHAPE PRECALCULATION
-				// Find the centroid of the bounding box
-				//              _____
-				//             |     |
-				//          |- |  o  | <-- centroid
-				//  pivot __|  |_____|  
-				//          |           
-				//          |-    x <-- pivot/x/y
-				//
-				PVector parent_cur_centroid = new PVector( parent.pivot.x + ((-parent.l+parent.r)/2), parent.pivot.y + ((-parent.t+parent.b)/2) );
-				parent_cur_centroid = parent_cur_centroid.rotate(PApplet.radians(parent.rotation));
-				parent_cur_centroid = parent_cur_centroid.add(parent.x,parent.y);
-				// Find width and shape height		
-				float parent_cur_w = parent.l + parent.r;
-				float parent_cur_h = parent.t + parent.b;
-				// Draw centroid
-				// p.ellipse(parent_cur_centroid.x+stage.camera.x, parent_cur_centroid.y+stage.camera.y, 15, 15);
-				
 				// TRANSLATION CHANGE
 				float x_diff = parent.x - parent_last_x;
 				float y_diff = parent.y - parent_last_y;
@@ -323,16 +361,51 @@ public class Primitive
 				float b_diff = parent.b - parent_last_b;
 				float l_diff = parent.l - parent_last_l;
 				float r_diff = parent.r - parent_last_r;
-	
+				// Find width and shape height	
+				float parent_cur_w = parent.l + parent.r;
+				float parent_cur_h = parent.t + parent.b;
+				
 				// CENTROID & SHAPE CONTROL
 				// If there has a been a change in the shape of the parent
+				
+				// CENTROID & SHAPE PRECALCULATION
+				// Find the centroid of the bounding box
+				//              _____
+				//             |     |
+				//          |- |  o  | <-- centroid
+				//  pivot __|  |_____|  
+				//          |           
+				//          |-    x <-- pivot/x/y
+				//
+				
+				PVector parent_cur_centroid = new PVector( parent.pivot.x + ((-parent.l+parent.r)/2), parent.pivot.y + ((-parent.t+parent.b)/2) );
+				parent_cur_centroid = parent_cur_centroid.rotate(PApplet.radians(parent.rotation));
+				parent_cur_centroid = parent_cur_centroid.add(parent.x,parent.y);
+					
+				// Draw centroid 
+				// p.ellipse(parent_cur_centroid.x+stage.camera.x, parent_cur_centroid.y+stage.camera.y, 15, 15);
+				
 				if(l_diff != 0 || r_diff != 0 || t_diff != 0 || b_diff != 0)
 				{
+					
 					float scale_factor_w = parent_cur_w/parent_last_w; // Find the ratio of change for the shape
 					float scale_factor_h = parent_cur_h/parent_last_h;
 					
+					// If there a position difference, make sure to remove it from centroid calculation, we are only concerned on how the shape changes
+					parent_cur_centroid = parent_cur_centroid.add(-x_diff, -y_diff);
+					
 					PVector centroid_diff = parent_cur_centroid.copy().sub(parent_last_centroid); // Get the vector difference of the centroid's change.
 					centroid_diff = centroid_diff.rotate(PApplet.radians(-parent.rotation)); // Reset rotation from the vector
+					
+					/*
+					if(centroid_diff.x != 0 || centroid_diff.y != 0 )
+					{
+						p.println("????");
+						p.println("LAST CENTROID: " + parent_last_centroid);
+						p.println("CURR CENTROID: " + parent_cur_centroid);
+						p.println("CENTROID DIFF: " + centroid_diff);
+					}
+					*/
 					
 					PVector child_to_centroid = new PVector(parent_last_centroid.x - this.x, parent_last_centroid.y - this.y); // Find the vector between the child and centroid
 					child_to_centroid = child_to_centroid.rotate(PApplet.radians(-parent.rotation)); // Reset the rotation
@@ -345,6 +418,16 @@ public class Primitive
 					// Apply the difference to child's position
 					this.x = this.x + centroid_diff.x;
 					this.y = this.y + centroid_diff.y;
+					
+					if(centroid_diff.x != 0 || centroid_diff.y != 0 )
+					{
+						total_translation.add(centroid_diff.x, centroid_diff.y);
+						//p.println("????");
+						//p.println("LAST CENTROID: " + parent_last_centroid);
+						//p.println("CURR CENTROID: " + parent_cur_centroid);
+						p.println("CHILD TO CENTROID: " + child_to_centroid);
+						p.println("CHILD TRANSLATION: " + total_translation);
+					}	
 				}
 				
 				// TRANSLATION CONTROL
@@ -367,8 +450,8 @@ public class Primitive
 					// Apply the position change, add rotation difference to the current rotation
 					this.x = this.x + rot_vector.x; 
 					this.y = this.y + rot_vector.y;
-					this.rotation = this.rotation + rot_diff;
-				}
+					this.rotation = this.rotation + rot_diff;	
+				}	
 				
 				// UPDATE LAST KNOWN PARENT PROPERTIES
 				parent_last_x = parent.x;
@@ -381,6 +464,8 @@ public class Primitive
 				parent_last_h = parent_cur_h;
 				parent_last_rot = parent.rotation;
 				parent_last_centroid = parent_cur_centroid; 
+				
+				
 			}
 		}
 	}
@@ -389,13 +474,14 @@ public class Primitive
 	{
 		if(delta_recording_start)
 		{
-			p.println("DELTA RECORDING RUNNING");
+			//p.println("DELTA RECORDING RUNNING");
 		}
 		//p.println("DELTA STARTED");
 		// If there is an active key
 		
 		if(!delta_recording_start)
 		{
+			p.println("DELTA RECORDING RUNNING");
 			delta_local_x = 0;
 			delta_local_y = 0;
 			delta_rotation = 0;
@@ -565,6 +651,8 @@ public class Primitive
 		p.stroke(0);
 		p.fill(0);
 		p.text(this.toString(), 0, 0);
+		p.text((int)this.x + ", " + (int)this.y, 0, 10);
+		//p.text(this.toString(), 0, 10);
 		
 		p.popMatrix();
 	}
