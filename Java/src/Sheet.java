@@ -141,6 +141,11 @@ public class Sheet extends Element{
 		possible_selections = t_possible_selections;
 		p.main_windows.stage.goToActiveKey(active_key_selection);
 		
+		if(within_bounds)
+		{
+			p.main_windows.stage.showCompiledKeys(e.getX(), e.getY());
+		}
+		
 		/*
 		if(withinBounds(e.getX(), e.getY()))
 		{

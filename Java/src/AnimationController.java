@@ -29,6 +29,8 @@ public class AnimationController {
 	ArrayList<Key> delta_keys;
 	Key default_key;
 	
+	boolean showing_compiled_keys = false;
+	
 	public AnimationController(AniSketch p) 
 	{
 		this.p = p;
@@ -37,6 +39,23 @@ public class AnimationController {
 		default_key = new Key(0, 0, 0, p);
 	}
 
+	public Key compileDeltaKeys(float x_input, float y_input)
+	{
+		Key compiled_key = new Key(0,0,0,p);
+		
+		// For all delta keys
+		for(Key delta_key: delta_keys)
+		{
+			// For all data in delta keys
+			for(Key.PrimitiveData primitive_data: delta_key.primitive_data)
+			{ 
+				// Add the primitive data contained in the delta key, multiplied by the delta key's weighting
+				compiled_key.addPrimitiveData(primitive_data.mult(delta_key.getWeight(x_input, y_input)));
+			}
+		}
+		return compiled_key;
+	}
+	
 	public void addKey(float x, float y, float d)
 	{
 		delta_keys.add(new Key(x, y, d, p));
@@ -146,6 +165,19 @@ public class AnimationController {
 			{
 				p.println(System.currentTimeMillis());
 				pause();
+			}
+		}
+		if(e.getKeyCode() == 67)
+		{
+			if(!p.main_windows.stage.showing_compiled_keys)
+			{
+				Utilities.printAlert("Showing compiled keys");
+				p.main_windows.stage.startCompiledKeys();
+			}
+			else if(p.main_windows.stage.showing_compiled_keys)
+			{
+				p.main_windows.stage.stopCompiledKeys();
+				Utilities.printAlert("Stopping compiled keys");
 			}
 		}
 	}

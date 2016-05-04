@@ -18,8 +18,9 @@ public class Stage extends Element{
 	
 	PVector camera;
 	
-	
 	Key active_key; // Currently selected key
+	
+	boolean showing_compiled_keys = false;
 	
 	Stage(int x, int y, int w, int h, AniSketch p)
 	{
@@ -74,11 +75,49 @@ public class Stage extends Element{
 		for(Primitive primitive: primitives)
 		{
 			primitive.enableParentControl();
-
 		}
 		
 		// Set active key to null
 		active_key = null;		
+	}
+
+	void startCompiledKeys()
+	{
+		showing_compiled_keys = true;
+	}
+	
+	void showCompiledKeys(float x_input, float y_input)
+	{
+		if(showing_compiled_keys)
+		{
+			if(active_key != null)
+			{
+				exitActiveKey();
+			}
+			applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, p.animation.compileDeltaKeys(x_input, y_input));
+		}
+	}
+	
+	void stopCompiledKeys()
+	{
+		showing_compiled_keys = false;
+		
+		for(Primitive all_primitives: primitives)
+		{
+			all_primitives.disableParentControl();
+		}
+		
+		p.println("Applying default key to all primitives");
+		for(Primitive all_primitives: primitives)
+		{
+			all_primitives.setPropertiesFromKey(p.animation.default_key);
+		}
+	
+		for(Primitive all_primitives: primitives)
+		{
+			all_primitives.resetLastParentOffset();
+			all_primitives.enableParentControl();
+		}
 	}
 	
 	// Overrides primitive properties with the values of a key
@@ -138,85 +177,46 @@ public class Stage extends Element{
 			current_primitive_branch = next_primitive_branch;
 		}
 		
-		
 		p.println("Applying deltas in order");
 		for(Primitive primitive_to_update: delta_update_order)
 		{	
-			//primitive_to_update.addAllPropertiesFromKey(delta_key);
-						
-			primitive_to_update.addPropertyFromKey(delta_key, Primitive.PROP_TOP);
-			primitive_to_update.addPropertyFromKey(delta_key, Primitive.PROP_BOTTOM);
-			primitive_to_update.addPropertyFromKey(delta_key, Primitive.PROP_LEFT);
-			primitive_to_update.addPropertyFromKey(delta_key, Primitive.PROP_RIGHT);
-			
-			if(primitive_to_update.hasChildren())
-			{
-				for(Primitive child: primitive_to_update.children)
-				{
-					child.parentControl();
-				}
-				//primitive_to_update.forceUpdateParentControlToAllChildren();
-			}
-			
-			primitive_to_update.addPropertyFromKey(delta_key, Primitive.PROP_X);
-			primitive_to_update.addPropertyFromKey(delta_key, Primitive.PROP_Y);
-			
-			if(primitive_to_update.hasChildren())
-			{
-				for(Primitive child: primitive_to_update.children)
-				{
-					child.parentControl();
-				}
-				//primitive_to_update.forceUpdateParentControlToAllChildren();
-			}
-			
-			primitive_to_update.addPropertyFromKey(delta_key, Primitive.PROP_ROTATION);
-			
-			if(primitive_to_update.hasChildren())
-			{
-				for(Primitive child: primitive_to_update.children)
-				{
-					child.parentControl();
-				}
-				
-				//primitive_to_update.forceUpdateParentControlToAllChildren();
-			}
-			
+			primitive_to_update.addAllPropertiesFromKey(delta_key);
 			primitive_to_update.resetLastParentOffset();
-			
 		}
-		
 	}
-		
+	
 	void goToActiveKey(Key key)
 	{
-		// If the key we are going to is NOT already the active key
-		if(active_key != key)
+		if(!showing_compiled_keys)
 		{
-			// If there is no active key, set the new key. This will only be triggered once per key switch
-			if(active_key == null) 
+			// If the key we are going to is NOT already the active key
+			if(active_key != key)
 			{
-				active_key = key;
+				// If there is no active key, set the new key. This will only be triggered once per key switch
+				if(active_key == null) 
+				{
+					active_key = key;
+				}
+				// If there is an active key open, close the active key and set the new one
+				else if(active_key != null) 
+				{
+					exitActiveKey();
+					active_key = key;
+				}
+				// For each primitive, override its property values to the default_key + active_key
+				for(Primitive primitive: primitives)
+				{
+					applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, active_key);
+				}
 			}
-			// If there is an active key open, close the active key and set the new one
-			else if(active_key != null) 
+			
+			if(active_key != null)
 			{
-				exitActiveKey();
-				active_key = key;
-			}
-			// For each primitive, override its property values to the default_key + active_key
-			for(Primitive primitive: primitives)
-			{
-				applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, active_key);
-			}
-		}
-		
-		if(active_key != null)
-		{
-			// Reset and begin a new delta recording for all primitives
-			for(Primitive primitive: primitives)
-			{
-				primitive.startDeltaRecording();
+				// Reset and begin a new delta recording for all primitives
+				for(Primitive primitive: primitives)
+				{
+					primitive.startDeltaRecording();
+				}
 			}
 		}
 	}
@@ -294,48 +294,6 @@ public class Stage extends Element{
 			{
 				primitives.get(p).checkMouseEvent(e, false);
 			}
-				
-			// Handle selection
-			boolean found_selection = false;
-			boolean keep_selected = false;
-			int selected_primitive_index = 0;
-			
-			/*
-			if(last_selected_primitive != null)
-			{
-				if(last_selected_primitive.selected)
-				{
-					keep_selected = last_selected_primitive.checkMouseEventHandles(e);
-				}
-			}
-			*/
-			
-			/*
-			for(int p=0; p<primitive_selection_rank.size(); p++)
-			{
-				// If a primitive is selected and its handles are active, do not check for selection on primitives
-				if(keep_selected || found_selection)
-				{
-					primitive_selection_rank.get(p).checkMouseEvent(e, true); 
-				}
-				else if(!keep_selected) // If selected primitive's handles are not active, check other objects for selection
-				{
-					primitive_selection_rank.get(p).checkMouseEvent(e, false);
-					
-					if(primitive_selection_rank.get(p).selected) // If object is selected
-					{
-						found_selection = true;
-						selected_primitive_index = p;
-						last_selected_primitive = primitive_selection_rank.get(p);
-					}
-				}
-			}
-			
-			if(found_selection)
-			{
-				primitive_selection_rank.add(primitive_selection_rank.remove(selected_primitive_index));
-			}
-			*/
 		}
 	}
 }

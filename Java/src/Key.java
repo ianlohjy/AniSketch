@@ -69,7 +69,7 @@ public class Key {
 		}
 	}
 	
-	// DATA HANDLING //
+	// PRIMITIVE DATA HANDLING //
 	
 	// Add the stored deltas from a primtive to the key, and reset the stored deltas from the primitive to 0
 	// If the primitive data does not exist, it is created first
@@ -173,6 +173,23 @@ public class Key {
 			
 			default:
 			return;
+		}
+	}
+	
+	// Adds input primitive data to the current key, it it does not exist, then a new Primitive Data will be created
+	public void addPrimitiveData(PrimitiveData data)
+	{
+		PrimitiveData found_data = primitiveDataExists(data.primitive);
+		
+		if(found_data == null)
+		{
+			found_data = new PrimitiveData(data.primitive);
+			primitive_data.add(found_data);
+		}
+		
+		if(found_data != null)
+		{
+			found_data.add(data);
 		}
 	}
 	
@@ -429,9 +446,12 @@ public class Key {
 		return mouse_status;
 	}
 	
+	//=======================//
+	// PRIMITIVE DATA OBJECT //
+	//=======================//
+	
 	class PrimitiveData
 	{
-		
 		Primitive primitive;
 		float x, y, t, l, b, r, rt;
 		//float x, y, t, l, b, r, rotation;
@@ -446,6 +466,31 @@ public class Key {
 			this.b = 0;
 			this.rt = 0;
 			this.primitive = primitive;
+		}
+	
+		void add(PrimitiveData data)
+		{
+			this.x += data.x;
+			this.y += data.y;
+			this.t += data.t;
+			this.b += data.b;
+			this.l += data.l;
+			this.r += data.r;
+			this.rt += data.rt;
+		}
+		
+		PrimitiveData mult(float value)
+		{
+			PrimitiveData return_data = new PrimitiveData(primitive);
+			return_data.setX(this.x*value);
+			return_data.setY(this.y*value);
+			return_data.setTop(this.t*value);
+			return_data.setBottom(this.b*value);
+			return_data.setLeft(this.l*value);
+			return_data.setRight(this.r*value);
+			return_data.setRotation(this.rt*value);
+			
+			return return_data;
 		}
 		
 		void setX(float value)
@@ -521,6 +566,6 @@ public class Key {
 			PApplet.println("T/B/L/R | " + this.t + ", " + this.b + ", " + this.l + ", " + this.r);
 			
 		}
-		
+	
 	}
 }

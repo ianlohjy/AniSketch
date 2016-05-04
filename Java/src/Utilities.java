@@ -31,6 +31,16 @@ public class Utilities {
 		}	
 	}
 	
+	public static void printError(String message)
+	{
+		System.err.println("<ERROR> " + message);
+	}
+	
+	public static void printAlert(String message)
+	{
+		System.err.println("<ALERT> " + message);
+	}
+	
 	public static float gaussian1d(float position, float offset, float deviation)
 	{
 		// Gaussian function from https://en.wikipedia.org/wiki/Gaussian_function

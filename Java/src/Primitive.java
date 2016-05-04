@@ -87,10 +87,12 @@ public class Primitive
 	float delta_l;
 	float delta_r;
 	
-	//===================//
-	// PROPERTY CONSTANT //
-	//===================//
+	//====================//
+	// PROPERTY CONSTANTS //
+	//====================//
 	
+	static final int PROP_SHAPE             = -3; // Shape consists of the Top, Left, Bottom, Right values
+	static final int PROP_POSITION          = -2; // Position consists of the X, Y values
 	static final int PROP_ALL_EXCEPT_SPRITE = -1;
 	static final int PROP_X        			= 0;
 	static final int PROP_Y        			= 1;
@@ -108,8 +110,6 @@ public class Primitive
 	Style style_selected;
 	Style style_outline;
 	Style style_outline_selected;
-	
-	PVector total_translation = new PVector(0,0);
 	
 	Primitive(float x, float y, float w, float h, Stage stage, AnimationController a, AniSketch p)
 	{
@@ -137,6 +137,82 @@ public class Primitive
 		setPropertiesToDefaultKey();
 	}
 	
+	//======//
+	// MAIN //
+	//======//
+	
+	public void update()
+	{
+		calculateBoundingPoints();
+		if(selected)
+		{
+			drawHandles();
+		}
+		if(transform_mode == ROTATE)
+		{
+			drawRotationGizmo();
+		}
+		
+		drawDefaultKeyPosition();
+		drawBoundingBox();
+		drawPivot();
+		
+		parentControl();
+		
+		if(stage.active_key == null && stage.showing_compiled_keys == false)
+		{
+			setPropertiesToDefaultKey();
+		}
+		//p.println("PO: " + parent_offset + "LO:" + parent_local_offset + "X: " + x);
+		//p.ellipse(stage.camera.x+x-parent_local_offset.x+parent_offset.x+parent.x, stage.camera.y+y-parent_local_offset.y+parent_offset.y+parent.y, 25, 25);
+	}
+	
+	public void setupStyles()
+	{
+		style_default = new Style(p);
+		style_default.noFill();
+		style_default.stroke(0,0,0,255);
+		style_default.strokeWeight(1);
+		
+		style_hover = new Style(p);
+		style_hover.noFill();
+		style_hover.stroke(0,0,0,255);
+		style_hover.strokeWeight(1);
+		
+		style_selected = new Style(p);
+		style_selected.noFill();
+		style_selected.stroke(0,0,0,255);
+		style_selected.strokeWeight(1);
+		
+		style_outline = new Style(p);
+		style_outline.noFill();
+		style_outline.stroke(255,255,255,50);
+		style_outline.strokeWeight(5);
+		
+		style_outline_selected = new Style(p);
+		style_outline_selected.noFill();
+		style_outline_selected.stroke(255,255,255,100);
+		style_outline_selected.strokeWeight(5);
+	}
+	
+	public void setupHandles()
+	{
+		wh_top_left = new Handle(Handle.WIDTH_HEIGHT, Handle.TOP_LEFT);
+		wh_bottom_left = new Handle(Handle.WIDTH_HEIGHT, Handle.BOTTOM_LEFT);
+		wh_bottom_right = new Handle(Handle.WIDTH_HEIGHT, Handle.BOTTOM_RIGHT);
+		wh_top_right = new Handle(Handle.WIDTH_HEIGHT, Handle.TOP_RIGHT);
+		rt_top_left = new Handle(Handle.ROTATION, Handle.TOP_LEFT);
+		rt_bottom_left = new Handle(Handle.ROTATION, Handle.BOTTOM_LEFT);
+		rt_bottom_right = new Handle(Handle.ROTATION, Handle.BOTTOM_RIGHT);
+		rt_top_right = new Handle(Handle.ROTATION, Handle.TOP_RIGHT);
+	}
+	
+	//===========//
+	// ANIMATION //
+	//===========//
+	
+	// Adds a property value from a key to the current primtive
+	// Use the Primitive.PROP value to indicate the desired property
 	public void addPropertyFromKey(Key key, int property)
 	{
 		if(key != null)
@@ -148,89 +224,102 @@ public class Primitive
 				switch(property) 
 				{
 					case Primitive.PROP_X:
-					p.println("ADDING PROPERTY X FROM KEY " + key + " TO PRIMITIVE " + this);
-					if(parent != null)
-					{
-						PVector x_rotated = new PVector(found_data.x, 0);
-						x_rotated = x_rotated.rotate(PApplet.radians(parent.rotation));
-						this.x += x_rotated.x;
-						this.y += x_rotated.y;
-						p.println("!<!<!<!<!<!ADDING X: " + x_rotated);
-					}
-					else
-					{
-						this.x += found_data.x;
-					}
-					return;
+						if(parent != null)
+						{
+							// If a parent exists, apply the transform relative to the parent's rotation
+							PVector x_rotated = new PVector(found_data.x, 0);
+							x_rotated = x_rotated.rotate(PApplet.radians(parent.rotation));
+							this.x += x_rotated.x;
+							this.y += x_rotated.y;
+						}
+						else{this.x += found_data.x;}
+						return;
 					
 					case Primitive.PROP_Y:
-					p.println("ADDING PROPERTY Y FROM KEY " + key + " TO PRIMITIVE " + this);
-					if(parent != null)
-					{
-						PVector y_rotated = new PVector(0, found_data.y);
-						y_rotated = y_rotated.rotate(PApplet.radians(parent.rotation));
-						this.y += y_rotated.y;
-						this.x += y_rotated.x;
-						p.println("!<!<!<!<!<!ADDING Y: " + y_rotated);
-					}
-					else
-					{
-						this.y += found_data.y;
-					}
-					return;
+						if(parent != null)
+						{
+							PVector y_rotated = new PVector(0, found_data.y);
+							y_rotated = y_rotated.rotate(PApplet.radians(parent.rotation));
+							this.y += y_rotated.y;
+							this.x += y_rotated.x;
+						}
+						else{this.y += found_data.y;}
+						return;
+					
+					case Primitive.PROP_POSITION:
+						if(parent != null)
+						{
+							PVector xy_rotated = new PVector(found_data.x, found_data.y);
+							xy_rotated = xy_rotated.rotate(PApplet.radians(parent.rotation));
+							this.y += xy_rotated.y;
+							this.x += xy_rotated.x;
+						}
+						else
+						{
+							this.x += found_data.x;
+							this.y += found_data.y;
+						}
+						return;
 					
 					case Primitive.PROP_LEFT:
-					p.println("ADDING PROPERTY L FROM KEY " + key + " TO PRIMITIVE " + this);	
-					this.l += found_data.l;
-					return;
+						this.l += found_data.l;
+						return;
 					
 					case Primitive.PROP_RIGHT:
-					p.println("ADDING PROPERTY R FROM KEY " + key + " TO PRIMITIVE " + this);
-					this.r += found_data.r;
-					return;
+						this.r += found_data.r;
+						return;
 					
 					case Primitive.PROP_TOP:
-					p.println("ADDING PROPERTY T FROM KEY " + key + " TO PRIMITIVE " + this);
-					this.t += found_data.t;
-					return;
+						this.t += found_data.t;
+						return;
 					
 					case Primitive.PROP_BOTTOM:
-					p.println("ADDING PROPERTY B FROM KEY " + key + " TO PRIMITIVE " + this);
-					this.b += found_data.b;
-					return;
+						this.b += found_data.b;
+						return;
 					
+					case Primitive.PROP_SHAPE:
+						this.t += found_data.t;
+						this.r += found_data.r;
+						this.b += found_data.b;
+						this.l += found_data.l;
+						
 					case Primitive.PROP_ROTATION:
-					p.println("ADDING PROPERTY RT FROM KEY " + key + " TO PRIMITIVE " + this);
-					this.rotation += found_data.rt;
-					return;
+						this.rotation += found_data.rt;
+						return;
 					
 					default:
-					return;
+						Utilities.printError("Could not add property code " + property + " to " + this.toString());
+						return;
 				}			
 			}
 		}
 	}
-	
+
+	// Adds all property values from a key to the current primitive
+	// If the primitive has children, parent transformation will be calculated 
+	// seperately for the children after shape, position, rotation to prevent transformation errors
 	public void addAllPropertiesFromKey(Key key)
 	{
-		if(key != null)
+		addPropertyFromKey(key, Primitive.PROP_SHAPE);
+		if(hasChildren())
 		{
-			p.println("ADDING PROPERTIES FROM KEY " + key + " TO PRIMITIVE " + this);
-			Key.PrimitiveData found_data = key.primitiveDataExists(this);
-	
-			if(found_data != null)
-			{
-				this.x += found_data.x;
-				this.y += found_data.y;
-				this.rotation += found_data.rt;
-				this.t += found_data.t;
-				this.b += found_data.b;
-				this.l += found_data.l;
-				this.r += found_data.r;
-			}
+			for(Primitive child: children){child.parentControl();}
+		}
+		
+		addPropertyFromKey(key, Primitive.PROP_POSITION);
+		if(hasChildren())
+		{
+			for(Primitive child: children){child.parentControl();}
+		}
+		
+		addPropertyFromKey(key, Primitive.PROP_ROTATION);
+		if(hasChildren())
+		{
+			for(Primitive child: children){child.parentControl();}
 		}
 	}
 	
+	//  Overrides the primitive's properties with the properties from the key
 	public void setPropertiesFromKey(Key key)
 	{
 		Key.PrimitiveData found_data = key.primitiveDataExists(this);
@@ -247,6 +336,7 @@ public class Primitive
 		}
 	}
 	
+	// Overrides properties from primitives to key
 	public void setPropertiesToKey(Key key)
 	{
 		key.setDataProperty(this, PROP_X, this.x);
@@ -258,6 +348,7 @@ public class Primitive
 		key.setDataProperty(this, PROP_RIGHT, this.r);
 	}
 	
+	// Updats the primitive properties to the animation's controller default key if no active key is selected 
 	public void setPropertiesToDefaultKey()
 	{
 		if(stage.active_key == null)
@@ -268,7 +359,35 @@ public class Primitive
 			}
 		}
 	}
+
+	// Starts delta recording, resets the recorded delta values
+	public void startDeltaRecording()
+	{
+		if(!delta_recording_start)
+		{
+			Utilities.printAlert("Delta recording started for " + this.toString());
+			delta_recording_start = true;
+			delta_local_x = 0;
+			delta_local_y = 0;
+			delta_rotation = 0;
+			delta_t = 0;
+			delta_b = 0;
+			delta_l = 0;
+			delta_r = 0;
+		}
+	}
 	
+	// Stops the delta recording
+	public void endDeltaRecording()
+	{ 
+		delta_recording_start = false;
+	}
+	
+	//===========//
+	// PARENTING //
+	//===========//
+	
+	// 
 	public boolean hasChildren()
 	{
 		if(children.size() > 0)
@@ -281,47 +400,8 @@ public class Primitive
 		}
 	}
 	
-	public void forceUpdateParentControlToAllChildren()
-	{
-		// Applies the parent effects to all children in the tree, in order. This includes all subchildren as well
-		
-		int num_children = 0;
-		
-		if(hasChildren())
-		{
-			p.println("Updating parent effects for all subchildren");
-			
-			ArrayList<Primitive> update_order = new ArrayList<Primitive>(); // Update order is important to ensure that parent controls are applied correctly
-			ArrayList<Primitive> children_in_cur_level = (ArrayList<Primitive>)children.clone();
-			
-			while(children_in_cur_level.size() != 0)
-			{
-				ArrayList<Primitive> children_in_next_level = new ArrayList<Primitive>();
-				
-				for(Primitive child: children_in_next_level)
-				{
-					update_order.add(child);
-					if(child.children.size() > 0)
-					{
-						for(Primitive subchild: child.children)
-						{
-							children_in_next_level.add(subchild);
-						}
-					}
-				}
-				children_in_cur_level = children_in_next_level;
-			}
-			
-			for(Primitive primitives_to_update: update_order)
-			{
-				primitives_to_update.parentControl();
-			}
-		}
-		
-		p.println("NUM OF DETECTED CHILDREN " + num_children);
-	}
-	
-	void enableParentControl()
+	// Resets last parent offset, and enables parent controls
+	public void enableParentControl()
 	{
 		if(parent != null)
 		{
@@ -330,10 +410,16 @@ public class Primitive
 		}
 	}
 	
+	// Disables parent control, but DOES NOT remove the parent
+	public void disableParentControl()
+	{
+		parent_control = false;
+	}
+	
 	// Sets the last parent to the current parent properties
 	// Parent controls are based on checking changes to the parent properties
 	// By setting the last checked parent properties to the current parent properties, we avoid child objects jumping around the next time the child is parented
-	void resetLastParentOffset()
+	public void resetLastParentOffset()
 	{
 		if(parent != null)
 		{
@@ -355,16 +441,11 @@ public class Primitive
 		}
 	}
 	
-	void disableParentControl()
-	{
-		parent_control = false;
-	}
-	
+	// Parent controls allow the parent to acts a controller for the primitive
+	// This essentially constrains the primitive to the parent's properties
+	// Parent values that affect the child are x,y,rotation,shape changes
 	public void parentControl()
 	{
-		// Parent controls allow the parent to acts a controller for the primitive
-		// This essentially constrains the primitive to the parent's properties
-		// Parent values that affect the child are x,y,rotation,shape changes
 		if(parent_control)
 		{
 			if(parent != null)
@@ -419,16 +500,6 @@ public class Primitive
 					PVector centroid_diff = parent_cur_centroid.copy().sub(parent_last_centroid); // Get the vector difference of the centroid's change.
 					centroid_diff = centroid_diff.rotate(PApplet.radians(-parent.rotation)); // Reset rotation from the vector
 					
-					/*
-					if(centroid_diff.x != 0 || centroid_diff.y != 0 )
-					{
-						p.println("????");
-						p.println("LAST CENTROID: " + parent_last_centroid);
-						p.println("CURR CENTROID: " + parent_cur_centroid);
-						p.println("CENTROID DIFF: " + centroid_diff);
-					}
-					*/
-					
 					PVector child_to_centroid = new PVector(parent_last_centroid.x - this.x, parent_last_centroid.y - this.y); // Find the vector between the child and centroid
 					child_to_centroid = child_to_centroid.rotate(PApplet.radians(-parent.rotation)); // Reset the rotation
 					
@@ -440,16 +511,6 @@ public class Primitive
 					// Apply the difference to child's position
 					this.x = this.x + centroid_diff.x;
 					this.y = this.y + centroid_diff.y;
-					
-					if(centroid_diff.x != 0 || centroid_diff.y != 0 )
-					{
-						total_translation.add(centroid_diff.x, centroid_diff.y);
-						//p.println("????");
-						//p.println("LAST CENTROID: " + parent_last_centroid);
-						//p.println("CURR CENTROID: " + parent_cur_centroid);
-						p.println("CHILD TO CENTROID: " + child_to_centroid);
-						p.println("CHILD TRANSLATION: " + total_translation);
-					}	
 				}
 				
 				// TRANSLATION CONTROL
@@ -492,102 +553,60 @@ public class Primitive
 		}
 	}
 	
-	public void startDeltaRecording()
+	public void removeChildFromChildren(Primitive child)
 	{
-		if(delta_recording_start)
+		int child_index = children.indexOf(child);
+
+		if(child_index != -1)
 		{
-			//p.println("DELTA RECORDING RUNNING");
-		}
-		//p.println("DELTA STARTED");
-		// If there is an active key
-		
-		if(!delta_recording_start)
-		{
-			p.println("DELTA RECORDING RUNNING");
-			delta_local_x = 0;
-			delta_local_y = 0;
-			delta_rotation = 0;
-			delta_t = 0;
-			delta_b = 0;
-			delta_l = 0;
-			delta_r = 0;
-			delta_recording_start = true;
+			children.remove(child_index);		
 		}
 	}
 	
-	public void endDeltaRecording()
-	{ 
-		delta_recording_start = false;
-	}
-	
-	public void update()
+	/*// Depreciated
+	public void forceUpdateParentControlToAllChildren()
 	{
-		calculateBoundingPoints();
-		if(selected)
+		// Applies the parent effects to all children in the tree, in order. This includes all subchildren as well
+		int num_children = 0;
+		
+		if(hasChildren())
 		{
-			drawHandles();
-		}
-		if(transform_mode == ROTATE)
-		{
-			drawRotationGizmo();
+			p.println("Updating parent effects for all subchildren");
+			
+			ArrayList<Primitive> update_order = new ArrayList<Primitive>(); // Update order is important to ensure that parent controls are applied correctly
+			ArrayList<Primitive> children_in_cur_level = (ArrayList<Primitive>)children.clone();
+			
+			while(children_in_cur_level.size() != 0)
+			{
+				ArrayList<Primitive> children_in_next_level = new ArrayList<Primitive>();
+				
+				for(Primitive child: children_in_next_level)
+				{
+					update_order.add(child);
+					if(child.children.size() > 0)
+					{
+						for(Primitive subchild: child.children)
+						{
+							children_in_next_level.add(subchild);
+						}
+					}
+				}
+				children_in_cur_level = children_in_next_level;
+			}
+			
+			for(Primitive primitives_to_update: update_order)
+			{
+				primitives_to_update.parentControl();
+			}
 		}
 		
-		drawDefaultKeyPosition();
-		drawBoundingBox();
-		drawPivot();
-		
-		parentControl();
-		
-		if(stage.active_key == null)
-		{
-			setPropertiesToDefaultKey();
-		}
-		//p.println("PO: " + parent_offset + "LO:" + parent_local_offset + "X: " + x);
-		//p.ellipse(stage.camera.x+x-parent_local_offset.x+parent_offset.x+parent.x, stage.camera.y+y-parent_local_offset.y+parent_offset.y+parent.y, 25, 25);
+		p.println("NUM OF DETECTED CHILDREN " + num_children);
 	}
+	*/
 	
-	public void setupStyles()
-	{
-		style_default = new Style(p);
-		style_default.noFill();
-		style_default.stroke(0,0,0,255);
-		style_default.strokeWeight(1);
-		
-		style_hover = new Style(p);
-		style_hover.noFill();
-		style_hover.stroke(0,0,0,255);
-		style_hover.strokeWeight(1);
-		
-		style_selected = new Style(p);
-		style_selected.noFill();
-		style_selected.stroke(0,0,0,255);
-		style_selected.strokeWeight(1);
-		
-		style_outline = new Style(p);
-		style_outline.noFill();
-		style_outline.stroke(255,255,255,50);
-		style_outline.strokeWeight(5);
-		
-		style_outline_selected = new Style(p);
-		style_outline_selected.noFill();
-		style_outline_selected.stroke(255,255,255,100);
-		style_outline_selected.strokeWeight(5);
-	}
-	
-	//=======//
-	// SETUP //
-	//=======//
-	public void setupHandles()
-	{
-		wh_top_left = new Handle(Handle.WIDTH_HEIGHT, Handle.TOP_LEFT);
-		wh_bottom_left = new Handle(Handle.WIDTH_HEIGHT, Handle.BOTTOM_LEFT);
-		wh_bottom_right = new Handle(Handle.WIDTH_HEIGHT, Handle.BOTTOM_RIGHT);
-		wh_top_right = new Handle(Handle.WIDTH_HEIGHT, Handle.TOP_RIGHT);
-		rt_top_left = new Handle(Handle.ROTATION, Handle.TOP_LEFT);
-		rt_bottom_left = new Handle(Handle.ROTATION, Handle.BOTTOM_LEFT);
-		rt_bottom_right = new Handle(Handle.ROTATION, Handle.BOTTOM_RIGHT);
-		rt_top_right = new Handle(Handle.ROTATION, Handle.TOP_RIGHT);
-	}
+	//==========//
+	// GRAPHICS //
+	//==========//
 	
 	//=====================//
 	// DRAWING / RENDERING //
@@ -720,6 +739,10 @@ public class Primitive
 		//p.ellipse(p.mouseX, p.mouseY, 10, 10);
 	}
 	
+	//==============//
+	// BOUNDING BOX //
+	//==============//
+	
 	//========================================//
 	// COLLISION AND BOUNDING BOX CALCULATION //
 	//========================================//
@@ -781,6 +804,10 @@ public class Primitive
 		}
 	}
 
+	//========//
+	// EVENTS //
+	//========//
+	
 	//================//
 	// EVENT HANDLING //
 	//================//
@@ -928,6 +955,12 @@ public class Primitive
 		}
 		return mouse_state;
 	}
+	
+	//======================//
+	// PRIMITIVE OPERATIONS //
+	//======================//
+	
+	// High level actions that operate only on the primitive
 	
 	//====================//
 	// TRANSFORM HANDLING //
@@ -1289,6 +1322,16 @@ public class Primitive
 		*/
 	}
 	
+	public void delete()
+	{	
+		// Unparent children
+		for(Primitive child: children)
+		{
+			child.parent = null;
+		}
+		marked_for_deletion = true;
+	}
+	
 	public void setParent(Primitive parent)
 	{
 		this.parent = parent;
@@ -1304,64 +1347,10 @@ public class Primitive
 		parent = null;
 	}
 	
-	public void removeChildFromChildren(Primitive child)
-	{
-		int child_index = children.indexOf(child);
-
-		if(child_index != -1)
-		{
-			children.remove(child_index);		
-		}
-	}
+	//===============//
+	// HANDLE OBJECT //
+	//===============//
 	
-	public void delete()
-	{	
-		// Unparent children
-		for(Primitive child: children)
-		{
-			child.parent = null;
-		}
-		marked_for_deletion = true;
-	}
-	
-	/*
-	public void setParent(Primitive parent)
-	{
-		// These values represent the offset needed to 
-		parent_start_offset = new PVector(this.x-parent.x, this.y-parent.y); // Initial positional offset
-		parent_local_offset = new PVector(this.x, this.y);
-		parent_rotation_offset = this.rotation - parent.rotation;
-		this.parent = parent;
-		
-		calculateParentOffset();
-		
-		p.println("PARENTED TO " + parent);
-		p.println("Offset between parent and child " + parent_offset);
-	}
-	
-	public PVector calculateParentOffset()
-	{	
-		// This parent offset is 'parent_start_offset' + parent rotation accounted for
-		if(parent != null)
-		{
-			PVector new_offset = parent_start_offset.copy();
-			//new_offset = new_offset.add(pivot);
-			new_offset = new_offset.rotate(PApplet.radians(parent.rotation - parent_rotation_offset));
-			parent_offset = new_offset;
-			//p.println(parent_offset);
-			
-			//p.stroke(0);
-			//p.ellipse(parent.x, parent.y, 25, 25);
-			p.line(parent.x + stage.camera.x, parent.y + stage.camera.y, parent.x+stage.camera.x+new_offset.x, parent.y+stage.camera.y+new_offset.y);
-			
-			return parent_offset;
-		}
-		else
-		{
-			return null;
-		}
-	}
-	*/
 	
 	//========================//
 	// PRIMITIVE HANDLE CLASS //
