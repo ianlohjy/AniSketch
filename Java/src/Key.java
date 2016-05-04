@@ -116,6 +116,25 @@ public class Key {
 		return null;
 	}
 	
+	// Adds primitive data from another key
+	public Key add(Key key_to_add)
+	{
+		for(PrimitiveData data_to_add: key_to_add.primitive_data)
+		{
+			PrimitiveData found_data = primitiveDataExists(data_to_add.primitive);
+			
+			if(found_data == null)
+			{
+				primitive_data.add(data_to_add);
+			}
+			else if(found_data != null)
+			{
+				found_data.add(data_to_add);
+			}
+		}
+		return this;
+	}
+	
 	// Set the data property for a primitive
 	public PrimitiveData getData(Primitive primitive)
 	{
@@ -252,7 +271,30 @@ public class Key {
 	
 	public float getWeight(float x_input, float y_input)
 	{
-		return Utilities.gaussian1d(x_input, this.x, this.d/6f) * Utilities.gaussian1d(y_input, this.y, this.d/6f);
+		/*
+		if(PApplet.dist(x_input, y_input, x, y) < this.d/2)
+		{
+			float weight = -PApplet.dist(x_input, y_input, x, y) + (d/2);
+			weight /= (d/2);
+			return weight;
+		}
+		
+		else
+		{
+			return 0;
+		}
+		*/
+		
+		float weight = Utilities.gaussian1d(x_input, this.x, this.d/6f) * Utilities.gaussian1d(y_input, this.y, this.d/6f);
+		weight *= 1.0;
+		
+		if(weight > 1)
+		{
+			weight = 1;
+		}
+		
+		return weight;
+		 
 	}
 	
 	public void doTranslate(float x_input, float y_input)

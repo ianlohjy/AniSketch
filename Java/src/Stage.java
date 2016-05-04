@@ -86,22 +86,30 @@ public class Stage extends Element{
 		showing_compiled_keys = true;
 	}
 	
-	void showCompiledKeys(float x_input, float y_input)
-	{
-		if(showing_compiled_keys)
-		{
-			if(active_key != null)
-			{
-				exitActiveKey();
-			}
-			applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, p.animation.compileDeltaKeys(x_input, y_input));
-		}
-	}
-	
 	void stopCompiledKeys()
 	{
 		showing_compiled_keys = false;
 		
+		for(Primitive all_primitives: primitives)
+		{
+			all_primitives.disableParentControl();
+		}
+		
+		p.println("Applying default key to all primitives");
+		for(Primitive all_primitives: primitives)
+		{
+			all_primitives.setPropertiesFromKey(p.animation.default_key);
+		}
+	
+		for(Primitive all_primitives: primitives)
+		{
+			all_primitives.resetLastParentOffset();
+			all_primitives.enableParentControl();
+		}
+	}
+	
+	void setAllPrimitivesToDefaultKey()
+	{
 		for(Primitive all_primitives: primitives)
 		{
 			all_primitives.disableParentControl();
@@ -134,7 +142,7 @@ public class Stage extends Element{
 			all_primitives.disableParentControl();
 		}
 		
-		p.println("Applying default key to all primitives");
+		//p.println("Applying default key to all primitives");
 		for(Primitive all_primitives: primitives)
 		{
 			all_primitives.setPropertiesFromKey(default_key);
@@ -157,7 +165,7 @@ public class Stage extends Element{
 			}
 		}
 		
-		p.println("Creating ordered delta update list");
+		//p.println("Creating ordered delta update list");
 		while(current_primitive_branch.size() > 0)
 		{
 			ArrayList<Primitive> next_primitive_branch = new ArrayList<Primitive>();
@@ -177,7 +185,7 @@ public class Stage extends Element{
 			current_primitive_branch = next_primitive_branch;
 		}
 		
-		p.println("Applying deltas in order");
+		//p.println("Applying deltas in order");
 		for(Primitive primitive_to_update: delta_update_order)
 		{	
 			primitive_to_update.addAllPropertiesFromKey(delta_key);
@@ -187,7 +195,7 @@ public class Stage extends Element{
 	
 	void goToActiveKey(Key key)
 	{
-		if(!showing_compiled_keys)
+		if(p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION)
 		{
 			// If the key we are going to is NOT already the active key
 			if(active_key != key)
@@ -208,6 +216,7 @@ public class Stage extends Element{
 				{
 					applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, active_key);
 				}
+				
 			}
 			
 			if(active_key != null)

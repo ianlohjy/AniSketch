@@ -153,13 +153,16 @@ public class Primitive
 			drawRotationGizmo();
 		}
 		
-		drawDefaultKeyPosition();
+		if(stage.active_key != null)
+		{
+			drawDefaultKeyPosition();
+		}
 		drawBoundingBox();
 		drawPivot();
 		
 		parentControl();
 		
-		if(stage.active_key == null && stage.showing_compiled_keys == false)
+		if(stage.active_key == null && p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION && a.current_frame == 0)
 		{
 			setPropertiesToDefaultKey();
 		}
@@ -282,6 +285,7 @@ public class Primitive
 						this.r += found_data.r;
 						this.b += found_data.b;
 						this.l += found_data.l;
+						return;
 						
 					case Primitive.PROP_ROTATION:
 						this.rotation += found_data.rt;
@@ -450,9 +454,6 @@ public class Primitive
 		{
 			if(parent != null)
 			{
-				// DRAW A DOTTED LINE FROM THE CHILD TO THE PARENT
-				style_default.apply();
-				Utilities.dottedLine(x+stage.camera.x, y+stage.camera.y, parent.x+stage.camera.x, parent.y+stage.camera.y, 5, 10, p);
 				
 				// TRANSLATION CHANGE
 				float x_diff = parent.x - parent_last_x;
@@ -667,6 +668,13 @@ public class Primitive
 	
 	public void drawBoundingBox()
 	{
+		// DRAW A DOTTED LINE FROM THE CHILD TO THE PARENT
+		if(parent != null)
+		{		
+			style_default.apply();
+			Utilities.dottedLine(x+stage.camera.x, y+stage.camera.y, parent.x+stage.camera.x, parent.y+stage.camera.y, 5, 10, p);
+		}
+		
 		p.pushMatrix();
 		p.translate(stage.camera.x+x, stage.camera.y+y);
 		
@@ -691,9 +699,9 @@ public class Primitive
 		
 		p.stroke(0);
 		p.fill(0);
-		p.text(this.toString(), 0, 0);
-		p.text((int)this.x + ", " + (int)this.y, 0, 10);
-		//p.text(this.toString(), 0, 10);
+		//p.text(this.toString(), 0, 0);
+		//p.text((int)this.x + ", " + (int)this.y, 0, 10);
+		//p.text("Delta Recording: " + delta_recording_start, 0, 20);
 		
 		p.popMatrix();
 	}

@@ -83,4 +83,16 @@ public class Stroke {
 		}
 	}
 	
+	PVector positionAtFrame(int frame_number)
+	{
+		if(frame_number >= start_frame && frame_number <= start_frame+points.size()-1)
+		{
+			return points.get(frame_number-(int)start_frame);
+		}
+		else
+		{
+			return null;
+		}
+	}
+	
 }

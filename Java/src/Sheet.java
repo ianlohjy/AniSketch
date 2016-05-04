@@ -14,6 +14,9 @@ public class Sheet extends Element{
 	
 	static final int UP = 0;
 	static final int DOWN = 1;
+	static final int DRAW = 0;
+	static final int COMPOSITION = 1;
+	
 	
 	int framerate = 25; // The framerate sets limits the number of points per second that you are able to draw
 	int millis_per_frame = 1000/25;
@@ -26,6 +29,7 @@ public class Sheet extends Element{
 	int number_keys_under_mouse = 0;
 	ArrayList<Key> possible_selections;
 	
+	int animation_mode = COMPOSITION;
 	
 	Sheet(int x, int y, int w, int h, AniSketch p, AnimationController a)
 	{
@@ -51,7 +55,16 @@ public class Sheet extends Element{
 		p.noClip();
 		p.fill(0);
 		
+		if(animation_mode == COMPOSITION)
+		{
+			p.text("COMPOSITION MODE", 5, this.h - 20);
+		}
+		else if(animation_mode == DRAW)
+		{
+			p.text("DRAWING MODE", 5, this.h - 20);
+		}	
 		p.text("Number of keys under mouse: " + possible_selections.size(), 5, this.h - 10);
+		p.text("Frame " + a.current_frame, 5, this.h - 30);
 		
 		update();
 	}
@@ -90,89 +103,121 @@ public class Sheet extends Element{
 		//drawMotionLine();
 	}
 	
+	void switchToDrawingMode()
+	{
+		Utilities.printAlert("Switched to drawing mode");
+		p.main_windows.stage.exitActiveKey();
+		animation_mode = DRAW;
+		//p.main_windows.stage.startCompiledKeys();
+	}
+	
+	void switchToCompositionMode()
+	{
+		Utilities.printAlert("Switched to composition mode");
+		
+		p.main_windows.stage.setAllPrimitivesToDefaultKey();
+		
+		animation_mode = COMPOSITION;
+		//p.main_windows.stage.stopCompiledKeys();
+		if(active_key_selection != null)
+		{
+			p.main_windows.stage.goToActiveKey(active_key_selection);
+		}
+		
+	}
+	
 	// If an object is selected, we wont select anything new UNLESS it is a click
 	// Mouse event checking needs to return a true 
-	
 	void checkMouseEvent(MouseEvent e)
 	{
 		// Check event, if it is a click, we know to change selection, 
 		// 
 		boolean within_bounds = withinBounds(e.getX(), e.getY());
-		boolean allow_selection_switch = false;
-		ArrayList<Key> t_possible_selections = new ArrayList<Key>();
-		int[] mouse_status;
 		
-		boolean selection_has_switched = false;
-
-		// Check key mouse selection incrementally
-		// If there is an active key selection, DO NOT switch selection unless:
-		// 1. A mouse click event is detected
-		// 2. Or the active key selection is NOT in the selectable object list
-		// If there is no active selection:
-		// 1. The key with the oldest last selected time becomes the new selected key
-		
-		if(within_bounds)
+		if(animation_mode == COMPOSITION)
 		{
-			for(Key key: a.delta_keys)
-			{	
-				mouse_status = key.checkMouseEvent(e, active_key_selection, possible_selections, !selection_has_switched);	
-				
-				if(mouse_status[0] == 1)
-				{
-					t_possible_selections.add(key);
-				}
-				
-				if(mouse_status[1] == 1)
-				{
-					if(!selection_has_switched)
+			boolean allow_selection_switch = false;
+			ArrayList<Key> t_possible_selections = new ArrayList<Key>();
+			int[] mouse_status;
+			
+			boolean selection_has_switched = false;
+	
+			// Check key mouse selection incrementally
+			// If there is an active key selection, DO NOT switch selection unless:
+			// 1. A mouse click event is detected
+			// 2. Or the active key selection is NOT in the selectable object list
+			// If there is no active selection:
+			// 1. The key with the oldest last selected time becomes the new selected key
+			
+			if(within_bounds)
+			{
+				for(Key key: a.delta_keys)
+				{	
+					mouse_status = key.checkMouseEvent(e, active_key_selection, possible_selections, !selection_has_switched);	
+					
+					if(mouse_status[0] == 1)
 					{
-						p.println("SWITCHING ACTIVE KEY");
-						//found_selection = true;
-						active_key_selection = key;
+						t_possible_selections.add(key);
 					}
-					selection_has_switched = true;
-				}	
-				else if(mouse_status[1] == -1 && active_key_selection == key)
-				{
-					active_key_selection = null;
+					
+					if(mouse_status[1] == 1)
+					{
+						if(!selection_has_switched)
+						{
+							p.println("SWITCHING ACTIVE KEY");
+							//found_selection = true;
+							active_key_selection = key;
+						}
+						selection_has_switched = true;
+					}	
+					else if(mouse_status[1] == -1 && active_key_selection == key)
+					{
+						active_key_selection = null;
+					}
+				}
+			}
+			possible_selections = t_possible_selections;
+			p.main_windows.stage.goToActiveKey(active_key_selection);
+		}	
+		else if(animation_mode == DRAW)
+		{
+			if(within_bounds)
+			{
+				//p.main_windows.stage.showCompiledKeys(e.getX(), e.getY());
+				
+				if(e.getButton() == 37)
+				{ // If its a left click
+					if(e.getAction() == 1)// Mouse Pressed
+					{
+						drawing = true;
+					}
+					else if(e.getAction() == 2)// Mouse Released
+					{
+						//a.stopStroke();
+						drawing = false;
+					}
+					else if(e.getAction() == 3) // Mouse Clicked
+					{
+					}
+					else if(e.getAction() == 4) // Mouse Dragged
+					{
+						//a.recordStroke(e.getX(), e.getY());
+					}
+					else if(e.getAction() == 5)
+					{
+					}
 				}
 			}
 		}
-		possible_selections = t_possible_selections;
-		p.main_windows.stage.goToActiveKey(active_key_selection);
-		
+		/*
 		if(within_bounds)
 		{
-			p.main_windows.stage.showCompiledKeys(e.getX(), e.getY());
-		}
-		
-		/*
-		if(withinBounds(e.getX(), e.getY()))
-		{
-			if(e.getButton() == 37)
-			{ // If its a left click
-				if(e.getAction() == 1)// Mouse Pressed
-				{
-					drawing = true;
-				}
-				else if(e.getAction() == 2)// Mouse Released
-				{
-					//a.stopStroke();
-					drawing = false;
-				}
-				else if(e.getAction() == 3) // Mouse Clicked
-				{
-				}
-				else if(e.getAction() == 4) // Mouse Dragged
-				{
-					//a.recordStroke(e.getX(), e.getY());
-				}
-				else if(e.getAction() == 5)
-				{
-				}
-			}
+			
 		}
 		*/
+		
+		
+		
 	}
 	
 	/*

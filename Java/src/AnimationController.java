@@ -91,6 +91,46 @@ public class AnimationController {
 		}	
 	}
 	
+	public Key calculateCurrentFrame(int frame)
+	{
+		Key added_keys = new Key(0,0,0,p);
+		
+		for(Stroke stroke: strokes)
+		{
+			PVector stroke_position = stroke.positionAtFrame(frame);
+			if(stroke_position != null)
+			{
+				added_keys = added_keys.add(compileDeltaKeys(stroke_position.x, stroke_position.y));
+			}
+		}
+		
+		if(p.main_windows.sheet.animation_mode == p.main_windows.sheet.DRAW)
+		{
+			if(p.main_windows.sheet.withinBounds(p.mouseX, p.mouseY));
+			{
+				added_keys = added_keys.add(compileDeltaKeys(p.mouseX, p.mouseY));
+			}
+		}
+		
+		return added_keys;
+	}
+	
+	void showCurrentFrame(int frame)
+	{
+		if(p.main_windows.sheet.animation_mode == p.main_windows.sheet.DRAW)
+		{
+			Key all_keys_added = calculateCurrentFrame(frame);
+			
+			if(p.main_windows.stage.active_key != null)
+			{
+				p.main_windows.stage.exitActiveKey();
+			}
+			//p.println("DELTAS ARE");
+			//p.animation.compileDeltaKeys(x_input, y_input).printDeltaData();
+			p.main_windows.stage.applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, all_keys_added);
+		}
+	}
+	
 	public void stopStroke()
 	{
 		if(recording_stroke)
@@ -150,6 +190,8 @@ public class AnimationController {
 				last_checked_time = System.currentTimeMillis();
 			}
 		}
+		
+		showCurrentFrame((int)current_frame);
 	}
 	
 	public void checkKeyEvent(KeyEvent e)
@@ -167,8 +209,18 @@ public class AnimationController {
 				pause();
 			}
 		}
-		if(e.getKeyCode() == 67)
+		if(e.getKeyCode() == 68)
 		{
+			// If 'D' is pressed, toggle between drawing and composition mode
+			if(p.main_windows.sheet.animation_mode == p.main_windows.sheet.DRAW)
+			{
+				p.main_windows.sheet.switchToCompositionMode();
+			}
+			else if(p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION)
+			{
+				p.main_windows.sheet.switchToDrawingMode();
+			}
+			/*
 			if(!p.main_windows.stage.showing_compiled_keys)
 			{
 				Utilities.printAlert("Showing compiled keys");
@@ -179,6 +231,7 @@ public class AnimationController {
 				p.main_windows.stage.stopCompiledKeys();
 				Utilities.printAlert("Stopping compiled keys");
 			}
+			*/
 		}
 	}
 
