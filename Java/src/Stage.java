@@ -187,9 +187,7 @@ public class Stage extends Element{
 		}
 		
 	}
-	
-	
-	
+		
 	void goToActiveKey(Key key)
 	{
 		// If the key we are going to is NOT already the active key

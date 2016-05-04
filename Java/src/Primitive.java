@@ -149,12 +149,34 @@ public class Primitive
 				{
 					case Primitive.PROP_X:
 					p.println("ADDING PROPERTY X FROM KEY " + key + " TO PRIMITIVE " + this);
-					this.x += found_data.x;
+					if(parent != null)
+					{
+						PVector x_rotated = new PVector(found_data.x, 0);
+						x_rotated = x_rotated.rotate(PApplet.radians(parent.rotation));
+						this.x += x_rotated.x;
+						this.y += x_rotated.y;
+						p.println("!<!<!<!<!<!ADDING X: " + x_rotated);
+					}
+					else
+					{
+						this.x += found_data.x;
+					}
 					return;
 					
 					case Primitive.PROP_Y:
 					p.println("ADDING PROPERTY Y FROM KEY " + key + " TO PRIMITIVE " + this);
-					this.y += found_data.y;
+					if(parent != null)
+					{
+						PVector y_rotated = new PVector(0, found_data.y);
+						y_rotated = y_rotated.rotate(PApplet.radians(parent.rotation));
+						this.y += y_rotated.y;
+						this.x += y_rotated.x;
+						p.println("!<!<!<!<!<!ADDING Y: " + y_rotated);
+					}
+					else
+					{
+						this.y += found_data.y;
+					}
 					return;
 					
 					case Primitive.PROP_LEFT:
@@ -929,11 +951,12 @@ public class Primitive
 			
 			if(delta_recording_start) // DELTA RECORDING FOR KEYS
 			{
-				if(false)
+				if(parent != null)
 				{
+					// If there is a parent, record the movement relative to the rotation of the parent
 					// Local position should be calculated IF a parent exists.
 					PVector global_to_local = new PVector(-amount_x, -amount_y);
-					global_to_local = global_to_local.rotate(PApplet.radians(-rotation));
+					global_to_local = global_to_local.rotate(PApplet.radians(-parent.rotation));
 					
 					delta_local_x += global_to_local.x;
 					delta_local_y += global_to_local.y;
