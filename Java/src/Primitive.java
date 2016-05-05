@@ -55,7 +55,6 @@ public class Primitive
 	final static int WIDTH_HEIGHT = 3;
 	// Transform Data
 	PVector transform_offset; // General purpose var for holding transform info
-	float transform_rotate_last_angle;
 	float transform_init_t, transform_init_b;
 	float transform_init_l, transform_init_r;
 	
@@ -677,7 +676,7 @@ public class Primitive
 		
 		p.pushMatrix();
 		p.translate(stage.camera.x+x, stage.camera.y+y);
-		
+		p.text("ROTATION: " + rotation, 10, 0);
 		p.rotate(PApplet.radians(rotation));
 
 		style_default.apply();
@@ -699,7 +698,7 @@ public class Primitive
 		
 		p.stroke(0);
 		p.fill(0);
-		//p.text(this.toString(), 0, 0);
+		
 		//p.text((int)this.x + ", " + (int)this.y, 0, 10);
 		//p.text("Delta Recording: " + delta_recording_start, 0, 20);
 		
@@ -1023,50 +1022,32 @@ public class Primitive
 	{
 		if(transform_mode == NONE)
 		{
-			transform_offset  = new PVector(x_input-x, y_input-y); // Unused & does not account for parenting
+			transform_offset  = new PVector(x_input - (x + stage.camera.x), y_input - (y + stage.camera.y));
 			transform_mode    = ROTATE;
-			
-			float transform_angle_x = x_input - (x + stage.camera.x);
-			float transform_angle_y = y_input - (y + stage.camera.y);
-			
-			p.println("Angle Pos " + transform_angle_x + " " + transform_angle_y);
-			
-			transform_rotate_last_angle = PApplet.degrees(PApplet.atan2(transform_angle_x, transform_angle_y));
 		}
 		if(transform_mode == ROTATE)
 		{
-			transform_offset  = new PVector(x_input-x, y_input-y); // Unused & does not account for parenting
+			PVector cur_vector = new PVector(x_input - (x + stage.camera.x), y_input - (y + stage.camera.y));
+			int direction = 0;
 
-			float transform_angle_x = x_input - (x + stage.camera.x);
-			float transform_angle_y = y_input - (y + stage.camera.y);
-			
-			float current_transform_angle    = PApplet.degrees(PApplet.atan2(transform_angle_x, transform_angle_y));		
-			
-			if(current_transform_angle > 0 && transform_rotate_last_angle < 0)
-			{ 	// If the mouse moves from -180 to +180
-				transform_rotate_last_angle = 180+(180-(-1*transform_rotate_last_angle));
-				//p.println("Moved between -/+ " + transform_rotate_last_angle);
+			if(isPointLeftOfLine(new PVector(0,0), transform_offset, x_input - (x + stage.camera.x) , y_input - (y + stage.camera.y)))
+			{
+				direction = 1;
 			}
-			else if(current_transform_angle < 0 && transform_rotate_last_angle > 0)
-			{	// If the mouse moves from +180 to -180
-				transform_rotate_last_angle = -1*(180+(180-transform_rotate_last_angle));
-				//p.println("Moved between +/- " + transform_rotate_last_angle);
+			else 
+			{
+				direction = -1;
 			}
 			
-			float transform_angle_difference = current_transform_angle-transform_rotate_last_angle;
-			rotation -= transform_angle_difference;
+			float transform_angle_difference = PApplet.degrees(PVector.angleBetween(cur_vector, transform_offset));
+			transform_offset = cur_vector;
+			rotation += transform_angle_difference * direction;
 			
 			// DELTA RECORDING
 			if(delta_recording_start)
 			{
-				delta_rotation -= transform_angle_difference;
+				delta_rotation += transform_angle_difference * direction;
 			}
-			
-			//p.println("Last Angle " + transform_rotate_last_angle);
-			//p.println("Transform Difference " + transform_angle_difference);
-			//p.println("Current Primitive Angle " + rotation);
-			
-			transform_rotate_last_angle = current_transform_angle;
 		}
 	}
 	
@@ -1350,9 +1331,12 @@ public class Primitive
 	
 	public void unparent()
 	{
-		disableParentControl();
-		parent.removeChildFromChildren(this);
-		parent = null;
+		if(parent != null)
+		{
+			disableParentControl();
+			parent.removeChildFromChildren(this);
+			parent = null;
+		}
 	}
 	
 	//===============//
