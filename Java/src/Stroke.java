@@ -43,7 +43,7 @@ public class Stroke {
 	{
 		
 		p.stroke(0);
-		p.strokeWeight(20);
+		p.strokeWeight(10);
 		
 		if(points != null && points.size()>1)
 		{
@@ -56,8 +56,8 @@ public class Stroke {
 	
 	void drawSimple()
 	{
-		p.stroke(0,150);
-		p.strokeWeight(5);
+		p.stroke(0,50);
+		p.strokeWeight(10);
 		p.noFill();
 		
 		if(points != null)

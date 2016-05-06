@@ -222,13 +222,13 @@ public class Key {
 	public void draw()
 	{
 		p.noStroke();
-		p.fill(color[0],color[1],color[2],255);		
+		p.fill(color[0]+100,color[1]+100,color[2]+100,255);		
 		// Insert center vertex
 		p.beginShape(p.TRIANGLE_FAN);
 		p.vertex(x,y);
 		
 		//p.fill(color[0],color[1],color[2],0);
-		p.fill(color[0]+150,color[1]+150,color[2]+150);
+		p.fill(color[0]+180,color[1]+180,color[2]+180);
 		for(float[] point: shape)
 		{
 			p.vertex((d/2*point[0]) + x,(d/2*point[1]) + y);
@@ -238,7 +238,7 @@ public class Key {
 		if(hover)
 		{
 			p.noFill();
-			p.strokeWeight(3);
+			p.strokeWeight(2);
 			p.stroke(230);
 			p.ellipse(x,y,d,d);
 		}
@@ -247,14 +247,14 @@ public class Key {
 		{
 			p.noFill();
 			p.strokeWeight(3);
-			p.stroke(50);
+			p.stroke(color[0]+50,color[1]+50,color[2]+50);
 			p.ellipse(x,y,d,d);
 		}
 		
 		p.noStroke();
 		if(p.main_windows.sheet.active_key_selection == this)
 		{
-			p.fill(255,0,0);
+			p.fill(color[0]+50,color[1]+50,color[2]+50);
 		}
 		else
 		{
@@ -265,7 +265,7 @@ public class Key {
 		p.rect(x, y, 5, 5);
 		p.rectMode(p.CORNER);
 		
-		p.text(Long.toString(last_time_selected), x, y);
+		//p.text(Long.toString(last_time_selected), x, y);
 		//p.println(last_time_selected);
 	}
 	
@@ -285,8 +285,9 @@ public class Key {
 		}
 		*/
 		
+		
 		float weight = Utilities.gaussian1d(x_input, this.x, this.d/6f) * Utilities.gaussian1d(y_input, this.y, this.d/6f);
-		weight *= 1.0;
+		weight *= 1;
 		
 		if(weight > 1)
 		{
@@ -510,6 +511,17 @@ public class Key {
 			this.primitive = primitive;
 		}
 	
+		void set(PrimitiveData data)
+		{
+			this.x = data.x;
+			this.y = data.y;
+			this.t = data.t;
+			this.b = data.b;
+			this.l = data.l;
+			this.r = data.r;
+			this.rt = data.rt;
+		}
+		
 		void add(PrimitiveData data)
 		{
 			this.x += data.x;

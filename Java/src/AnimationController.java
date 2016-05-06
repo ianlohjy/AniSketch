@@ -12,7 +12,7 @@ public class AnimationController {
 	static final int PLAY = 1;
 	
 	int playback = PAUSE;
-	long frame_range[] = {0, 250};
+	long frame_range[] = {0, 1};
 	long current_frame = 0;		
 	long last_checked_time = System.currentTimeMillis();
 	
@@ -42,10 +42,15 @@ public class AnimationController {
 	public Key compileDeltaKeys(float x_input, float y_input)
 	{
 		Key compiled_key = new Key(0,0,0,p);
+		float highest_weight = 0;
 		
 		// For all delta keys
 		for(Key delta_key: delta_keys)
 		{
+			if(delta_key.getWeight(x_input, y_input) > highest_weight)
+			{
+				highest_weight = delta_key.getWeight(x_input, y_input);
+			}
 			// For all data in delta keys
 			for(Key.PrimitiveData primitive_data: delta_key.primitive_data)
 			{ 
@@ -53,6 +58,22 @@ public class AnimationController {
 				compiled_key.addPrimitiveData(primitive_data.mult(delta_key.getWeight(x_input, y_input)));
 			}
 		}
+		
+		/*
+		float multiplier = 1f/highest_weight;
+		
+		if(highest_weight < 0.0000000000000000000001)
+		{
+			multiplier = 1;
+		}
+		
+		p.println("HIGHEST WEIGHT IS : " + highest_weight + ", " + multiplier + ", " + highest_weight*multiplier);
+		
+		for(Key.PrimitiveData data: compiled_key.primitive_data)
+		{
+			data.set(data.mult(multiplier));
+		}
+		*/
 		return compiled_key;
 	}
 	

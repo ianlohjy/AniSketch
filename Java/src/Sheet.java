@@ -48,10 +48,13 @@ public class Sheet extends Element{
 		p.clip(x, y, w, h);
 		default_style.apply();
 		p.rect(x, y, w, h);
-		drawStrokes();
+		
 		p.blendMode(p.MULTIPLY);
 		drawKeys();
 		p.blendMode(p.NORMAL);
+		
+		drawStrokes();
+		
 		p.noClip();
 		p.fill(0);
 		
