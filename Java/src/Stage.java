@@ -283,10 +283,12 @@ public class Stage extends Element{
 		}
 	}
 	
-	void addPrimitive(float x, float y, float w, float h, Stage stage, AnimationController a, AniSketch p)
+	Primitive addPrimitive(float x, float y, float w, float h, Stage stage, AnimationController a, AniSketch p)
 	{
-		primitives.add(new Primitive(x, y, w, h, this, a, p));
+		Primitive new_primitive = new Primitive(x, y, w, h, this, a, p);
+		primitives.add(new_primitive);
 		buildPrimitiveSelectionRank();
+		return new_primitive;
 	}
 	
 	void buildPrimitiveSelectionRank()

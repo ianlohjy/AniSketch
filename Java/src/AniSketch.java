@@ -89,7 +89,6 @@ public class AniSketch extends PApplet
 		gesture_handler.update();
 		
 		text("Framerate " + (int)frameRate, 5, 15);
-		
 	}
 
 	public void initialiseGestureHandler()

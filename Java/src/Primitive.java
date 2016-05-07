@@ -676,7 +676,7 @@ public class Primitive
 		
 		p.pushMatrix();
 		p.translate(stage.camera.x+x, stage.camera.y+y);
-		p.text("ROTATION: " + rotation, 10, 0);
+		//p.text("ROTATION: " + rotation, 10, 0);
 		p.rotate(PApplet.radians(rotation));
 
 		style_default.apply();

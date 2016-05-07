@@ -159,7 +159,15 @@ public class GestureHandler {
             		if(p.main_windows.stage.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
                 	{
             			Stage stage = p.main_windows.stage;
-            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.animation, p);
+            			float[] box_shape = findBoxShapeAndAngle(candidate.input_points);
+            			if(box_shape != null)
+            			{
+            				p.println("BOX SHAPE " + box_shape[0] + " " + box_shape[1] + " " + box_shape[2] + " " + box_shape[3] + " " + box_shape[4] + " " );
+            				Primitive new_primitive = p.main_windows.stage.addPrimitive(box_shape[0] - stage.camera.x, box_shape[1] - stage.camera.y, box_shape[3], box_shape[4], p.main_windows.stage, p.animation, p);
+            				new_primitive.rotation = box_shape[2]+90;
+            				
+            			}
+            			
                 	}
             	}
             p.println("THIS IS A SQUARE");
@@ -237,7 +245,61 @@ public class GestureHandler {
 		}
 	}
 	
-	float checkAngleVarience(ArrayList<PVector> points)
+	
+	public float[] findBoxShapeAndAngle(ArrayList<PVector> input_points)
+	{
+		PVector top_point;
+		PVector bottom_point;
+		PVector left_point;
+		PVector right_point;
+		
+		if(input_points != null && input_points.size() != 0)
+		{
+			top_point = input_points.get(0).copy();
+			bottom_point = input_points.get(0).copy();
+			left_point = input_points.get(0).copy();
+			right_point = input_points.get(0).copy();
+			
+			for(PVector cur_point: input_points)
+			{
+				if(cur_point.y < top_point.y)
+				{
+					top_point = cur_point;
+				}
+				if(cur_point.y > bottom_point.y)
+				{
+					bottom_point = cur_point;
+				}
+				if(cur_point.x > right_point.x)
+				{
+					right_point = cur_point;
+				}
+				if(cur_point.x < left_point.x)
+				{
+					left_point = cur_point;
+				}
+			}
+			
+			// Find the 'vertical' vector axis of the box shape
+			PVector top_local_pt    = new PVector((left_point.x+top_point.x)/2, (left_point.y+top_point.y)/2);
+			PVector bottom_local_pt = new PVector((right_point.x+bottom_point.x)/2, (right_point.y+bottom_point.y)/2);
+			PVector vertical_axis = top_local_pt.copy().sub(bottom_local_pt);
+
+			// Find the 'horizontal' vector axis of the box shape
+			PVector left_local_pt = new PVector((left_point.x+bottom_point.x)/2, (left_point.y+bottom_point.y)/2);
+			PVector right_local_pt = new PVector((top_point.x+right_point.x)/2, (top_point.y+right_point.y)/2);
+			PVector horizontal_axis = right_local_pt.copy().sub(left_local_pt);
+
+			// Find the center point by averaging all points
+			PVector center = new PVector((top_local_pt.x+bottom_local_pt.x+left_local_pt.x+right_local_pt.x)/4, (top_local_pt.y+bottom_local_pt.y+left_local_pt.y+right_local_pt.y)/4);
+			
+			float[] result = {center.x, center.y, PApplet.degrees(vertical_axis.heading()), horizontal_axis.mag(), vertical_axis.mag()};
+			return result;
+		}
+		return null;
+	}
+	
+	public float checkAngleVarience(ArrayList<PVector> points)
 	{
 		float average_angle_variance = 0;
 		
