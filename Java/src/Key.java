@@ -11,6 +11,7 @@ public class Key {
 	float d;
 	float deviation_width;
 	float[] color = new float[3];
+	float min_d = 100;
 	
 	AniSketch p;
 	ArrayList<PrimitiveData> primitive_data;
@@ -29,9 +30,13 @@ public class Key {
 	int transform_mode;
 	final static int NONE = 0;
 	final static int MOVE = 1;
+	final static int WIDTH = 2;
 	// Transform Data
 	PVector transform_offset; // General purpose var for holding transform info
 
+	// HANDLES // 
+	HandleRing ring_handle = new HandleRing(this);
+	
 	// SELECTION // 
 	long last_time_selected = 0;
 	
@@ -215,12 +220,12 @@ public class Key {
 	// MAIN //
 	public void update()
 	{
-		draw();
 	}
 	
 	// DRAWING // 
 	public void draw()
 	{
+		
 		p.noStroke();
 		p.fill(color[0]+100,color[1]+100,color[2]+100,255);		
 		// Insert center vertex
@@ -235,7 +240,7 @@ public class Key {
 		}
 		p.endShape();
 		
-		if(hover)
+		if(hover && !selected)
 		{
 			p.noFill();
 			p.strokeWeight(2);
@@ -245,22 +250,24 @@ public class Key {
 		
 		if(selected)
 		{
+			ring_handle.draw();
 			p.noFill();
 			p.strokeWeight(3);
 			p.stroke(color[0]+50,color[1]+50,color[2]+50);
-			p.ellipse(x,y,d,d);
+			//p.ellipse(x,y,d,d);
 		}
 		
 		p.noStroke();
 		if(p.main_windows.sheet.active_key_selection == this)
 		{
-			p.fill(color[0]+50,color[1]+50,color[2]+50);
+			p.fill(color[0],color[1],color[2]);
 		}
 		else
 		{
 			p.fill(0,0,0);
 		}
 		
+		p.fill(color[0],color[1],color[2]);
 		p.rectMode(p.CENTER);
 		p.rect(x, y, 5, 5);
 		p.rectMode(p.CORNER);
@@ -325,6 +332,38 @@ public class Key {
 		}
 	}
 	
+	public void doWidth(float x_input, float y_input)
+	{
+		if(transform_mode == NONE)
+		{
+			transform_mode = WIDTH;
+			transform_offset = new PVector(x_input, y_input);
+		}
+		
+		if(transform_mode == WIDTH)
+		{
+			float cur_dist = PApplet.dist(this.x, this.y, x_input, y_input);
+			float last_dist = PApplet.dist(this.x, this.y, transform_offset.x, transform_offset.y);
+			
+			this.d = cur_dist * 2;	
+			
+			if(this.d < this.min_d)
+			{
+				this.d = min_d;
+			}
+			
+			transform_offset = new PVector(x_input, y_input);
+		}
+	}
+	
+	public void endWidth(float x_input, float y_input)
+	{
+		if(transform_mode == WIDTH)
+		{
+			transform_mode = NONE;
+		}
+	}
+	
 	public boolean withinBounds(float x_input, float y_input)
 	{
 		if(PApplet.dist(x_input, y_input, this.x, this.y) < d/2)
@@ -364,129 +403,224 @@ public class Key {
 	public int[] checkMouseEvent(MouseEvent e, Key active_key_selection, ArrayList<Key> selectable_keys, boolean allow_switching)
 	{
 		boolean within_bounds = withinBounds(e.getX(), e.getY());
+		boolean handles_mouse_event_state = false;
+		int[] mouse_status = {0,0}; 
 		// Mouse state communicates how the Key has processed the mouse event
 		// mouse_status[0] = if the mouse is within the bounds of the object
-		// mouse_status[1] = if the Key has become the active selection
+		// mouse_status[1] = if the Key has become the active selection (1) if the key has been deselected (-1)
 		
-		int[] mouse_status = {0,0}; 
-		
-	
-		if(e.getAction() == 1)// Mouse Pressed
+		if(selected)
 		{
-			if(e.getButton() == 37) // If it was a left-click
+			handles_mouse_event_state = checkMouseEventHandle(e);
+		}
+		
+		if(!handles_mouse_event_state)
+		{
+			if(e.getAction() == 1)// Mouse Pressed
 			{
-				// If withing bounds
-				if(within_bounds)
+				if(e.getButton() == 37) // If it was a left-click
 				{
-					// If the active key is NOT selectable 
-					if(!selectableKeysContainsKey(selectable_keys, active_key_selection))
+					// If withing bounds
+					if(within_bounds)
 					{
-						// If there is no active key OR the active key is out of bounds
-						if(active_key_selection == null || !active_key_selection.withinBounds(e.getX(), e.getY()))
+						// If the active key is NOT selectable, meaning that the current selected key is not in the possible selection list 
+						if(!selectableKeysContainsKey(selectable_keys, active_key_selection))
 						{
-							if(lastSelectionTimeIsLowest(selectable_keys))
+							// And if there is no active key OR the active key is out of bounds
+							if(active_key_selection == null || !active_key_selection.withinBounds(e.getX(), e.getY()))
 							{
-								selected = true;
-								last_time_selected = System.currentTimeMillis();
-								mouse_status[1] = 1;
-								p.println("PRESS");
+								if(lastSelectionTimeIsLowest(selectable_keys))
+								{
+									selected = true;
+									last_time_selected = System.currentTimeMillis();
+									mouse_status[1] = 1;
+									p.println("PRESS");
+								}
 							}
 						}
-					}
-				}
-				else
-				{
-					selected = false;
-					mouse_status[1] = -1;
-				}
-			}
-		}
-		else if(e.getAction() == 2)// Mouse Released
-		{
-			if(e.getButton() == 37) // If it was a left-click
-			{
-				endTranslate(e.getX(), e.getY());
-			}
-		}
-		else if(e.getAction() == 3) // Mouse Clicked
-		{
-			if(e.getButton() == 37) // If it was a left-click
-			{			
-				// Clicking will cycle through selections
-				if(within_bounds)
-				{
-					if(active_key_selection == this)
-					{
-						p.println("CLICK");
-						if(selectableKeysContainsKey(selectable_keys, this) && selectable_keys.size() != 1)
-						{
-							selected = false;
-							mouse_status[1] = -1;
-						}
-						//selected = false;
-						//mouse_status[1] = 0;
 					}
 					else
 					{
-						if(lastSelectionTimeIsLowest(selectable_keys))
+						selected = false;
+						mouse_status[1] = -1;
+					}
+				}
+			}
+			else if(e.getAction() == 2)// Mouse Released
+			{
+				if(e.getButton() == 37) // If it was a left-click
+				{
+					endTranslate(e.getX(), e.getY());
+				}
+			}
+			else if(e.getAction() == 3) // Mouse Clicked
+			{
+				if(e.getButton() == 37) // If it was a left-click
+				{			
+					// Clicking will cycle through selections
+					if(within_bounds)
+					{
+						if(active_key_selection == this)
 						{
-							if(allow_switching)
+							p.println("CLICK");
+							if(selectableKeysContainsKey(selectable_keys, this) && selectable_keys.size() != 1)
 							{
-								for(Key other_keys: selectable_keys)
+								selected = false;
+								mouse_status[1] = -1;
+							}
+							//selected = false;
+							//mouse_status[1] = 0;
+						}
+						else
+						{
+							if(lastSelectionTimeIsLowest(selectable_keys))
+							{
+								if(allow_switching)
 								{
-									other_keys.selected = false;
+									for(Key other_keys: selectable_keys)
+									{
+										other_keys.selected = false;
+									}
+									
+									selected = true;
+									last_time_selected = System.currentTimeMillis();
+									mouse_status[1] = 1;
+									p.println("PRESS");
 								}
-								
-								selected = true;
-								last_time_selected = System.currentTimeMillis();
-								mouse_status[1] = 1;
-								p.println("PRESS");
 							}
 						}
 					}
 				}
 			}
-		}
-		else if(e.getAction() == 4) // Mouse Dragged
-		{
-			if(e.getButton() == 37) // If it was a left-click
+			else if(e.getAction() == 4) // Mouse Dragged
 			{
-				if(within_bounds)
+				if(e.getButton() == 37) // If it was a left-click
+				{
+					if(within_bounds)
+					{
+						hover = true;
+					}
+					
+					if(selected)
+					{
+						if(e.getButton() == 37)
+						{
+							doTranslate(e.getX(), e.getY());
+						}	
+					}
+				}
+			}
+			else if(e.getAction() == 5) // When mouse is moved
+			{
+				if(within_bounds) 
 				{
 					hover = true;
 				}
-				
-				if(selected)
+				else 
 				{
-					if(e.getButton() == 37)
-					{
-						doTranslate(e.getX(), e.getY());
-					}	
+					hover = false;
 				}
 			}
-		}
-		else if(e.getAction() == 5) // When mouse is moved
-		{
-			if(within_bounds) 
+			
+			if(within_bounds)
 			{
-				hover = true;
+				mouse_status[0] = 1;
 			}
-			else 
+			else
 			{
-				hover = false;
+				mouse_status[0] = -1;
 			}
 		}
-		
-		if(within_bounds)
-		{
-			mouse_status[0] = 1;
-		}
-		else
-		{
-			mouse_status[0] = -1;
-		}
-		
 		return mouse_status;
+	}
+	
+	public boolean checkMouseEventHandle(MouseEvent e)
+	{
+		return ring_handle.checkMouseEvent(e);
+	}
+	
+	// HANDLES //
+	
+	class HandleRing
+	{
+		Key key;
+		boolean selected, hover;
+		float ring_width = 10;
+		
+		HandleRing(Key key)
+		{
+			this.selected = false;
+			this.hover = false;
+			this.key = key;
+		}
+		
+		void draw()
+		{
+			//p.stroke();
+			p.stroke(color[0]+70,color[1]+70,color[2]+70);
+			p.strokeWeight(ring_width);
+			p.noFill();
+			p.ellipse(key.x, key.y, (key.d)-(ring_width/2), (key.d)-(ring_width/2));
+		}
+		
+		boolean withinBounds(float x_input, float y_input)
+		{
+			float dist_to_mouse = PApplet.dist(key.x, key.y, x_input, y_input); 
+			
+			if(dist_to_mouse >= (d/2)-8 && dist_to_mouse < (d/2))
+			{
+				return true;
+			}
+			return false;
+		}
+		
+		boolean checkMouseEvent(MouseEvent e)
+		{
+			boolean within_bounds = withinBounds(e.getX(), e.getY());
+			boolean mouse_state = false;
+			
+			if(e.getAction() == 1) // When mouse is pressed (down)
+			{
+				if(e.getButton() == 37)
+				{
+					if(within_bounds)
+					{
+
+						selected = true;
+						mouse_state = true;	
+					}
+					else 
+					{
+						selected = false;
+					}
+				}	
+			}
+			else if(e.getAction() == 2) // When mouse is released
+			{
+				selected = false;
+				key.endWidth(e.getX(), e.getY());
+			}
+			else if(e.getAction() == 4) // When mouse is dragged
+			{
+				if(selected)
+				{
+					mouse_state = true;
+					key.doWidth(e.getX(), e.getY());
+				}
+			}
+			else if(e.getAction() == 5) // When mouse is moved
+			{
+				if(within_bounds) {hover = true;}
+				else {hover = false;}
+			}
+			return mouse_state;
+		}
+		
+	}
+	
+	class HandleSlider
+	{
+		
 	}
 	
 	//=======================//
@@ -620,6 +754,6 @@ public class Key {
 			PApplet.println("T/B/L/R | " + this.t + ", " + this.b + ", " + this.l + ", " + this.r);
 			
 		}
-	
+
 	}
 }
