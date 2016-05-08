@@ -966,7 +966,6 @@ public class Primitive
 	//======================//
 	// PRIMITIVE OPERATIONS //
 	//======================//
-	
 	// High level actions that operate only on the primitive
 	
 	//====================//
