@@ -52,7 +52,9 @@ public class Sheet extends Element{
 		drawKeys();
 		p.blendMode(p.NORMAL);
 		
+		//p.blendMode(p.EXCLUSION);
 		drawStrokes();
+		p.blendMode(p.NORMAL);
 		
 		p.noClip();
 		p.fill(0);
@@ -83,12 +85,12 @@ public class Sheet extends Element{
 	{
 		for(Stroke stroke: a.strokes)
 		{
-			stroke.drawSimple();
+			stroke.draw();
 		}
 		
 		if(a.recorded_stroke != null)
 		{
-			a.recorded_stroke.drawSimple();
+			a.recorded_stroke.draw();
 		}
 	}
 	
