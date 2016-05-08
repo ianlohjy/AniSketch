@@ -260,7 +260,7 @@ public class Stage extends Element{
 		p.noClip();
 	}
 
-	void handleDelete()
+	void handlePrimitiveDeletion()
 	{
 		for(int p=0; p<primitives.size(); p++)
 		{
@@ -275,7 +275,7 @@ public class Stage extends Element{
 	
 	void updatePrimitives()
 	{
-		handleDelete();
+		handlePrimitiveDeletion();
 		
 		for(int p=0; p<primitives.size(); p++)
 		{

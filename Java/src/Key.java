@@ -18,6 +18,8 @@ public class Key {
 	
 	float[][] shape;
 
+	boolean marked_for_deletion = false;
+	
 	//==============//
 	// MOUSE STATES //
 	//==============//
@@ -364,6 +366,16 @@ public class Key {
 		}
 	}
 	
+	public void delete()
+	{
+		// Check if the key is the active selection for the sheet/stage
+		if(p.main_windows.sheet.active_key_selection == this)
+		{
+			p.main_windows.sheet.active_key_selection = null;
+		}
+		marked_for_deletion = true;
+	}
+	
 	public boolean withinBounds(float x_input, float y_input)
 	{
 		if(PApplet.dist(x_input, y_input, this.x, this.y) < d/2)
@@ -445,6 +457,16 @@ public class Key {
 						mouse_status[1] = -1;
 					}
 				}
+				// REGISTER GESTURE EVENT //
+				if(within_bounds && e.getButton() == 39)// && selected)
+				{
+					p.gesture_handler.registerObject(this, e);
+				} 
+				else if(selected)
+				{
+					p.gesture_handler.registerObject(this, e);
+				}
+				////////////////////////////
 			}
 			else if(e.getAction() == 2)// Mouse Released
 			{
@@ -452,6 +474,12 @@ public class Key {
 				{
 					endTranslate(e.getX(), e.getY());
 				}
+				// REGISTER GESTURE EVENT //
+				if(within_bounds && e.getButton() == 39)// && selected)
+				{
+					p.gesture_handler.registerObject(this, e);
+				}
+				////////////////////////////
 			}
 			else if(e.getAction() == 3) // Mouse Clicked
 			{

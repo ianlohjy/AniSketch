@@ -40,7 +40,6 @@ public class Sheet extends Element{
 		drawing = false;
 		this.a = a;
 		possible_selections = new ArrayList<Key>();
-		a.addKey(200, 200, 150);
 	}
 	
 	void draw()

@@ -1,5 +1,6 @@
 import java.awt.dnd.peer.DropTargetPeer;
 import java.util.ArrayList;
+
 import processing.core.PApplet;
 import processing.core.PVector;
 import processing.event.MouseEvent;
@@ -130,7 +131,7 @@ public class GestureHandler {
 	            		}	
             		}
             	}
-            	else if(p.main_windows.sheet.withinBounds((int)response.startPoint.x, (int)response.startPoint.y))
+            	if(p.main_windows.sheet.withinBounds((int)response.startPoint.x, (int)response.startPoint.y))
             	{
             		if(p.main_windows.sheet.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
                 	{
@@ -198,20 +199,28 @@ public class GestureHandler {
             break;
             
             case "DELETE":
-            	if(state.startObjectSize() == 1)
+            	ArrayList<GestureState.ObjectState> found_selected_objects = state.selectedStartObjectsSize();
+            	
+            	if(found_selected_objects.size() == 1)
             	{
-            		if(state.start_point_objects.get(0).selected())
-            		{
-            			if(state.start_point_objects.get(0).isPrimitive())
+            		if(found_selected_objects.get(0).isPrimitive())
+        			{
+        				Primitive found_object = (Primitive)found_selected_objects.get(0).object;
+            			if(found_object.withinBounds(response.startPoint.x, response.startPoint.y))
             			{
-            				Primitive found_object = (Primitive)state.start_point_objects.get(0).object;
-	            			if(found_object.withinBounds(response.startPoint.x, response.startPoint.y))
-	            			{
-	            				found_object.delete();
-	            				PApplet.println("DELETING OBJECT");
-	            			}
+            				found_object.delete();
+            				PApplet.println("DELETING OBJECT");
             			}
-            		}
+        			}
+        			else if(found_selected_objects.get(0).isKey())
+        			{
+        				Key found_object = (Key)found_selected_objects.get(0).object;
+            			if(found_object.withinBounds(response.startPoint.x, response.startPoint.y))
+            			{
+            				found_object.delete();
+            				PApplet.println("DELETING KEY");
+            			}
+        			}
             	}
             p.println("EXECUTING DELETE");
             break;
@@ -244,7 +253,6 @@ public class GestureHandler {
 			}
 		}
 	}
-	
 	
 	public float[] findBoxShapeAndAngle(ArrayList<PVector> input_points)
 	{
@@ -434,6 +442,32 @@ public class GestureHandler {
 			return false;
 		}
 		
+		ArrayList<ObjectState> selectedStartObjectsSize()
+		{
+			ArrayList<ObjectState> selected = new ArrayList<ObjectState>();
+			for(ObjectState object: start_point_objects)
+			{
+				if(object.selected())
+				{
+					selected.add(object);
+				}
+			}
+			return selected;
+		}
+		
+		ArrayList<ObjectState> selectedEndObjectsSize()
+		{
+			ArrayList<ObjectState> selected = new ArrayList<ObjectState>();
+			for(ObjectState object: end_point_objects)
+			{
+				if(object.selected())
+				{
+					selected.add(object);
+				}
+			}
+			return selected;
+		}
+		
 		int startObjectSize()
 		{
 			return start_point_objects.size();
@@ -470,13 +504,13 @@ public class GestureHandler {
 			static final int STAGE = -1;
 			static final int NONE = 0; 
 			static final int PRIMITIVE = 1;
+			static final int KEY = 2;
 			
 			boolean mouse_state_selected = false;
 			boolean mouse_state_hover = false;
 			int object_type = NONE;
 			int window = NONE;
 			Object object;
-			
 			
 			ObjectState(Object input_object)
 			{
@@ -489,6 +523,15 @@ public class GestureHandler {
 					mouse_state_selected = primitive.selected;
 					mouse_state_hover = primitive.hover;
 					window = STAGE;
+				}
+				
+				if(input_object instanceof Key)
+				{
+					object_type = KEY;
+					Key key = (Key)input_object;
+					mouse_state_selected = key.selected;
+					mouse_state_hover = key.hover;
+					window = SHEET;
 				}
 			}
 			
@@ -528,6 +571,17 @@ public class GestureHandler {
 				}
 			}
 			
+			boolean isKey()
+			{
+				if(object_type == KEY)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
 		}
 	}
 	

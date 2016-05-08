@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 
+import processing.core.PApplet;
 import processing.core.PVector;
 import processing.event.KeyEvent;
 
@@ -75,6 +76,32 @@ public class AnimationController {
 		}
 		*/
 		return compiled_key;
+	}
+	
+	public void handleKeyDeletion()
+	{
+		for(int k=0; k<delta_keys.size(); k++)
+		{
+			if(delta_keys.get(k).marked_for_deletion)
+			{
+				deleteKey(delta_keys.get(k));
+				k--;
+			}
+		}		
+	}
+	
+	void deleteKey(Key to_delete)
+	{
+		int index_to_delete = delta_keys.indexOf(to_delete);
+		
+		if(index_to_delete != -1)
+		{
+			delta_keys.remove(index_to_delete);
+		}
+		else
+		{
+			PApplet.println("Key does not exist on sheet. Cannot delete");
+		}
 	}
 	
 	public void addKey(float x, float y, float d)
@@ -181,6 +208,8 @@ public class AnimationController {
 
 	public void update()
 	{
+		handleKeyDeletion();
+		
 		if(playback == PLAY)
 		{
 			// Check to see if a tick has passed
