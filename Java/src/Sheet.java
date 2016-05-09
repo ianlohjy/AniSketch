@@ -50,7 +50,7 @@ public class Sheet extends Element{
 		
 		p.blendMode(p.MULTIPLY);
 		drawKeys();
-		//p.blendMode(p.NORMAL);
+		p.blendMode(p.NORMAL);
 		
 		drawStrokes();
 		p.blendMode(p.NORMAL);

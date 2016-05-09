@@ -37,7 +37,7 @@ public class Stroke {
 	
 	void draw()
 	{
-		drawInk();
+		drawInk((int)a.current_frame-(int)start_frame, false);
 	}
 	
 	void drawLine()
@@ -66,30 +66,99 @@ public class Stroke {
 		}
 	}
 	
-	void drawInk()
+	void drawInk(int index_focus, boolean show_all)
 	{
+		int range = 250; // The number of points to render on either side of index focus
+		int fade_dist = 50;
+		//p.println(index_focus + " " + points.size());
+		
 		if(points != null && points.size() > 1)
 		{
-			//float min_dist = 10;
-			///float dist_traversed = 0;
-			//PVector segment_start = points.get(0);	
-			//int num_neighbors = 0;
-			int neighbours_to_check = 5;
+			int start_index = -1;
+			int end_index = -1;
 			
-			for(int pt=0; pt<points.size()-1; pt++)
+			if(show_all)
 			{
-				float width = widthFilter(points.get(pt).avg_neighbour_dist);
-				
-				p.noFill();
-				p.stroke(245);
-				p.strokeWeight(width);
-				p.line(points.get(pt).pos.x, points.get(pt).pos.y, points.get(pt+1).pos.x, points.get(pt+1).pos.y);
-				
-				if(width > 10)
+				start_index = 0;
+				end_index = points.size()-1;
+			}
+			else
+			{
+				if(index_focus <= 0) // If the index focus is before the stroke start
 				{
-					p.noStroke();
-					p.fill(245);
-					p.ellipse(points.get(pt).pos.x, points.get(pt).pos.y, width, width);
+					end_index = index_focus + range;
+					if(end_index > 0) // If the object is in range
+					{
+						start_index = 0;
+					}
+					if(end_index > points.size()-1)
+					{
+						end_index = points.size()-1;
+					}
+				}
+				else if(index_focus >= points.size()-1) // If the index focus is after the stroke end
+				{
+					start_index = index_focus-range;
+					if(start_index < points.size()-1)
+					{
+						end_index = points.size()-1;
+					}
+					if(start_index < 0)
+					{
+						start_index = 0;
+					}
+				}
+				else if(index_focus < points.size() && index_focus >= 0) // If the index focus is within the stroke
+				{
+					start_index = index_focus - range;
+					end_index   = index_focus + range;
+					
+					if(start_index < 0)
+					{
+						start_index = 0;
+					}
+					if(end_index > points.size()-1)
+					{
+						end_index = points.size()-1;
+					}
+				}
+			}
+			if(show_all || start_index != -1)
+			{
+				float base_opacity = 30;
+				int fade_in_limit  = index_focus-range+fade_dist;
+				int fade_out_limit = index_focus+range-fade_dist;
+				
+				p.println("FADE OUT AT INDEX " + fade_out_limit);
+				
+				for(int pt=start_index; pt<end_index; pt++)
+				{
+					float width = widthFilter(points.get(pt).avg_neighbour_dist);
+					float opacity = base_opacity;
+					
+					if(fade_in_limit >= 0 && pt < fade_in_limit)
+					{
+						opacity = -base_opacity * (((float)(fade_in_limit-pt)/fade_dist)-1);
+					}					
+					if(fade_out_limit < points.size() && pt > fade_out_limit)
+					{
+						opacity = -base_opacity * (((float)(pt-fade_out_limit)/fade_dist)-1);
+					}
+					
+					p.noFill();
+					p.stroke(100,opacity);
+					p.strokeWeight(width);
+					if(width < 20)
+					{
+						p.line(points.get(pt).pos.x, points.get(pt).pos.y, points.get(pt+1).pos.x, points.get(pt+1).pos.y);
+					}
+					
+					if(width > 15)
+					{
+						p.noStroke();
+						p.fill(100,opacity*0.75f);
+						p.ellipse(points.get(pt).pos.x, points.get(pt).pos.y, width, width);
+					}
 				}
 			}
 		}
@@ -101,7 +170,7 @@ public class Stroke {
 	{
 		float result = width;
 		
-		result = (2/result)*100;
+		result = (2/result)*80;
 		
 		if(result > 40)
 		{
@@ -112,7 +181,7 @@ public class Stroke {
 	
 	void drawCursor2(int index)
 	{
-		int trail_length = 5;
+		int trail_length = 10;
 		int start_index = index-trail_length;
 		int end_index = index;
 		int num_points = 0;
@@ -152,6 +221,8 @@ public class Stroke {
 			
 			if(c==end_index-1)
 			{
+				p.fill(0);
+				p.ellipse(points.get(c+1).pos.x, points.get(c+1).pos.y, width, width);
 				p.fill(0);
 				p.ellipse(points.get(c+1).pos.x, points.get(c+1).pos.y, width, width);
 			}
