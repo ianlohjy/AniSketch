@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 
 import processing.core.PApplet;
@@ -42,6 +43,9 @@ public class Key {
 	// SELECTION // 
 	long last_time_selected = 0;
 	
+	// CONNECTIONS //
+	ArrayList<Key> connections;
+	
 	Key(float x, float y, float d, AniSketch p)
 	{
 		this.x = x;
@@ -50,8 +54,35 @@ public class Key {
 		this.p = p;
 		
 		primitive_data = new ArrayList<PrimitiveData>();
+		connections = new ArrayList<Key>();
 		color = Utilities.randomColorPallete();
 		cacheCircle(30);
+	}
+	
+	public void connectToKey(Key key)
+	{
+		p.animation.connectKeys(this, key);
+	}
+	
+	public void disconnectKey(Key key)
+	{
+		p.animation.disconnectKeys(this, key);
+	}
+	
+	public void disconnectAllKeys()
+	{
+		while(connections.size() > 0)
+		{
+			p.println("!!#!#");
+			disconnectKey(connections.get(0));
+		}
+		
+		/*
+		for(Key connected: connections)
+		{
+			disconnectKey(connected);
+		}
+		*/
 	}
 	
 	// SETUP //
@@ -227,7 +258,6 @@ public class Key {
 	// DRAWING // 
 	public void draw()
 	{
-		
 		p.noStroke();
 		p.fill(color[0]+100,color[1]+100,color[2]+100,255);		
 		// Insert center vertex
@@ -293,7 +323,6 @@ public class Key {
 			return 0;
 		}
 		*/
-		
 		
 		float weight = Utilities.gaussian1d(x_input, this.x, this.d/6f) * Utilities.gaussian1d(y_input, this.y, this.d/6f);
 		weight *= 1;
@@ -535,6 +564,13 @@ public class Key {
 						{
 							doTranslate(e.getX(), e.getY());
 						}	
+					}
+				}
+				if(e.getButton() == 39) // If it was a right-click
+				{
+					if(within_bounds)
+					{
+						hover = true;
 					}
 				}
 			}

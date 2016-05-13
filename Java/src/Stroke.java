@@ -129,7 +129,7 @@ public class Stroke {
 				int fade_in_limit  = index_focus-range+fade_dist;
 				int fade_out_limit = index_focus+range-fade_dist;
 				
-				p.println("FADE OUT AT INDEX " + fade_out_limit);
+				//p.println("FADE OUT AT INDEX " + fade_out_limit);
 				
 				for(int pt=start_index; pt<end_index; pt++)
 				{
@@ -188,14 +188,10 @@ public class Stroke {
 
 		if(start_index < 0)
 		{
-			start_index = 0;
-			
+			start_index = 0;	
 		}
-		
 		num_points = end_index-start_index;
-		
 		p.noFill();
-		
 		for(int c=start_index; c<end_index; c++)
 		{
 			float opacity = 0;
@@ -206,7 +202,7 @@ public class Stroke {
 				opacity = ((float)(c-start_index)/(float)num_points)*255;
 			}
 			
-			p.println(opacity);
+			//p.println(opacity);
 			
 			p.stroke(0,opacity);
 			p.strokeWeight(width);
@@ -228,7 +224,6 @@ public class Stroke {
 			}
 		}
 	}
-	
 	
 	void drawStroke()
 	{
@@ -260,7 +255,6 @@ public class Stroke {
 			return null;
 		}
 	}
-	
 	
 	class StrokePoint
 	{

@@ -50,6 +50,7 @@ public class Sheet extends Element{
 		
 		p.blendMode(p.MULTIPLY);
 		drawKeys();
+		drawKeyShapes();
 		p.blendMode(p.NORMAL);
 		
 		drawStrokes();
@@ -70,6 +71,11 @@ public class Sheet extends Element{
 		p.text("Frame " + a.current_frame, 5, this.h - 30);
 		
 		update();
+	}
+	
+	void drawKeyShapes()
+	{
+		a.keyshapes.draw();
 	}
 	
 	void drawKeys()
@@ -136,6 +142,8 @@ public class Sheet extends Element{
 		// Check event, if it is a click, we know to change selection, 
 		// 
 		boolean within_bounds = withinBounds(e.getX(), e.getY());
+		
+		a.keyshapes.getWeights(e.getX(), e.getY());
 		
 		if(animation_mode == COMPOSITION)
 		{

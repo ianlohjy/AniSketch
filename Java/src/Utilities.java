@@ -41,6 +41,30 @@ public class Utilities {
 		System.err.println("<ALERT> " + message);
 	}
 	
+	public static float distToLine(float lx1, float ly1, float lx2, float ly2, float x, float y)
+	{
+	  // Based on the intuitive example from http://members.tripod.com/vector_applications/distance_point_line/
+	  // We find the distance to the line using the pythagorean theorem (a^2 + b^2 = c^2)
+	  
+	  // Finding the hypothenuse
+	  PVector hyp = new PVector(x, y);
+	  hyp = hyp.sub(lx1,ly1);
+	  float hyp_length = hyp.mag();
+
+	  // Finding the second length of the triangle
+	  PVector second_side = new PVector(lx2-lx1, ly2-ly1);
+	  second_side = second_side.normalize();
+	  float second_length = hyp.dot(second_side);
+	    
+	  // With the length of 2 sides, we can now calculate the last length (which is the perpendicular distance)
+	  return PApplet.sqrt((hyp_length*hyp_length) - (second_length*second_length));
+	}
+
+	public static boolean isPointLeftOfLine(PVector a, PVector b, float input_x, float input_y)
+	{
+		return ((b.x - a.x)*(input_y - a.y) - (b.y - a.y)*(input_x - a.x)) > 0;
+	}
+	
 	public static float gaussian1d(float position, float offset, float deviation)
 	{
 		// Gaussian function from https://en.wikipedia.org/wiki/Gaussian_function

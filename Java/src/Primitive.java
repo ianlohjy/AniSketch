@@ -753,21 +753,17 @@ public class Primitive
 	//========================================//
 	// COLLISION AND BOUNDING BOX CALCULATION //
 	//========================================//
-	public boolean isPointLeftOfLine(PVector a, PVector b, float input_x, float input_y)
-	{
-		return ((b.x - a.x)*(input_y - a.y) - (b.y - a.y)*(input_x - a.x)) > 0;
-	}
 	
 	public boolean withinBounds(float input_x, float input_y)
 	{
 		try{
-			if(!isPointLeftOfLine(bounding_points[0], bounding_points[1], input_x, input_y))
+			if(!Utilities.isPointLeftOfLine(bounding_points[0], bounding_points[1], input_x, input_y))
 			{
-				if(!isPointLeftOfLine(bounding_points[1], bounding_points[2], input_x, input_y))
+				if(!Utilities.isPointLeftOfLine(bounding_points[1], bounding_points[2], input_x, input_y))
 				{
-					if(!isPointLeftOfLine(bounding_points[2], bounding_points[3], input_x, input_y))
+					if(!Utilities.isPointLeftOfLine(bounding_points[2], bounding_points[3], input_x, input_y))
 					{
-						if(!isPointLeftOfLine(bounding_points[3], bounding_points[0], input_x, input_y))
+						if(!Utilities.isPointLeftOfLine(bounding_points[3], bounding_points[0], input_x, input_y))
 						{
 							return true;
 						}
@@ -1029,7 +1025,7 @@ public class Primitive
 			PVector cur_vector = new PVector(x_input - (x + stage.camera.x), y_input - (y + stage.camera.y));
 			int direction = 0;
 
-			if(isPointLeftOfLine(new PVector(0,0), transform_offset, x_input - (x + stage.camera.x) , y_input - (y + stage.camera.y)))
+			if(Utilities.isPointLeftOfLine(new PVector(0,0), transform_offset, x_input - (x + stage.camera.x) , y_input - (y + stage.camera.y)))
 			{
 				direction = 1;
 			}

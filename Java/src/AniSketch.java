@@ -16,7 +16,7 @@ public class AniSketch extends PApplet
 	
 	int cur_width;
 	int cur_height;
-	
+
 	GestureHandler gesture_handler;
 	MainWindows main_windows;
 	AnimationController animation;
@@ -73,6 +73,11 @@ public class AniSketch extends PApplet
 		initialiseAnimationController(); // Animation Controller needs to be initialised first
 		initialiseMainWindows();
 		initialiseGestureHandler();
+		
+		animation.addKey(100, 100, 100);
+		animation.addKey(200, 200, 100);
+		animation.delta_keys.get(0).connectToKey(animation.delta_keys.get(1));
+		//animation.delta_keys.get(0).disconnectAllKeys();
 	}
 	
 	public void initialiseAnimationController()

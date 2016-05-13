@@ -28,6 +28,8 @@ public class AnimationController {
 	float last_recording_input_x = 0;
 	float last_recording_input_y = 0;
 	ArrayList<Key> delta_keys;
+	
+	KeyShapes keyshapes;
 	Key default_key;
 	
 	boolean showing_compiled_keys = false;
@@ -36,6 +38,7 @@ public class AnimationController {
 	{
 		this.p = p;
 		strokes = new ArrayList<Stroke>();
+		keyshapes = new KeyShapes(p);
 		delta_keys = new ArrayList<Key>();
 		default_key = new Key(0, 0, 0, p);
 	}
@@ -45,18 +48,35 @@ public class AnimationController {
 		Key compiled_key = new Key(0,0,0,p);
 		float highest_weight = 0;
 		
+		ArrayList<KeyShapes.KeyWeight> key_weights = keyshapes.compileWeights(x_input, y_input);
+		
 		// For all delta keys
 		for(Key delta_key: delta_keys)
 		{
-			if(delta_key.getWeight(x_input, y_input) > highest_weight)
+			// If the delta key has no connections (ie. if its not part of a bigger shape)
+			if(delta_key.connections.size() == 0)
 			{
-				highest_weight = delta_key.getWeight(x_input, y_input);
+				if(delta_key.getWeight(x_input, y_input) > highest_weight)
+				{
+					highest_weight = delta_key.getWeight(x_input, y_input);
+				}
+				// For all data in delta keys
+				for(Key.PrimitiveData primitive_data: delta_key.primitive_data)
+				{ 
+					// Add the primitive data contained in the delta key, multiplied by the delta key's weighting
+					compiled_key.addPrimitiveData(primitive_data.mult(delta_key.getWeight(x_input, y_input)));
+				}
 			}
+		}
+		
+		// For Keyshapes
+		for(KeyShapes.KeyWeight delta_key: key_weights)
+		{
 			// For all data in delta keys
-			for(Key.PrimitiveData primitive_data: delta_key.primitive_data)
+			for(Key.PrimitiveData primitive_data: delta_key.key.primitive_data)
 			{ 
 				// Add the primitive data contained in the delta key, multiplied by the delta key's weighting
-				compiled_key.addPrimitiveData(primitive_data.mult(delta_key.getWeight(x_input, y_input)));
+				compiled_key.addPrimitiveData(primitive_data.mult(delta_key.weight));
 			}
 		}
 		
@@ -78,6 +98,135 @@ public class AnimationController {
 		return compiled_key;
 	}
 	
+	// KeyShape Handling
+	
+	public void disconnectKeys(Key key1, Key key2)
+	{
+		if(key1.connections.contains(key2))
+		{
+			key1.connections.remove(key2);
+		}
+		
+		if(key2.connections.contains(key1))
+		{
+			key2.connections.remove(key1);
+		}
+		
+		KeyShapes.KeyLine found_keyline = keyshapes.connectionExists(key1, key2);
+		
+		if(found_keyline != null)
+		{
+			keyshapes.keylines.remove(found_keyline);
+		}
+	}
+	
+	public void connectKeys(Key key1, Key key2)
+	{
+		boolean connection_added = false;
+		
+		if(!key1.connections.contains(key2))
+		{
+			key1.connections.add(key2);
+			connection_added = true;
+		}
+		else
+		{
+			Utilities.printAlert("Keys are already connected");
+		}
+		
+		if(!key2.connections.contains(key1))
+		{
+			key2.connections.add(key1);
+			connection_added = true;
+		}
+		else
+		{
+			Utilities.printAlert("Keys are already connected");
+		}
+		
+		// If a new connection was made, handle the connection
+		if(connection_added)
+		{
+			keyshapes.connectKeys(key1, key2);
+		}
+			/*
+			ArrayList<KeyShape> shapes_with_key1 = findKeyShapesWithKey(key1);
+			ArrayList<KeyShape> shapes_with_key2 = findKeyShapesWithKey(key2);
+			KeyShape key1_shape = null; 
+			KeyShape key2_shape = null;
+			
+			if(shapes_with_key1.size() > 1 || shapes_with_key2.size() > 1)
+			{
+				Utilities.printError("There are more than 2 KeyShapes that contain these keys. That should not be happening");
+				return;
+			}
+			else
+			{
+				// Reassign the keyshapes in question for readibility
+				if(shapes_with_key1.size() == 1)
+				{
+					key1_shape = shapes_with_key1.get(0);
+				}
+				
+				if(shapes_with_key2.size() == 1)
+				{
+					key2_shape = shapes_with_key2.get(0);
+				}
+			}
+			
+			// If the there are no found keyshapes for either keys, make a new shape
+			if(key1_shape == null && key2_shape == null)
+			{
+				KeyShape new_keyshape = new KeyShape(p);
+				new_keyshape.connectKeys(key1, key2);
+				keyshapes.add(new_keyshape);
+			}
+			// If one shape has the key, add the loose key to that shape
+			else if(key1_shape != null && key2_shape == null)
+			{
+				key1_shape.connectKeys(key1, key2);
+			}
+			else if(key2_shape != null && key1_shape == null)
+			{
+				key2_shape.connectKeys(key1, key2);
+			}
+			// If both keys are already part of the existing shapes
+			else if(key1_shape != null && key2_shape != null)
+			{
+				// If the keys belong to the same shape
+				if(key1_shape == key2_shape)
+				{
+					key1_shape.connectKeys(key1, key2);
+				}
+				// If the shapes are not the same
+				else if(key1_shape != key2_shape)
+				{
+					key1_shape.mergeWith(key2_shape);
+				}
+			}
+
+		}
+		*/
+	}
+	
+	/*
+	public ArrayList<KeyShape> findKeyShapesWithKey(Key key)
+	{
+		// Returns the number of Keyshapes that contain a specific key, returns an empty list if there is none
+		ArrayList<KeyShape> returned_shapes = new ArrayList<KeyShape>();
+		
+		for(KeyShape keyshape: keyshapes)
+		{
+			if(keyshape.contains(key))
+			{
+				returned_shapes.add(keyshape);
+			}
+		}
+		return returned_shapes;
+	}
+	
+*/
+	
 	public void handleKeyDeletion()
 	{
 		for(int k=0; k<delta_keys.size(); k++)
@@ -96,6 +245,7 @@ public class AnimationController {
 		
 		if(index_to_delete != -1)
 		{
+			to_delete.disconnectAllKeys();
 			delta_keys.remove(index_to_delete);
 		}
 		else
@@ -108,6 +258,11 @@ public class AnimationController {
 	{
 		delta_keys.add(new Key(x, y, d, p));
 	}
+	
+	//public void addKeyLine(Key key1, Key key2)
+	//{
+	///	keylines.add(new KeyLine(key1, key2, p));
+	//}
 	
 	public void setCursor()
 	{

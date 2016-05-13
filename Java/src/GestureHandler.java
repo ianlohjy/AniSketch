@@ -116,6 +116,11 @@ public class GestureHandler {
 						Primitive found_object = (Primitive)state.start_point_objects.get(0).object;
             			found_object.unparent();
 					}
+					if(state.start_point_objects.get(0).mouse_state_selected && state.start_point_objects.get(0).isKey())
+					{
+						Key found_object = (Key)state.start_point_objects.get(0).object;
+            			found_object.disconnectAllKeys();
+					}
 				}
 			break;
 			
@@ -248,6 +253,13 @@ public class GestureHandler {
 						Primitive start_object = (Primitive)state.start_point_objects.get(0).object;
 						Primitive end_object = (Primitive)state.end_point_objects.get(0).object;
 						start_object.setParent(end_object);
+					}
+					if(state.end_point_objects.get(0).isKey() && state.start_point_objects.get(0).isKey())
+					{
+						PApplet.println("CONNECTING");
+						Key start_object = (Key)state.start_point_objects.get(0).object;
+						Key end_object = (Key)state.end_point_objects.get(0).object;
+						start_object.connectToKey(end_object);
 					}
 				}
 			}
