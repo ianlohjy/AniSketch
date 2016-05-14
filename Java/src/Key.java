@@ -12,7 +12,7 @@ public class Key {
 	float d;
 	float deviation_width;
 	float[] color = new float[3];
-	float min_d = 100;
+	float min_d = 50;
 	
 	AniSketch p;
 	ArrayList<PrimitiveData> primitive_data;
@@ -304,6 +304,7 @@ public class Key {
 		p.rect(x, y, 5, 5);
 		p.rectMode(p.CORNER);
 		
+		p.text(this.toString(), x, y);
 		//p.text(Long.toString(last_time_selected), x, y);
 		//p.println(last_time_selected);
 	}

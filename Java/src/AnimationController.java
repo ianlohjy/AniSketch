@@ -112,12 +112,7 @@ public class AnimationController {
 			key2.connections.remove(key1);
 		}
 		
-		KeyShapes.KeyLine found_keyline = keyshapes.connectionExists(key1, key2);
-		
-		if(found_keyline != null)
-		{
-			keyshapes.keylines.remove(found_keyline);
-		}
+		keyshapes.disconnectKeys(key1, key2);
 	}
 	
 	public void connectKeys(Key key1, Key key2)

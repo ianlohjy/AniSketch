@@ -60,9 +60,14 @@ public class Utilities {
 	  return PApplet.sqrt((hyp_length*hyp_length) - (second_length*second_length));
 	}
 
-	public static boolean isPointLeftOfLine(PVector a, PVector b, float input_x, float input_y)
+	public static boolean isPointLeftOfLine(PVector a, PVector b, float x_input, float y_input)
 	{
-		return ((b.x - a.x)*(input_y - a.y) - (b.y - a.y)*(input_x - a.x)) > 0;
+		return ((b.x - a.x)*(y_input - a.y) - (b.y - a.y)*(x_input - a.x)) > 0;
+	}
+	
+	public static boolean isPointLeftOfLine(float ax, float ay, float bx, float by, float x_input, float y_input)
+	{
+		return ((bx - ax)*(y_input - ay) - (by - ay)*(x_input - ax)) > 0;
 	}
 	
 	public static float gaussian1d(float position, float offset, float deviation)
@@ -94,5 +99,25 @@ public class Utilities {
 		}
 	}
 	
+	public static float[] cartesianToBarycentric(float x1, float y1, float x2, float y2, float x3, float y3, float x_input, float y_input)
+	{
+		float[] coords = {-1,-1,-1};
+		
+		boolean state1 = isPointLeftOfLine(x1, y1, x2, y2, x_input, y_input);
+		boolean state2 = isPointLeftOfLine(x2, y2, x3, y3, x_input, y_input);
+		boolean state3 = isPointLeftOfLine(x3, y3, x1, y1, x_input, y_input);
+		
+		if(state1 == state2 && state1 == state3)
+		{
+			float b1 = ((y2-y3)*(x_input-x3) + (x3-x2)*(y_input-y3)) / ((y2-y3)*(x1-x3) + (x3-x2)*(y1-y3));
+			float b2 = ((y3-y1)*(x_input-x3) + (x1-x3)*(y_input-y3)) / ((y2-y3)*(x1-x3) + (x3-x2)*(y1-y3));
+			float b3 = 1 - b1 - b2;
+			
+			coords[0] = b1;
+			coords[1] = b2;
+			coords[2] = b3;
+		}
+		return coords;	
+	}
 
 }
