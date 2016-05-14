@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 
+
 import processing.core.*;
 import processing.event.MouseEvent;
 
@@ -155,6 +156,7 @@ public class Primitive
 		if(stage.active_key != null)
 		{
 			drawDefaultKeyPosition();
+			drawActiveKeyPosition();
 		}
 		drawBoundingBox();
 		drawPivot();
@@ -646,14 +648,15 @@ public class Primitive
 			return;
 		}
 		
+		p.noFill();
+		p.stroke(255,20);
+		p.strokeWeight(2);
+		
 		p.pushMatrix();
 		p.translate(stage.camera.x + def_data.x, stage.camera.y + def_data.y);
 		
 		p.rotate(PApplet.radians(def_data.rt));
 		
-		p.noFill();
-		p.stroke(255,50);
-		p.strokeWeight(2);
 		//style_default.apply();
 		
 		//style_outline_selected.apply();
@@ -663,6 +666,123 @@ public class Primitive
 		//style_selected.apply();
 		
 		p.popMatrix();
+	}
+	
+	public void drawActiveKeyPosition()
+	{
+		Key.PrimitiveData active_data = stage.active_key.getData(this);
+		Key.PrimitiveData def_data = a.default_key.getData(this);
+		
+		PVector centroid = new PVector( this.pivot.x + ((-this.l+this.r)/2), this.pivot.y + ((-this.t+this.b)/2) );
+		centroid = centroid.rotate(PApplet.radians(this.rotation));	
+		
+		PVector centroid_no_rotation = new PVector( this.pivot.x + ((-this.l+this.r)/2), this.pivot.y + ((-this.t+this.b)/2) );
+		//PApplet.println(PApplet.degrees(centroid_no_rotation.heading()));	
+		
+		p.noFill();
+		p.stroke(255,100);
+		p.strokeWeight(2);
+		
+		float delta_rotation_live = delta_rotation;
+		float delta_local_x_live = delta_local_x;
+		float delta_local_y_live = delta_local_y;
+		
+		if(active_data != null)
+		{
+			delta_rotation_live += active_data.rt;
+			delta_local_x_live += active_data.x;
+			delta_local_y_live += active_data.y;
+		}
+	
+		// Draw rotation change
+		if(delta_rotation_live < -0.5 || delta_rotation_live > 0.5)
+		{
+			p.pushMatrix();
+			
+			p.translate(stage.camera.x + this.x, stage.camera.y + this.y);
+			p.rotate(centroid_no_rotation.heading() + PApplet.HALF_PI); 
+			p.rotate(PApplet.radians(-90));
+	
+			int rotation_direction = 1;
+			float delta_rotation_adjusted = (delta_rotation_live);
+			float rotation_arc_radius = (PApplet.dist(0, 0, centroid.x, centroid.y)*2) + 50;
+			
+			// Arcs in processing only accept a positive, so we need to adjust the values if the angle is negative 
+			if(delta_rotation_adjusted < 0)
+			{
+				delta_rotation_adjusted = 360 + delta_rotation_adjusted;
+				rotation_direction = -1;
+			}
+			
+			// Draw the rotatation delta arc
+			if(rotation_direction == 1)
+			{
+				p.arc(0, 0, rotation_arc_radius, rotation_arc_radius, 0, PApplet.radians(delta_rotation_adjusted));
+			}
+			else if(rotation_direction == -1)
+			{
+				p.arc(0, 0, rotation_arc_radius, rotation_arc_radius, PApplet.radians(delta_rotation_adjusted), PApplet.TWO_PI);
+			}
+		
+			//p.pushMatrix();
+			if((int)Math.abs(delta_rotation_live)/360 != 0)
+			{
+				p.fill(255,150);
+				p.textFont(p.consolas_b);
+				p.textAlign(p.LEFT, p.CENTER);
+				p.textSize(14);
+				p.text( ((int)Math.abs(delta_rotation_live)/360) + "x", (rotation_arc_radius/2)+6, -2);
+				//p.text( String.format( "%.2f", (active_data.rt + delta_rotation)) + "°", (rotation_arc_radius/2)+6, 0);
+				//p.popMatrix();
+			}
+			
+			// Draw the start line
+			p.line((rotation_arc_radius/2)+3, 0, (rotation_arc_radius/2)-3, 0);
+			
+			// Draw the arrow
+			p.pushMatrix();
+			p.rotate(PApplet.radians(delta_rotation_live));
+			p.translate(rotation_arc_radius/2, 0);
+			if(rotation_direction == 1)
+			{
+				p.line(0, 0, -7, -7);
+				p.line(0, 0, 7, -7);
+			}
+			else if(rotation_direction == -1)
+			{
+				p.line(0, 0, -7, 7);
+				p.line(0, 0, 7, 7);
+			}
+			p.popMatrix();
+			// Arrow pop
+			p.popMatrix();
+		}
+		
+		// Draw translation change
+		PVector delta_translate_live = new PVector(delta_local_x_live, delta_local_y_live);
+		if(parent != null)
+		{
+			delta_translate_live = delta_translate_live.rotate(PApplet.radians(parent.rotation));
+		}
+		
+		if(delta_translate_live.mag() > 5)
+		{
+			p.pushMatrix();
+			p.translate(stage.camera.x + this.x, stage.camera.y + this.y);		
+			
+			p.line(0, 0, -delta_translate_live.x, -delta_translate_live.y);
+			
+			p.pushMatrix();
+			p.translate(-delta_translate_live.x/2, -delta_translate_live.y/2);
+			p.rotate(delta_translate_live.heading()+p.HALF_PI);
+			p.line(0, 0, 7, 7);
+			p.line(0, 0, -7, 7);
+			//p.ellipse(-delta_translate_live.x/2, -delta_translate_live.y/2, 5, 5);
+			p.popMatrix();
+			
+			p.popMatrix();
+		}
+		
 	}
 	
 	public void drawBoundingBox()

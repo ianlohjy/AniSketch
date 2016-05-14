@@ -81,11 +81,12 @@ public class Utilities {
 	
 	public static float[] randomColorPallete()
 	{
-		float lightness = (float)(0.75+(Math.random()*0.5));
+		float lightness = 1;//(float)(0.75+(Math.random()*0.5));
 		float google_blue[] = {lightness*66,lightness*133,lightness*244}; // Google Blue
 		float google_green[] = {lightness*52,lightness*168,lightness*83}; // Google Green
 		float google_yellow[] = {lightness*251,lightness*188,lightness*5}; // Google Yellow
 		float google_red[] = {lightness*234,lightness*67,lightness*53}; // Google Red
+		float illustrator_orange[] = {lightness*255,lightness*123,lightness*25};
 		
 		int selection = (int)(Math.random()*4);
 		
@@ -93,7 +94,7 @@ public class Utilities {
 		{
 			case 0:  return google_blue;
 			case 1:  return google_green;
-			case 2:  return google_yellow;
+			case 2:  return illustrator_orange;//google_yellow;
 			case 3:  return google_red;
 			default: return google_blue;
 		}

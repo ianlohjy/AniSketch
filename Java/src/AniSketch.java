@@ -21,6 +21,8 @@ public class AniSketch extends PApplet
 	MainWindows main_windows;
 	AnimationController animation;
 	
+	PFont consolas_b;
+	
 	public static void main(String args[])
 	{
 		PApplet.main(new String[] { "AniSketch" });
@@ -66,9 +68,15 @@ public class AniSketch extends PApplet
 		main_windows = new MainWindows(this);
 	}
 	
+	public void loadFonts()
+	{
+		consolas_b = createFont("./consolab", 32);
+	}
+	
 	public void setup()
 	{
 		frameRate(250);
+		loadFonts();
 		initialisePAppletFrame();
 		initialiseAnimationController(); // Animation Controller needs to be initialised first
 		initialiseMainWindows();
