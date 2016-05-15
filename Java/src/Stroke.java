@@ -1,8 +1,11 @@
 
 import java.util.ArrayList;
 
+import javax.swing.GroupLayout.SequentialGroup;
+
 import jogamp.graph.geom.plane.Crossing.CubicCurve;
 import processing.core.*;
+import processing.event.MouseEvent;
 
 public class Stroke {
 
@@ -12,9 +15,9 @@ public class Stroke {
 	ArrayList<StrokePoint> points;
 	AnimationController a;
 	
-	final static int visible_range = 100;
+	final static int visible_range = 150;
 	final static int range_fade_amount = 50;
-	
+	final static int max_ink_width = 40;
 	Stroke(AniSketch p, AnimationController a)
 	{
 		this.p = p;
@@ -22,10 +25,17 @@ public class Stroke {
 		points = new ArrayList<StrokePoint>();
 	}
 	
+	boolean hover = false;
+	boolean selected = false;
+	int hover_focus = -1;
+	
+	
 	public void update()
 	{
 		
 	}
+	
+	//ArrayList<float[]> cur_bounds = new ArrayList<float[]>();
 	
 	void addPoint(float x, float y)
 	{	
@@ -41,6 +51,26 @@ public class Stroke {
 	void draw()
 	{
 		drawInk((int)a.current_frame-(int)start_frame, visible_range, range_fade_amount, false);
+		if(hover_focus != -1)
+		{
+			//p.stroke(255,0,0);
+			//p.strokeWeight(5);
+			p.noStroke();
+			p.fill(255,0,0);
+			p.ellipse(points.get(hover_focus).pos.x, points.get(hover_focus).pos.y, 10, 10);
+			//p.line(points.get(hover_focus).pos.x, points.get(hover_focus).pos.y, points.get(hover_focus+1).pos.x, points.get(hover_focus+1).pos.y);
+		}
+		
+		/*// Draws boundings boxes used in collisions.
+		for(float[] cur_box: cur_bounds)
+		{
+			p.noFill();
+			p.stroke(255,0,0);
+			p.strokeWeight(2);
+			p.rect(cur_box[0],cur_box[1],cur_box[2],cur_box[3]);
+		}
+		*/
+		
 	}
 	
 	void drawLine()
@@ -92,9 +122,9 @@ public class Stroke {
 			else if(index_focus >= points.size()-1)// && (index_focus-range) > points.size()-1) // If the index focus is after the stroke end
 			{
 				return_index[0] = index_focus-range;
-				if(return_index[0] < points.size()-1)
+				if(return_index[0] < points.size())
 				{
-					return_index[1] = points.size()-1;
+					return_index[1] = points.size();
 				}
 				if(return_index[0] < 0)
 				{
@@ -110,18 +140,231 @@ public class Stroke {
 				{
 					return_index[0] = 0;
 				}
-				if(return_index[1] > points.size()-1)
+				if(return_index[1] > points.size())
 				{
-					return_index[1] = points.size()-1;
+					return_index[1] = points.size();
 				}
 			}	
 		}
 		return return_index;
 	}
 	
-	void checkCollision()
+	boolean checkCollision()
 	{
+		int[] range_to_check = findPointsIndexRangeForFocus((int)a.current_frame-(int)start_frame, visible_range);
+	
+		if(range_to_check[0] != -1)
+		{
+			 
+		}
+		return false;
+	}
+	
+	float[] mouseDistToStrokeSegment(int index, float x_input, float y_input)
+	{
+		// Find the distance of the mouse to a stroke segment, returning the distance, and the ratio of how close the mouse is to both points
+		// If the line is not in range, it will return a -1
+		// If the stroke in question is too short, it will return -2, in this case, a distance check is recomended instead
+		float[] distances = {-1,-1,-1};
 		
+		if(index+1 < points.size() && index+1 > 0)
+		{	
+			// Get the 2 points
+			StrokePoint cur_point = points.get(index);
+			StrokePoint next_point = points.get(index+1);
+			
+			PVector cur_line = next_point.pos.copy().sub(cur_point.pos);
+			
+			//stroke_buffer  = stroke_buffer.rotate(PApplet.HALF_PI);
+			
+			//p.println(cur_line.mag() + " " + PApplet.dist(cur_point.pos.x, cur_point.pos.y, next_point.pos.x, next_point.pos.y));
+			
+			if(cur_line.mag() > 5) // If the stroke is really short do not do a check
+			{
+				// Set the buffer size
+				float buffer = (widthFilter(cur_point.avg_neighbour_dist)*0.5f)+5;
+				PVector line_rot = cur_line.copy().rotate(PApplet.HALF_PI).setMag(30);
+				//PApplet.println("DIST: " + dist_from_line);
+				
+				p.strokeWeight(10);
+				p.stroke(0,0,255);
+				//p.point(cur_point.pos.x, cur_point.pos.y);
+				//p.point(next_point.pos.x, next_point.pos.y);
+				
+				if(!Utilities.isPointLeftOfLine(cur_point.pos.x, cur_point.pos.y, cur_point.pos.x+line_rot.x, cur_point.pos.y+line_rot.y, x_input, y_input))
+				{
+					//p.line(cur_point.pos.x, cur_point.pos.y, cur_point.pos.x+line_rot.x,cur_point.pos.y+line_rot.y);
+					if(Utilities.isPointLeftOfLine(next_point.pos.x, next_point.pos.y, next_point.pos.x+line_rot.x, next_point.pos.y+line_rot.y, x_input, y_input))
+					{
+						//p.line(next_point.pos.x, next_point.pos.y, next_point.pos.x+line_rot.x, next_point.pos.y+line_rot.y);
+						float dist_from_line = Utilities.distToLine(cur_point.pos.x, cur_point.pos.y, next_point.pos.x, next_point.pos.y, x_input, y_input);
+						float dist_along_line = Utilities.distToLine(cur_point.pos.x, cur_point.pos.y, cur_point.pos.x+line_rot.x, cur_point.pos.y+line_rot.y, x_input, y_input);
+						distances[0] = dist_from_line;
+						distances[1] = dist_along_line/cur_line.mag();
+						distances[2] = 1 - distances[1];	
+						//p.println("DIST :  " + dist_from_line);
+					}
+				}
+			}			
+			else
+			{
+				distances[0] = -2;
+				distances[1] = -2;
+				distances[2] = -2;
+			}
+		}
+		return distances;
+	}
+	
+	void checkMouseEvent(MouseEvent e)
+	{
+		int[] index_range = findPointsIndexRangeForFocus((int)a.current_frame-(int)start_frame,visible_range-(range_fade_amount/5));
+		
+		if(index_range[0] != -1) // If the line is being displayed
+		{
+			ArrayList<int[]> segments = withinRangeSegments(index_range[0], index_range[1], 50, e.getX(), e.getY());	
+			
+			if(segments.size() != 0) // If there are segments to check
+			{
+				int closest_index = -1;
+				float closest_distance = -1;
+				
+				//p.println(segments.size());
+				
+				for(int[] segment: segments) // For each segment
+				{
+					//p.stroke(0);
+					//p.strokeWeight(10);
+					//p.line(points.get(segment[0]).pos.x, points.get(segment[0]).pos.y, points.get(segment[1]).pos.x, points.get(segment[1]).pos.y);
+					
+					//p.println("C IS " + segment[0] + " " + segment[1]);
+					
+					for(int c=segment[0]; c<segment[1]; c++) // step through individual strokes and check detection
+					{	
+						float[] check_result = mouseDistToStrokeSegment(c, e.getX(), e.getY());
+						
+						if(check_result[0] != -1 && check_result[0] != -2)
+						{
+							if(closest_distance == -1)
+							{
+								if(check_result[1] < 0.5)
+								{
+									closest_index = c;
+								}
+								else
+								{
+									closest_index = c+1;
+								}
+								closest_distance = check_result[0];
+							}
+							if(closest_distance >= check_result[0])
+							{
+								if(check_result[1] < 0.5)
+								{
+									closest_index = c;
+								}
+								else
+								{
+									closest_index = c+1;
+								}
+								closest_distance = check_result[0];
+							}
+						}
+						else if(check_result[0] == -2) // A return value of -2 is given if the segment is too small to check, so instead we will do a distance check
+						{
+							float dist_to_e = PApplet.dist(points.get(c).pos.x, points.get(c).pos.y, e.getX(), e.getY());
+							
+							if(closest_distance >= dist_to_e || closest_distance == -1)
+							{
+								//p.println("SADASD!");
+								closest_distance = dist_to_e;
+								closest_index = c;
+							}
+							p.println(dist_to_e + " / " + closest_distance);
+						}
+					}
+				}
+				
+				if(closest_index != -1)
+				{
+					if(closest_distance <15)
+					{
+						hover_focus = closest_index;
+					}
+					else
+					{
+						hover_focus = -1;
+					}
+					//p.println(closest_distance);
+					//p.line(points.get(closest_index).pos.x, points.get(closest_index).pos.y,points.get(closest_index+1).pos.x, points.get(closest_index+1).pos.y);
+					//p.ellipse(points.get(closest_index).pos.x, points.get(closest_index).pos.y, 15, 15);
+				}
+				//p.println("CLOSEST INDEX IS " + closest_index);
+				p.println("CLOSEST INDEX: " + hover_focus + "/" + (points.size()-1));
+			}
+		}
+	}
+	
+	ArrayList<int[]> withinRangeSegments(int start_range, int stop_range, int segment_length, float x_input, float y_input)
+	{
+		//cur_bounds.clear();
+		
+		ArrayList<int[]> segments = new ArrayList<int[]>();
+		
+		float dist_traversed = 0;
+		
+		int cur_segment_start = 0;
+		float cur_segment_max_l = 0;
+		float cur_segment_max_r = 0;
+		float cur_segment_max_t = 0;
+		float cur_segment_max_b = 0;
+		int bounding_box_buffer = 10;
+		
+		for(int p=start_range; p<stop_range-1; p++)
+		{
+			StrokePoint cur_point = points.get(p);
+			StrokePoint nxt_point = points.get(p+1);
+			float next_buffer = (widthFilter(nxt_point.avg_neighbour_dist)*0.5f) + bounding_box_buffer;
+			
+			// If this is the very first point in the range, setup the bounding box values
+			if(p == start_range)
+			{
+				float cur_buffer = (widthFilter(cur_point.avg_neighbour_dist)*0.5f + bounding_box_buffer);
+				cur_segment_max_l = cur_point.pos.x - cur_buffer;
+				cur_segment_max_r = cur_point.pos.x + cur_buffer;
+				cur_segment_max_t = cur_point.pos.y - cur_buffer;
+				cur_segment_max_b = cur_point.pos.y + cur_buffer;
+			}
+			
+			// Update the segment's bounding box if the next point makes a larger box
+			if(nxt_point.pos.x-next_buffer < cur_segment_max_l) {cur_segment_max_l = nxt_point.pos.x-next_buffer;}
+			if(nxt_point.pos.x+next_buffer > cur_segment_max_r) {cur_segment_max_r = nxt_point.pos.x+next_buffer;}
+			if(nxt_point.pos.y-next_buffer < cur_segment_max_t) {cur_segment_max_t = nxt_point.pos.y-next_buffer;}
+			if(nxt_point.pos.y+next_buffer > cur_segment_max_b) {cur_segment_max_b = nxt_point.pos.y+next_buffer;}
+			
+			// Find the current distance traverse
+			dist_traversed += PApplet.dist(cur_point.pos.x, cur_point.pos.y, nxt_point.pos.x, nxt_point.pos.y);
+			
+			// If the dist traversed meets the length requirments, or we have reached the end of the range
+			if(dist_traversed >= segment_length || p == stop_range-2)
+			{
+				if(Utilities.withinBounds(cur_segment_max_l, cur_segment_max_t, cur_segment_max_r-cur_segment_max_l, cur_segment_max_b-cur_segment_max_t, x_input, y_input))
+				{
+					int[] segment_range = {cur_segment_start, p+1};
+					segments.add(segment_range);
+					//float[] cur_box = {cur_segment_max_l, cur_segment_max_t, cur_segment_max_r-cur_segment_max_l, cur_segment_max_b-cur_segment_max_t};
+					//cur_bounds.add(cur_box);
+					//PApplet.println("ADDING A SEGMENT " + cur_segment_start + " " + (p+1) + "/" + (points.size()-1));
+				}
+				cur_segment_start = p+1; // Set the new segment start
+				cur_segment_max_l = nxt_point.pos.x - next_buffer; // Reset to new segment bounding values
+				cur_segment_max_r = nxt_point.pos.x + next_buffer; 
+				cur_segment_max_t = nxt_point.pos.y - next_buffer; 	
+				cur_segment_max_b = nxt_point.pos.y + next_buffer;
+				dist_traversed = 0; // Reset the traverse distance
+			}
+		}
+		return segments;
 	}
 	
 	void drawInk(int index_focus, int render_range, int edge_fade_amt, boolean show_all)
@@ -134,7 +377,7 @@ public class Stroke {
 			if(show_all)
 			{
 				start_index = 0;
-				end_index = points.size()-1;
+				end_index = points.size();
 			}
 			else
 			{
@@ -151,7 +394,7 @@ public class Stroke {
 				
 				//p.println("FADE OUT AT INDEX " + fade_out_limit);
 				
-				for(int pt=start_index; pt<end_index; pt++)
+				for(int pt=start_index; pt<end_index-1; pt++)
 				{
 					float width = widthFilter(points.get(pt).avg_neighbour_dist);
 					float opacity = base_opacity;
@@ -192,9 +435,9 @@ public class Stroke {
 		
 		result = (2/result)*80;
 		
-		if(result > 40)
+		if(result > max_ink_width)
 		{
-			result = 40;
+			result = max_ink_width;
 		}
 		return result;
 	}

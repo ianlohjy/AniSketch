@@ -100,6 +100,7 @@ public class AniSketch extends PApplet
 		animation.update();
 		main_windows.update();
 		gesture_handler.update();
+		fill(0);
 		text("Framerate " + (int)frameRate, 5, 15);
 	}
 

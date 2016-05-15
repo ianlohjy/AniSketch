@@ -120,5 +120,16 @@ public class Utilities {
 		}
 		return coords;	
 	}
-
+	
+	public static boolean withinBounds(float x, float y, float w, float h, float x_input, float y_input)
+	{
+		if(x_input > x && x_input < (x+w))
+		{
+			if(y_input > y && y_input < (y+h))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 }

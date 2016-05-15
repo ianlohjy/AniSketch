@@ -5,6 +5,7 @@ public class Divider extends Element{
 
 	Style default_style;
 	Style hover_style;
+	Style line_style;
 	
 	static int HORIZONTAL = 0;
 	static int VERTICAL   = 1;
@@ -24,6 +25,7 @@ public class Divider extends Element{
 	{
 		super(0,0,0,0,p);
 		
+		line_style    = new Style(p);
 		hover_style   = new Style(p);
 		default_style = new Style(p);
 		setupStyles();
@@ -141,15 +143,29 @@ public class Divider extends Element{
 	
 	void setupStyles()
 	{
-		hover_style.fill(80,80,80,255);
+		hover_style.fill(20,20,20,255);
 		hover_style.noStroke();
-		default_style.fill(20,20,20,255);
+		default_style.fill(20,20,20,20);
 		default_style.noStroke();
+		line_style.noFill();
+		line_style.stroke(0,0,0,255);
+		line_style.strokeWeight(1);
 	}
 	
 	void draw()
 	{
 		updateCurrentPosition();
+		
+		line_style.apply();
+		if(type == VERTICAL)
+		{
+			p.line(x+x_offset+(thickness/2), y+y_offset, x+x_offset+(thickness/2), y+y_offset+h-(thickness/2));
+		}
+		else if(type == HORIZONTAL)
+		{
+			p.line(x+x_offset, y+y_offset+(thickness/2), x+x_offset+w, y+y_offset+(thickness/2));
+		}
+		
 		if(hover || pressed)
 		{
 			hover_style.apply();

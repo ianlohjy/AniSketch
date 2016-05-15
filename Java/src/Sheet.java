@@ -220,6 +220,15 @@ public class Sheet extends Element{
 				}
 			}
 		}
+		
+		if(within_bounds && animation_mode == COMPOSITION)
+		{
+			for(Stroke stroke: a.strokes)
+			{
+				stroke.checkMouseEvent(e);
+			}
+		}
+		
 		/*
 		if(within_bounds)
 		{
