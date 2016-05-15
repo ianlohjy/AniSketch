@@ -12,6 +12,9 @@ public class Stroke {
 	ArrayList<StrokePoint> points;
 	AnimationController a;
 	
+	final static int visible_range = 100;
+	final static int range_fade_amount = 50;
+	
 	Stroke(AniSketch p, AnimationController a)
 	{
 		this.p = p;
@@ -37,7 +40,7 @@ public class Stroke {
 	
 	void draw()
 	{
-		drawInk((int)a.current_frame-(int)start_frame, false);
+		drawInk((int)a.current_frame-(int)start_frame, visible_range, range_fade_amount, false);
 	}
 	
 	void drawLine()
@@ -66,12 +69,63 @@ public class Stroke {
 		}
 	}
 	
-	void drawInk(int index_focus, boolean show_all)
+	// Given the current stroke points and an index 'focus', find the start and stop index that is +/- in range from the focus
+	// Returns -1,-1 if it is out of range
+	int[] findPointsIndexRangeForFocus(int index_focus, int range)
 	{
-		int range = 250; // The number of points to render on either side of index focus
-		int fade_dist = 50;
-		//p.println(index_focus + " " + points.size());
+		int[] return_index = {-1, -1}; // [0] = start index / [1] = stop index
 		
+		if(points != null && points.size() > 1)
+		{
+			if(index_focus <= 0)// && (index_focus+range) > 0) // If the index focus is before the stroke start
+			{
+				return_index[1] = index_focus + range;
+				if(return_index[1] > 0) // If the object is in range
+				{
+					return_index[0] = 0;
+				}
+				if(return_index[1] > points.size()-1)
+				{
+					return_index[1] = points.size()-1;
+				}
+			}
+			else if(index_focus >= points.size()-1)// && (index_focus-range) > points.size()-1) // If the index focus is after the stroke end
+			{
+				return_index[0] = index_focus-range;
+				if(return_index[0] < points.size()-1)
+				{
+					return_index[1] = points.size()-1;
+				}
+				if(return_index[0] < 0)
+				{
+					return_index[0] = 0;
+				}
+			}
+			else if(index_focus < points.size() && index_focus >= 0) // If the index focus is within the stroke
+			{
+				return_index[0] = index_focus - range;
+				return_index[1] = index_focus + range;
+				
+				if(return_index[0] < 0)
+				{
+					return_index[0] = 0;
+				}
+				if(return_index[1] > points.size()-1)
+				{
+					return_index[1] = points.size()-1;
+				}
+			}	
+		}
+		return return_index;
+	}
+	
+	void checkCollision()
+	{
+		
+	}
+	
+	void drawInk(int index_focus, int render_range, int edge_fade_amt, boolean show_all)
+	{
 		if(points != null && points.size() > 1)
 		{
 			int start_index = -1;
@@ -84,50 +138,16 @@ public class Stroke {
 			}
 			else
 			{
-				if(index_focus <= 0) // If the index focus is before the stroke start
-				{
-					end_index = index_focus + range;
-					if(end_index > 0) // If the object is in range
-					{
-						start_index = 0;
-					}
-					if(end_index > points.size()-1)
-					{
-						end_index = points.size()-1;
-					}
-				}
-				else if(index_focus >= points.size()-1) // If the index focus is after the stroke end
-				{
-					start_index = index_focus-range;
-					if(start_index < points.size()-1)
-					{
-						end_index = points.size()-1;
-					}
-					if(start_index < 0)
-					{
-						start_index = 0;
-					}
-				}
-				else if(index_focus < points.size() && index_focus >= 0) // If the index focus is within the stroke
-				{
-					start_index = index_focus - range;
-					end_index   = index_focus + range;
-					
-					if(start_index < 0)
-					{
-						start_index = 0;
-					}
-					if(end_index > points.size()-1)
-					{
-						end_index = points.size()-1;
-					}
-				}
+				int[] index_range = findPointsIndexRangeForFocus(index_focus,render_range);
+				start_index = index_range[0];
+				end_index = index_range[1];
 			}
+			
 			if(show_all || start_index != -1)
 			{
 				float base_opacity = 30;
-				int fade_in_limit  = index_focus-range+fade_dist;
-				int fade_out_limit = index_focus+range-fade_dist;
+				int fade_in_limit  = index_focus-render_range+edge_fade_amt;
+				int fade_out_limit = index_focus+render_range-edge_fade_amt;
 				
 				//p.println("FADE OUT AT INDEX " + fade_out_limit);
 				
@@ -138,11 +158,11 @@ public class Stroke {
 					
 					if(fade_in_limit >= 0 && pt < fade_in_limit)
 					{
-						opacity = -base_opacity * (((float)(fade_in_limit-pt)/fade_dist)-1);
+						opacity = -base_opacity * (((float)(fade_in_limit-pt)/edge_fade_amt)-1);
 					}					
 					if(fade_out_limit < points.size() && pt > fade_out_limit)
 					{
-						opacity = -base_opacity * (((float)(pt-fade_out_limit)/fade_dist)-1);
+						opacity = -base_opacity * (((float)(pt-fade_out_limit)/edge_fade_amt)-1);
 					}
 					
 					p.noFill();

@@ -35,7 +35,6 @@ public class Timeline extends Element{
 		}
 		p.stroke(0,150);
 		p.line(x+(50), y+(h*0.5f), x+(50+progression_length), y+(h*0.5f));
-		
 	}
 	
 }

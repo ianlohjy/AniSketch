@@ -253,10 +253,10 @@ public class KeyShapes {
 				}
 			}
 			
-			for(KeyWeight weights: key_weights)
-			{
-				p.println(weights.key.toString() + " " + weights.weight);
-			}
+			//for(KeyWeight weights: key_weights)
+			//{
+			//	p.println(weights.key.toString() + " " + weights.weight);
+			//}
 		}
 		
 		/*
