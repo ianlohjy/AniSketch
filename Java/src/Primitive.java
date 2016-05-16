@@ -153,7 +153,7 @@ public class Primitive
 			drawRotationGizmo();
 		}
 		
-		if(stage.active_key != null)
+		if(stage.opened_key != null)
 		{
 			drawDefaultKeyPosition();
 			drawActiveKeyPosition();
@@ -163,7 +163,7 @@ public class Primitive
 		
 		parentControl();
 		
-		if(stage.active_key == null && p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION && a.current_frame == 0)
+		if(stage.opened_key == null && p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION && a.current_frame == 0)
 		{
 			setPropertiesToDefaultKey();
 		}
@@ -356,9 +356,9 @@ public class Primitive
 	// Updats the primitive properties to the animation's controller default key if no active key is selected 
 	public void setPropertiesToDefaultKey()
 	{
-		if(stage.active_key == null)
+		if(stage.opened_key == null)
 		{
-			if(stage.active_key == null)
+			if(stage.opened_key == null)
 			{
 				setPropertiesToKey(a.default_key);
 			}
@@ -670,7 +670,7 @@ public class Primitive
 	
 	public void drawActiveKeyPosition()
 	{
-		Key.PrimitiveData active_data = stage.active_key.getData(this);
+		Key.PrimitiveData active_data = stage.opened_key.getData(this);
 		Key.PrimitiveData def_data = a.default_key.getData(this);
 		
 		PVector centroid = new PVector( this.pivot.x + ((-this.l+this.r)/2), this.pivot.y + ((-this.t+this.b)/2) );

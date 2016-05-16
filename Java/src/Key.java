@@ -20,6 +20,7 @@ public class Key {
 	float[][] shape;
 
 	boolean marked_for_deletion = false;
+	boolean key_opened = false;
 	
 	//==============//
 	// MOUSE STATES //
@@ -250,6 +251,17 @@ public class Key {
 		}
 	}
 	
+	// Opening a Key allows it gp
+	void openKey()
+	{
+		key_opened = true;
+	}
+	
+	void closeKey()
+	{
+		key_opened = false;
+	}
+	
 	// MAIN //
 	public void update()
 	{
@@ -304,7 +316,7 @@ public class Key {
 		p.rect(x, y, 5, 5);
 		p.rectMode(p.CORNER);
 		
-		p.text(this.toString(), x, y);
+		//p.text(this.toString(), x, y);
 		//p.text(Long.toString(last_time_selected), x, y);
 		//p.println(last_time_selected);
 	}
@@ -401,6 +413,7 @@ public class Key {
 		// Check if the key is the active selection for the sheet/stage
 		if(p.main_windows.sheet.active_key_selection == this)
 		{
+			p.main_windows.stage.exitActiveKey();
 			p.main_windows.sheet.active_key_selection = null;
 		}
 		marked_for_deletion = true;

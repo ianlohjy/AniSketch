@@ -152,7 +152,9 @@ public class Sheet extends Element{
 			int[] mouse_status;
 			
 			boolean selection_has_switched = false;
-	
+			
+			Key last_active_key = active_key_selection; 
+			
 			// Check key mouse selection incrementally
 			// If there is an active key selection, DO NOT switch selection unless:
 			// 1. A mouse click event is detected
@@ -188,7 +190,18 @@ public class Sheet extends Element{
 				}
 			}
 			possible_selections = t_possible_selections;
-			p.main_windows.stage.goToActiveKey(active_key_selection);
+			if(last_active_key != active_key_selection)
+			{
+				if(active_key_selection != null)
+				{
+					//p.main_windows.stage.goToActiveKey(active_key_selection);
+					p.main_windows.stage.button_goto_key.checkKeyOpenStatus(active_key_selection);
+				}
+				else if(active_key_selection == null)
+				{
+					p.main_windows.stage.exitActiveKey();
+				}
+			}
 		}	
 		else if(animation_mode == DRAW)
 		{
@@ -228,16 +241,6 @@ public class Sheet extends Element{
 				stroke.checkMouseEvent(e);
 			}
 		}
-		
-		/*
-		if(within_bounds)
-		{
-			
-		}
-		*/
-		
-		
-		
 	}
 	
 	/*

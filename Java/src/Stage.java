@@ -18,7 +18,7 @@ public class Stage extends Element{
 	
 	PVector camera;
 	
-	Key active_key; // Currently selected key
+	Key opened_key; // Currently selected key
 	
 	boolean showing_compiled_keys = false;
 	
@@ -49,14 +49,14 @@ public class Stage extends Element{
 	
 	void exitActiveKey()
 	{
-		if(active_key != null)
+		if(opened_key != null)
 		{
 			for(Primitive primitive: primitives)
 			{
-				active_key.mergeDataFromPrimitive(primitive);
+				opened_key.mergeDataFromPrimitive(primitive);
 				primitive.endDeltaRecording();
 			}	
-			active_key.printDeltaData();
+			opened_key.printDeltaData();
 		}
 		
 		// For each primitive, reset its properties with the default key
@@ -81,7 +81,7 @@ public class Stage extends Element{
 		}
 		
 		// Set active key to null
-		active_key = null;		
+		opened_key = null;		
 	}
 
 	void startCompiledKeys()
@@ -198,31 +198,32 @@ public class Stage extends Element{
 	
 	void goToActiveKey(Key key)
 	{
+		Utilities.printAlert("GOING TO ACTIVE KEY");
 		if(p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION)
 		{
 			// If the key we are going to is NOT already the active key
-			if(active_key != key)
+			if(opened_key != key)
 			{
 				// If there is no active key, set the new key. This will only be triggered once per key switch
-				if(active_key == null) 
+				if(opened_key == null) 
 				{
-					active_key = key;
+					opened_key = key;
 				}
 				// If there is an active key open, close the active key and set the new one
-				else if(active_key != null) 
+				else if(opened_key != null) 
 				{
 					exitActiveKey();
-					active_key = key;
+					opened_key = key;
 				}
 				// For each primitive, override its property values to the default_key + active_key
 				for(Primitive primitive: primitives)
 				{
-					applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, active_key);
+					applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, opened_key);
 				}
 				
 			}
 			
-			if(active_key != null)
+			if(opened_key != null)
 			{
 				// Reset and begin a new delta recording for all primitives
 				for(Primitive primitive: primitives)
@@ -253,9 +254,9 @@ public class Stage extends Element{
 
 		default_style.apply(); // Apply style for Stage window
 		
-		if(active_key != null)
+		if(opened_key != null)
 		{
-			p.fill(active_key.color[0],active_key.color[1],active_key.color[2]); // Override background color if a key is active (selected)
+			p.fill(opened_key.color[0],opened_key.color[1],opened_key.color[2]); // Override background color if a key is active (selected)
 		}
 		
 		p.rect(x, y, w, h);
@@ -318,7 +319,7 @@ public class Stage extends Element{
 
 	public void drawButtons()
 	{
-		if(p.main_windows.sheet.active_key_selection != null)
+		if(p.main_windows.sheet.active_key_selection != null && p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION)
 		{
 			button_goto_key.draw();
 		}
@@ -326,7 +327,7 @@ public class Stage extends Element{
 	
 	public void checkButtonMouseEvent(MouseEvent e)
 	{
-		if(p.main_windows.sheet.active_key_selection != null)
+		if(p.main_windows.sheet.active_key_selection != null && p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION)
 		{
 			button_goto_key.checkMouseEvent(e);
 		}
@@ -334,7 +335,7 @@ public class Stage extends Element{
 	
 	public void updateButtons()
 	{
-		if(p.main_windows.sheet.active_key_selection != null)
+		if(p.main_windows.sheet.active_key_selection != null && p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION)
 		{
 			button_goto_key.update();
 		}
@@ -353,19 +354,65 @@ public class Stage extends Element{
 		void update()
 		{
 			this.x = p.main_windows.stage.x + 10;
-			this.y = p.main_windows.stage.y + 10;
+			this.y = p.main_windows.stage.y + 8;
 		}
 		
 		@Override
 		void toggleOnAction()
 		{
-			setLabel("EXIT KEY");
+			openKey();
 		}
 		
 		@Override
 		void toggleOffAction()
 		{
-			setLabel("OPEN KEY");
+			closeKey();
+		}
+		
+		void openKey()
+		{
+			if(p.main_windows.sheet.active_key_selection != null)
+			{
+				goToActiveKey(p.main_windows.sheet.active_key_selection);
+				setLabel("CLOSE KEY");
+				if(!p.main_windows.sheet.active_key_selection.key_opened)
+				{
+					p.main_windows.sheet.active_key_selection.openKey();
+				}
+			}
+		}
+		
+		void closeKey()
+		{
+			if(p.main_windows.sheet.active_key_selection != null)
+			{
+				exitActiveKey();
+				setLabel("OPEN KEY");
+				if(p.main_windows.sheet.active_key_selection.key_opened)
+				{
+					p.main_windows.sheet.active_key_selection.closeKey();
+				}
+			}
+		}
+		
+		void checkKeyOpenStatus(Key key)
+		{
+			if(key != null)
+			{
+				if(key.key_opened)
+				{
+					openKey();
+					this.pressed = true;
+					//setLabel("CLOSE KEY");
+				}
+				else
+				{
+					closeKey();
+					this.pressed = false;
+					//this.pressed = false;
+					//setLabel("OPEN KEY");
+				}
+			}
 		}
 	}
 }

@@ -42,7 +42,7 @@ public class AniSketch extends PApplet
 			println("RESIZED");
 			cur_width = width;
 			cur_height = height;
-			
+			ortho();
 			main_windows.onScreenResize();
 		}
 	}
