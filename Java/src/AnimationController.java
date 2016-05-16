@@ -341,8 +341,8 @@ public class AnimationController {
 	
 	void showCurrentFrame(int frame)
 	{
-		//if(p.main_windows.sheet.animation_mode == p.main_windows.sheet.DRAW)
-		if(current_frame != 0 && p.main_windows.stage.opened_key == null)
+		if(p.main_windows.sheet.animation_mode == p.main_windows.sheet.DRAW)
+		//if(current_frame != 0 && p.main_windows.stage.opened_key == null)
 		{
 			Key all_keys_added = calculateCurrentFrame(frame);
 			

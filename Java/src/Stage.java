@@ -43,6 +43,7 @@ public class Stage extends Element{
 		addPrimitive(100, 400, 100, 100, this, p.animation, p);
 		//addPrimitive(100, 300, 100, 100, this, p.animation, p);
 		primitives.get(1).setParent(primitives.get(0));
+		primitives.get(1).loadSprite("./resources/sprites/ball.svg");
 		//primitives.get(2).setParent(primitives.get(1));
 		
 	}

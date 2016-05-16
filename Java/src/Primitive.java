@@ -22,8 +22,9 @@ public class Primitive
 	float rotation; // Rotation of the Primitive in degrees
 	float t, b, l, r; // The top, bottom, left & right edges of the bounding boxes, relative to the x,y position
 	PVector[] bounding_points; // The calculated "true" position of the 4 bounding points that make up the primitive.
-	SpriteLibrary.Sprite sprite; // *Unused at the moment* Sprite Object
+	//SpriteLibrary.Sprite sprite; // *Unused at the moment* Sprite Object
 	boolean marked_for_deletion = false;
+	PShape sprite;
 	
 	//=========// 
 	// HANDLES //
@@ -140,7 +141,6 @@ public class Primitive
 	//======//
 	// MAIN //
 	//======//
-	
 	public void update()
 	{
 		calculateBoundingPoints();
@@ -214,7 +214,6 @@ public class Primitive
 	//===========//
 	// ANIMATION //
 	//===========//
-	
 	// Adds a property value from a key to the current primtive
 	// Use the Primitive.PROP value to indicate the desired property
 	public void addPropertyFromKey(Key key, int property)
@@ -391,8 +390,7 @@ public class Primitive
 	//===========//
 	// PARENTING //
 	//===========//
-	
-	// 
+	// Returns true primitive has children
 	public boolean hasChildren()
 	{
 		if(children.size() > 0)
@@ -609,11 +607,6 @@ public class Primitive
 	//==========//
 	// GRAPHICS //
 	//==========//
-	
-	//=====================//
-	// DRAWING / RENDERING //
-	//=====================//
-	
 	public void drawStretchRect(float x, float y, float t, float b, float l, float r)
 	{
 		// Draws a box at x,y with t,b,l,r being offsets that define the edges from the center of x,y
@@ -814,6 +807,11 @@ public class Primitive
 			drawStretchRect(pivot.x, pivot.y, t, b, l, r);
 			style_hover.apply();
 		}
+		if(sprite != null)
+		{
+			//sprite.enableStyle();
+			p.shape(sprite, pivot.x-l, pivot.y-t, r+l, t+b);
+		}
 		drawStretchRect(pivot.x, pivot.y, t, b, l, r);
 		
 		p.stroke(0);
@@ -865,15 +863,15 @@ public class Primitive
 		p.point(p.mouseX, p.mouseY);
 		//p.ellipse(p.mouseX, p.mouseY, 10, 10);
 	}
+
+	public void loadSprite(String file)
+	{
+		sprite = p.loadShape(file);
+	}
 	
-	//==============//
-	// BOUNDING BOX //
-	//==============//
-	
-	//========================================//
-	// COLLISION AND BOUNDING BOX CALCULATION //
-	//========================================//
-	
+	//======================//
+	// COLLISION AND BOUNDS //
+	//======================//
 	public boolean withinBounds(float input_x, float input_y)
 	{
 		try{
@@ -927,12 +925,8 @@ public class Primitive
 		}
 	}
 
-	//========//
-	// EVENTS //
-	//========//
-	
 	//================//
-	// EVENT HANDLING //
+	// MOUSE HANDLING //
 	//================//
 	public boolean checkMouseEvent(MouseEvent e, boolean ignore_selection)
 	{
@@ -1077,12 +1071,7 @@ public class Primitive
 		}
 		return mouse_state;
 	}
-	
-	//======================//
-	// PRIMITIVE OPERATIONS //
-	//======================//
-	// High level actions that operate only on the primitive
-	
+
 	//====================//
 	// TRANSFORM HANDLING //
 	//====================//
@@ -1269,45 +1258,9 @@ public class Primitive
 		}
 	}
 	
-	public void setTop(float amount)
-	{
-		if( (amount+b) < 30)
-		{
-			amount = 30-b;
-		}
-		t = amount;
-	}
-	
-	public void setLeft(float amount)
-	{
-		if( (amount+r) < 30)
-		{
-			amount = 30-r;
-		}
-		l = amount;
-	}
-	
-	public void setRight(float amount)
-	{
-		if( (amount+l) < 30)
-		{
-			amount = 30-l;
-		}
-		r = amount;
-	}
-	
-	public void setBottom(float amount)
-	{
-		if( (amount+t) < 30)
-		{
-			amount = 30-t;
-		}
-		b = amount;
-	}
-	
-	//=========//
-	// EDITING //
-	//=========//
+	//===================//
+	// PRIMITIVE EDITING //
+	//===================//
 	public void setPivot(float new_pivot_x, float new_pivot_y)
 	{
 		// Sets pivot relative to center of object
@@ -1435,6 +1388,42 @@ public class Primitive
 		marked_for_deletion = true;
 	}
 	
+	public void setTop(float amount)
+	{
+		if( (amount+b) < 30)
+		{
+			amount = 30-b;
+		}
+		t = amount;
+	}
+	
+	public void setLeft(float amount)
+	{
+		if( (amount+r) < 30)
+		{
+			amount = 30-r;
+		}
+		l = amount;
+	}
+	
+	public void setRight(float amount)
+	{
+		if( (amount+l) < 30)
+		{
+			amount = 30-l;
+		}
+		r = amount;
+	}
+	
+	public void setBottom(float amount)
+	{
+		if( (amount+t) < 30)
+		{
+			amount = 30-t;
+		}
+		b = amount;
+	}
+	
 	public void setParent(Primitive parent)
 	{
 		this.parent = parent;
@@ -1452,12 +1441,7 @@ public class Primitive
 			parent = null;
 		}
 	}
-	
-	//===============//
-	// HANDLE OBJECT //
-	//===============//
-	
-	
+		
 	//========================//
 	// PRIMITIVE HANDLE CLASS //
 	//========================//
