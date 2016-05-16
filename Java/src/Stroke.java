@@ -50,15 +50,20 @@ public class Stroke {
 	
 	void draw()
 	{
-		drawInk((int)a.current_frame-(int)start_frame, visible_range, range_fade_amount, false);
+		//p.println(hover_focus);
+		
+		if(selected)
+		{
+			drawInk((int)a.current_frame-(int)start_frame, visible_range, range_fade_amount, false, 50, 30);
+		}
+		else
+		{
+			drawInk((int)a.current_frame-(int)start_frame, visible_range, range_fade_amount, false, 100, 30);
+		}
+		
 		if(hover_focus != -1)
 		{
-			//p.stroke(255,0,0);
-			//p.strokeWeight(5);
-			p.noStroke();
-			p.fill(255,0,0);
-			p.ellipse(points.get(hover_focus).pos.x, points.get(hover_focus).pos.y, 10, 10);
-			//p.line(points.get(hover_focus).pos.x, points.get(hover_focus).pos.y, points.get(hover_focus+1).pos.x, points.get(hover_focus+1).pos.y);
+			drawFocus(hover_focus, 5, 0.75f);
 		}
 		
 		/*// Draws boundings boxes used in collisions.
@@ -149,15 +154,88 @@ public class Stroke {
 		return return_index;
 	}
 	
-	boolean checkCollision()
+	int[] checkCollision(MouseEvent e)
 	{
-		int[] range_to_check = findPointsIndexRangeForFocus((int)a.current_frame-(int)start_frame, visible_range);
-	
-		if(range_to_check[0] != -1)
+		int[] index_range = findPointsIndexRangeForFocus((int)a.current_frame-(int)start_frame,visible_range-(range_fade_amount/5));
+		float[] collision_state = {-1,-1,-1,-1}; // {closest distance, index1, index2, index_ratio} 
+		
+		if(index_range[0] != -1) // If the line is being displayed
 		{
-			 
+			ArrayList<int[]> segments = withinRangeSegments(index_range[0], index_range[1], 50, e.getX(), e.getY());	
+			
+			if(segments.size() != 0) // If there are segments to check
+			{
+				int closest_index = -1;
+				float closest_distance = -1;
+				
+				//p.println(segments.size());
+				
+				for(int[] segment: segments) // For each segment
+				{
+					//p.println("C IS " + segment[0] + " " + segment[1]);
+					
+					for(int c=segment[0]; c<segment[1]; c++) // step through individual strokes and check detection
+					{	
+						float[] check_result = mouseDistToStrokeSegment(c, e.getX(), e.getY());
+						
+						if(check_result[0] != -1 && check_result[0] != -2)
+						{
+							if(closest_distance == -1)
+							{
+								if(check_result[1] < 0.5)
+								{
+									closest_index = c;
+								}
+								else
+								{
+									closest_index = c+1;
+								}
+								closest_distance = check_result[0];
+							}
+							if(closest_distance >= check_result[0])
+							{
+								if(check_result[1] < 0.5)
+								{
+									closest_index = c;
+								}
+								else
+								{
+									closest_index = c+1;
+								}
+								closest_distance = check_result[0];
+							}
+						}
+						else if(check_result[0] == -2) // A return value of -2 is given if the segment is too small to check, so instead we will do a distance check
+						{
+							float dist_to_e = PApplet.dist(points.get(c).pos.x, points.get(c).pos.y, e.getX(), e.getY());
+							
+							if(closest_distance >= dist_to_e || closest_distance == -1)
+							{
+								closest_distance = dist_to_e;
+								closest_index = c;
+							}
+							//p.println(dist_to_e + " / " + closest_distance);
+						}
+					}
+				}
+				
+				if(closest_index != -1)
+				{
+					if(closest_distance <15)
+					{
+						hover_focus = closest_index;
+					}
+					else
+					{
+						hover_focus = -1;
+					}
+				}
+			}
+			else
+			{
+				hover_focus = -1;
+			}
 		}
-		return false;
 	}
 	
 	float[] mouseDistToStrokeSegment(int index, float x_input, float y_input)
@@ -218,91 +296,7 @@ public class Stroke {
 	
 	void checkMouseEvent(MouseEvent e)
 	{
-		int[] index_range = findPointsIndexRangeForFocus((int)a.current_frame-(int)start_frame,visible_range-(range_fade_amount/5));
-		
-		if(index_range[0] != -1) // If the line is being displayed
-		{
-			ArrayList<int[]> segments = withinRangeSegments(index_range[0], index_range[1], 50, e.getX(), e.getY());	
-			
-			if(segments.size() != 0) // If there are segments to check
-			{
-				int closest_index = -1;
-				float closest_distance = -1;
-				
-				//p.println(segments.size());
-				
-				for(int[] segment: segments) // For each segment
-				{
-					//p.stroke(0);
-					//p.strokeWeight(10);
-					//p.line(points.get(segment[0]).pos.x, points.get(segment[0]).pos.y, points.get(segment[1]).pos.x, points.get(segment[1]).pos.y);
-					
-					//p.println("C IS " + segment[0] + " " + segment[1]);
-					
-					for(int c=segment[0]; c<segment[1]; c++) // step through individual strokes and check detection
-					{	
-						float[] check_result = mouseDistToStrokeSegment(c, e.getX(), e.getY());
-						
-						if(check_result[0] != -1 && check_result[0] != -2)
-						{
-							if(closest_distance == -1)
-							{
-								if(check_result[1] < 0.5)
-								{
-									closest_index = c;
-								}
-								else
-								{
-									closest_index = c+1;
-								}
-								closest_distance = check_result[0];
-							}
-							if(closest_distance >= check_result[0])
-							{
-								if(check_result[1] < 0.5)
-								{
-									closest_index = c;
-								}
-								else
-								{
-									closest_index = c+1;
-								}
-								closest_distance = check_result[0];
-							}
-						}
-						else if(check_result[0] == -2) // A return value of -2 is given if the segment is too small to check, so instead we will do a distance check
-						{
-							float dist_to_e = PApplet.dist(points.get(c).pos.x, points.get(c).pos.y, e.getX(), e.getY());
-							
-							if(closest_distance >= dist_to_e || closest_distance == -1)
-							{
-								//p.println("SADASD!");
-								closest_distance = dist_to_e;
-								closest_index = c;
-							}
-							p.println(dist_to_e + " / " + closest_distance);
-						}
-					}
-				}
-				
-				if(closest_index != -1)
-				{
-					if(closest_distance <15)
-					{
-						hover_focus = closest_index;
-					}
-					else
-					{
-						hover_focus = -1;
-					}
-					//p.println(closest_distance);
-					//p.line(points.get(closest_index).pos.x, points.get(closest_index).pos.y,points.get(closest_index+1).pos.x, points.get(closest_index+1).pos.y);
-					//p.ellipse(points.get(closest_index).pos.x, points.get(closest_index).pos.y, 15, 15);
-				}
-				//p.println("CLOSEST INDEX IS " + closest_index);
-				p.println("CLOSEST INDEX: " + hover_focus + "/" + (points.size()-1));
-			}
-		}
+		checkCollision(e);
 	}
 	
 	ArrayList<int[]> withinRangeSegments(int start_range, int stop_range, int segment_length, float x_input, float y_input)
@@ -367,7 +361,7 @@ public class Stroke {
 		return segments;
 	}
 	
-	void drawInk(int index_focus, int render_range, int edge_fade_amt, boolean show_all)
+	void drawInk(int index_focus, int render_range, int edge_fade_amt, boolean show_all, float base_lightness, float base_opacity)
 	{
 		if(points != null && points.size() > 1)
 		{
@@ -388,7 +382,6 @@ public class Stroke {
 			
 			if(show_all || start_index != -1)
 			{
-				float base_opacity = 30;
 				int fade_in_limit  = index_focus-render_range+edge_fade_amt;
 				int fade_out_limit = index_focus+render_range-edge_fade_amt;
 				
@@ -409,17 +402,17 @@ public class Stroke {
 					}
 					
 					p.noFill();
-					p.stroke(100,opacity);
+					p.stroke(base_lightness,opacity);
 					p.strokeWeight(width);
 					if(width < 20)
 					{
 						p.line(points.get(pt).pos.x, points.get(pt).pos.y, points.get(pt+1).pos.x, points.get(pt+1).pos.y);
 					}
 					
-					if(width > 15)
+					if(width > 10)
 					{
 						p.noStroke();
-						p.fill(100,opacity*0.75f);
+						p.fill(base_lightness,opacity*0.75f);
 						p.ellipse(points.get(pt).pos.x, points.get(pt).pos.y, width, width);
 					}
 				}
@@ -440,6 +433,65 @@ public class Stroke {
 			result = max_ink_width;
 		}
 		return result;
+	}
+	
+	void drawFocus(int index_focus, int range, float fade)
+	{
+		// Fade should be between 0 and 1
+		int[] index_range = findPointsIndexRangeForFocus(index_focus, range);
+		
+		int num_left_points = index_focus-index_range[0];
+		if(num_left_points >= 0)
+		{
+			for(int i=index_range[0]; i<index_focus; i++)
+			{
+				float opacity = -1*(((index_focus-i)/(float)range)-1) * fade;
+				float width = widthFilter(points.get(i).avg_neighbour_dist);
+				
+				//p.println(i + " " + (index_focus-index_range[0]));
+				
+				if(width < 20)
+				{
+					p.noFill();
+					p.stroke(0,opacity*255);
+					p.strokeWeight(width);
+					p.line(points.get(i).pos.x, points.get(i).pos.y, points.get(i+1).pos.x, points.get(i+1).pos.y);
+				}
+				
+				if(width > 10)
+				{
+					p.fill(0,opacity*255*0.75f);
+					p.noStroke();
+					p.ellipse(points.get(i).pos.x, points.get(i).pos.y, width, width);
+				}	
+			}
+		}
+		
+		int num_right_points = index_range[1]-index_focus;
+		if(num_right_points >= 0)
+		{
+			for(int i=index_focus; i<index_range[1]-1; i++)
+			{
+				float opacity = -1*((((i-index_focus+1)/(float)range))-1) * fade;
+				float width = widthFilter(points.get(i).avg_neighbour_dist);
+				
+				//p.println(opacity);
+				if(width < 20)
+				{
+					p.noFill();
+					p.stroke(0,opacity*255);
+					p.strokeWeight(width);
+					p.line(points.get(i).pos.x, points.get(i).pos.y, points.get(i+1).pos.x, points.get(i+1).pos.y);	
+				}
+				
+				if(width > 10)
+				{
+					p.fill(0,opacity*255*0.75f);
+					p.noStroke();
+					p.ellipse(points.get(i).pos.x, points.get(i).pos.y, width, width);
+				}
+			}
+		}
 	}
 	
 	void drawCursor2(int index)

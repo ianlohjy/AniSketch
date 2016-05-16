@@ -144,6 +144,7 @@ public class MainWindows {
 		{
 			stage.checkMouseEvent(e);
 			sheet.checkMouseEvent(e);
+			timeline.checkMouseEvent(e);
 		}
 	}
 	

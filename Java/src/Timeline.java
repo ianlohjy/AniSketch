@@ -1,4 +1,5 @@
 import processing.core.PApplet;
+import processing.event.MouseEvent;
 
 public class Timeline extends Element{
 	Style default_style;
@@ -35,6 +36,13 @@ public class Timeline extends Element{
 		}
 		p.stroke(0,150);
 		p.line(x+(50), y+(h*0.5f), x+(50+progression_length), y+(h*0.5f));
+	}
+	
+	void checkMouseEvent(MouseEvent e)
+	{
+		boolean within_bounds = withinBounds(e.getX(), e.getY());
+		
+		//if(e.getAction() =)
 	}
 	
 }

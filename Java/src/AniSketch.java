@@ -75,6 +75,7 @@ public class AniSketch extends PApplet
 	
 	public void setup()
 	{
+		ortho();
 		frameRate(250);
 		loadFonts();
 		initialisePAppletFrame();
