@@ -211,20 +211,29 @@ public class GestureHandler {
             		if(found_selected_objects.get(0).isPrimitive())
         			{
         				Primitive found_object = (Primitive)found_selected_objects.get(0).object;
-            			if(found_object.withinBounds(response.startPoint.x, response.startPoint.y))
-            			{
-            				found_object.delete();
-            				PApplet.println("DELETING OBJECT");
-            			}
+            			//if(found_object.withinBounds(response.startPoint.x, response.startPoint.y))
+            			//{
+            			found_object.delete();
+            			Utilities.printAlert("DELETING OBJECT");
+            			//}
         			}
         			else if(found_selected_objects.get(0).isKey())
         			{
         				Key found_object = (Key)found_selected_objects.get(0).object;
-            			if(found_object.withinBounds(response.startPoint.x, response.startPoint.y))
-            			{
-            				found_object.delete();
-            				PApplet.println("DELETING KEY");
-            			}
+            			//if(found_object.withinBounds(response.startPoint.x, response.startPoint.y))
+            			//{
+            			found_object.delete();
+            			Utilities.printAlert("DELETING KEY");
+            			//}
+        			}
+        			else if(found_selected_objects.get(0).isStroke())
+        			{
+        				Stroke found_object = (Stroke)found_selected_objects.get(0).object;
+            			//if(found_object.withinBounds(response.startPoint.x, response.startPoint.y))
+            			//{
+        				found_object.delete();
+            			Utilities.printAlert("DELETING STROKE");
+            			//}
         			}
             	}
             p.println("EXECUTING DELETE");
@@ -514,9 +523,10 @@ public class GestureHandler {
 			// Object Types
 			static final int SHEET = -2;
 			static final int STAGE = -1;
-			static final int NONE = 0; 
+			static final int NONE  =  0; 
 			static final int PRIMITIVE = 1;
-			static final int KEY = 2;
+			static final int KEY       = 2;
+			static final int STROKE    = 3;
 			
 			boolean mouse_state_selected = false;
 			boolean mouse_state_hover = false;
@@ -543,6 +553,15 @@ public class GestureHandler {
 					Key key = (Key)input_object;
 					mouse_state_selected = key.selected;
 					mouse_state_hover = key.hover;
+					window = SHEET;
+				}
+				
+				if(input_object instanceof Stroke)
+				{
+					object_type = STROKE;
+					Stroke stroke = (Stroke)input_object;
+					mouse_state_selected = stroke.selected;
+					mouse_state_hover = stroke.hover;
 					window = SHEET;
 				}
 			}
@@ -586,6 +605,18 @@ public class GestureHandler {
 			boolean isKey()
 			{
 				if(object_type == KEY)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			
+			boolean isStroke()
+			{
+				if(object_type == STROKE)
 				{
 					return true;
 				}

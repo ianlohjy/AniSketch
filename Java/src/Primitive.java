@@ -1008,7 +1008,6 @@ public class Primitive
 					setPivotUsingGlobalPosition(e.getX(), e.getY());
 				}
 				*/
-
 			}
 			else if(e.getAction() == 4) // When mouse is dragged
 			{

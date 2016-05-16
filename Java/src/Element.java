@@ -39,18 +39,18 @@ public class Element
 	{
 		boolean within_bounds = withinBounds(e.getX(),e.getY());
 		
-		if(e.getAction() == 1)
+		if(e.getAction() == 1) // When mouse is pressed (down)
 		{
 			if(within_bounds)
 			{pressed = true;}
 			else 
 			{pressed = false;}
 		}
-		else if(e.getAction() == 2)
+		else if(e.getAction() == 2) // When mouse is released
 		{
 			pressed = false;
 		}
-		else if(e.getAction() == 5)
+		else if(e.getAction() == 5) // When mouse is moved
 		{
 			if(within_bounds)
 			{hover = true;}
@@ -68,7 +68,6 @@ public class Element
 	boolean withinBounds(int x_input, int y_input)
 	{
 		// Returns true if input x/y is inside element's bounding box
-		
 		if(x_input > x+x_offset && x_input < x+w+x_offset)
 		{
 			if(y_input > y+y_offset && y_input < y+h+y_offset)
@@ -95,7 +94,6 @@ public class Element
 		
 		p.rectMode(p.CORNER);
 		p.rect(x+x_offset, y+y_offset, w, h);
-
 	}
 	
 	void normalStyle()

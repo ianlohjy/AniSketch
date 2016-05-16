@@ -234,7 +234,33 @@ public class AnimationController {
 		}		
 	}
 	
-	void deleteKey(Key to_delete)
+	public void handleStrokeDeletion()
+	{
+		for(int s=0; s<strokes.size(); s++)
+		{
+			if(strokes.get(s).marked_for_deletion)
+			{
+				deleteStroke(strokes.get(s));
+				s--;
+			}
+		}		
+	}
+	
+	public void deleteStroke(Stroke to_delete)
+	{
+		int index_to_delete = strokes.indexOf(to_delete);
+		
+		if(index_to_delete != -1)
+		{
+			strokes.remove(index_to_delete);
+		}
+		else
+		{
+			Utilities.printAlert("Stroke does not exist. Cannot delete");
+		}
+	}
+	
+	public void deleteKey(Key to_delete)
 	{
 		int index_to_delete = delta_keys.indexOf(to_delete);
 		
@@ -245,7 +271,7 @@ public class AnimationController {
 		}
 		else
 		{
-			PApplet.println("Key does not exist on sheet. Cannot delete");
+			Utilities.printAlert("Key does not exist. Cannot delete");
 		}
 	}
 	
@@ -359,6 +385,7 @@ public class AnimationController {
 	public void update()
 	{
 		handleKeyDeletion();
+		handleStrokeDeletion();
 		
 		if(playback == PLAY)
 		{

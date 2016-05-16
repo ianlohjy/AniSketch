@@ -22,6 +22,9 @@ public class Stage extends Element{
 	
 	boolean showing_compiled_keys = false;
 	
+	// Buttons
+	ButtonGoToKey button_goto_key = new ButtonGoToKey(x, y, 80, 25, p);
+	
 	Stage(int x, int y, int w, int h, AniSketch p)
 	{
 		super(x,y,w,h,p);
@@ -258,6 +261,9 @@ public class Stage extends Element{
 		p.rect(x, y, w, h);
 		updatePrimitives();
 		p.noClip();
+		
+		updateButtons();
+		drawButtons();
 	}
 
 	void handlePrimitiveDeletion()
@@ -301,10 +307,65 @@ public class Stage extends Element{
 	{
 		if(withinBounds(e.getX(), e.getY()))
 		{
+			checkButtonMouseEvent(e);
+			
 			for(int p=0; p<primitive_selection_rank.size(); p++)
 			{
 				primitives.get(p).checkMouseEvent(e, false);
 			}
+		}
+	}
+
+	public void drawButtons()
+	{
+		if(p.main_windows.sheet.active_key_selection != null)
+		{
+			button_goto_key.draw();
+		}
+	}
+	
+	public void checkButtonMouseEvent(MouseEvent e)
+	{
+		if(p.main_windows.sheet.active_key_selection != null)
+		{
+			button_goto_key.checkMouseEvent(e);
+		}
+	}
+	
+	public void updateButtons()
+	{
+		if(p.main_windows.sheet.active_key_selection != null)
+		{
+			button_goto_key.update();
+		}
+	}
+	
+	public class ButtonGoToKey extends Button{
+
+		ButtonGoToKey(int x, int y, int w, int h, AniSketch p) 
+		{
+			super(x, y, w, h, p);
+			setToToggle();
+			setLabel("OPEN KEY");
+		}
+		
+		@Override
+		void update()
+		{
+			this.x = p.main_windows.stage.x + 10;
+			this.y = p.main_windows.stage.y + 10;
+		}
+		
+		@Override
+		void toggleOnAction()
+		{
+			setLabel("EXIT KEY");
+		}
+		
+		@Override
+		void toggleOffAction()
+		{
+			setLabel("OPEN KEY");
 		}
 	}
 }

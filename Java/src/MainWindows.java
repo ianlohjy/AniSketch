@@ -41,7 +41,7 @@ public class MainWindows {
 	{
 		sheet  = new Sheet(0,0,vertical_divider.x,horizontal_divider.y,p,p.animation);
 		stage  = new Stage(vertical_divider.x,0,p.width-vertical_divider.x,horizontal_divider.y,p);
-		timeline = new Timeline(0,horizontal_divider.y,p.width,p.height-horizontal_divider.y,p);
+		timeline = new Timeline(0,horizontal_divider.y,p.width,p.height-horizontal_divider.y,p,p.animation);
 		
 		updateWindowPositions();
 	}
