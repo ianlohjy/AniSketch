@@ -328,7 +328,7 @@ public class AnimationController {
 			}
 		}
 		
-		if(p.main_windows.sheet.animation_mode == p.main_windows.sheet.DRAW)
+		if(p.main_windows.sheet.isDrawMode())
 		{
 			if(p.main_windows.sheet.withinBounds(p.mouseX, p.mouseY));
 			{
@@ -439,20 +439,25 @@ public class AnimationController {
 		}
 	}
 	
+	void togglePlayback()
+	{
+		if(playback == PAUSE)
+		{
+			//p.println(System.currentTimeMillis());
+			play();
+		}
+		else if(playback == PLAY)
+		{
+			//p.println(System.currentTimeMillis());
+			pause();
+		}
+	}
+	
 	public void checkKeyEvent(KeyEvent e)
 	{
 		if(e.getKeyCode() == 32)
 		{
-			if(playback == PAUSE)
-			{
-				p.println(System.currentTimeMillis());
-				play();
-			}
-			else if(playback == PLAY)
-			{
-				p.println(System.currentTimeMillis());
-				pause();
-			}
+			togglePlayback();
 		}
 		if(e.getKeyCode() == 68)
 		{

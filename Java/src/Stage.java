@@ -95,7 +95,7 @@ public class Stage extends Element{
 	void goToActiveKey(Key key)
 	{
 		Utilities.printAlert("GOING TO ACTIVE KEY");
-		if(sheet.isCompositionMode())
+		if(sheet.animation_mode == p.main_windows.sheet.COMPOSITION)
 		{
 			// If the key we are going to is NOT already the active key
 			if(opened_key != key)

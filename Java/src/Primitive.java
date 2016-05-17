@@ -517,15 +517,26 @@ public class Primitive
 					// Apply the difference to child's position
 					this.x = this.x + centroid_diff.x;
 					this.y = this.y + centroid_diff.y;
+					
+					if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0 && stage.opened_key == null)
+					{
+						//setPropertiesToDefaultKey();
+					}
 				}
 				
 				// TRANSLATION CONTROL
 				// If a change in parent position was detected
 				if(x_diff !=0 || y_diff !=0)
 				{
+					p.println(x_diff + " " + y_diff);
 					// Add the position difference to the child
 					this.x = this.x + x_diff; 
 					this.y = this.y + y_diff;
+					
+					if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0 && stage.opened_key == null)
+					{
+						//setPropertiesToDefaultKey();
+					}
 				}
 				
 				// ROTATION CONTROL
@@ -540,6 +551,11 @@ public class Primitive
 					this.x = this.x + rot_vector.x; 
 					this.y = this.y + rot_vector.y;
 					this.rotation = this.rotation + rot_diff;	
+					
+					if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0 && stage.opened_key == null)
+					{
+						//setPropertiesToDefaultKey();
+					}
 				}	
 				
 				// UPDATE LAST KNOWN PARENT PROPERTIES
@@ -553,11 +569,6 @@ public class Primitive
 				parent_last_h = parent_cur_h;
 				parent_last_rot = parent.rotation;
 				parent_last_centroid = parent_cur_centroid; 
-				
-				if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0 && stage.opened_key == null)
-				{
-					setPropertiesToDefaultKey();
-				}
 			}
 		}
 	}
@@ -1087,7 +1098,10 @@ public class Primitive
 	// TRANSFORM HANDLING //
 	//====================//
 	public void doTranslate(float x_input, float y_input)
-	{ // Does translation of primitive based on the position of x_start & y_start
+	{ 
+		if(a.current_frame != 0) {return;}
+		
+		// Does translation of primitive based on the position of x_start & y_start
 		if(transform_mode == NONE) // If translate has not been started, initialise it
 		{
 			transform_offset  = new PVector(x_input-x, y_input-y);			
@@ -1116,8 +1130,8 @@ public class Primitive
 				}
 				else if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0)
 				{
-					addPropertyToDefaultKey(PROP_X, global_to_local.x);
-					addPropertyToDefaultKey(PROP_Y, global_to_local.y);
+					//addPropertyToDefaultKey(PROP_X, global_to_local.x);
+					//addPropertyToDefaultKey(PROP_Y, global_to_local.y);
 				}
 			}
 			else if(delta_recording_start) // If there is no parent, use the global transform for delta recording
@@ -1127,14 +1141,15 @@ public class Primitive
 			}			
 			else if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0)
 			{
-				addPropertyToDefaultKey(PROP_X, -amount_x);
-				addPropertyToDefaultKey(PROP_Y, -amount_y);
+				//addPropertyToDefaultKey(PROP_X, -amount_x);
+				//addPropertyToDefaultKey(PROP_Y, -amount_y);
 			}
 		}
 	}
 	
 	public void endTranslate(float x_input, float y_input)
-	{ // Ends translation of primitive
+	{ 
+		// Ends translation of primitive
 		if(transform_mode == MOVE)
 		{
 			transform_mode = NONE;
@@ -1173,7 +1188,7 @@ public class Primitive
 			}
 			else if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0)
 			{
-				addPropertyToDefaultKey(PROP_ROTATION, transform_angle_difference * direction);
+				//addPropertyToDefaultKey(PROP_ROTATION, transform_angle_difference * direction);
 			}
 		}
 	}
@@ -1187,7 +1202,8 @@ public class Primitive
 	}
 	
 	public void doWidthHeight(float x_input, float y_input, Handle handle)
-	{ // Does translation of primitive based on the position of x_start & y_start
+	{ 
+		// Does translation of primitive based on the position of x_start & y_start
 		// Needs to be cleaned up
 		if(transform_mode == NONE) // If translate has not been started, initialise it
 		{
@@ -1272,7 +1288,7 @@ public class Primitive
 			
 			if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0)
 			{
-				setPropertiesToDefaultKey();
+				//setPropertiesToDefaultKey();
 			}
 			
 			handle.updateHandlePosition();
