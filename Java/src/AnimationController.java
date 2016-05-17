@@ -328,7 +328,7 @@ public class AnimationController {
 			}
 		}
 		
-		if(p.main_windows.sheet.isDrawMode())
+		if(p.main_windows.sheet.animation_mode == p.main_windows.sheet.DRAW)
 		{
 			if(p.main_windows.sheet.withinBounds(p.mouseX, p.mouseY));
 			{
@@ -461,6 +461,7 @@ public class AnimationController {
 		}
 		if(e.getKeyCode() == 68)
 		{
+			/*
 			// If 'D' is pressed, toggle between drawing and composition mode
 			if(p.main_windows.sheet.animation_mode == p.main_windows.sheet.DRAW)
 			{
@@ -470,7 +471,7 @@ public class AnimationController {
 			{
 				p.main_windows.sheet.switchToDrawingMode();
 			}
-			/*
+			
 			if(!p.main_windows.stage.showing_compiled_keys)
 			{
 				Utilities.printAlert("Showing compiled keys");

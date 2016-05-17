@@ -1,10 +1,9 @@
 
-//import javax.swing.JFrame;
-
 //import java.awt.Dimension;
 //import java.awt.event.*;
 
 //import processing.awt.PSurfaceAWT.SmoothCanvas;
+
 import processing.core.*;
 import processing.event.KeyEvent;
 import processing.event.MouseEvent;
@@ -20,8 +19,9 @@ public class AniSketch extends PApplet
 	GestureHandler gesture_handler;
 	MainWindows main_windows;
 	AnimationController animation;
-	
 	PFont consolas_b;
+	
+	String cursor_message = "";
 	
 	public static void main(String args[])
 	{
@@ -86,7 +86,6 @@ public class AniSketch extends PApplet
 		animation.addKey(100, 100, 100);
 		animation.addKey(200, 200, 100);
 		animation.delta_keys.get(0).connectToKey(animation.delta_keys.get(1));
-		//animation.delta_keys.get(0).disconnectAllKeys();
 	}
 	
 	public void initialiseAnimationController()
@@ -96,8 +95,6 @@ public class AniSketch extends PApplet
 	
 	public void draw()
 	{
-		textSize(14);
-
 		background(200);
 		screenResized();
 		main_windows.update();
@@ -106,9 +103,39 @@ public class AniSketch extends PApplet
 		fill(0);
 		
 		textSize(14);
-		text("Framerate " + (int)frameRate, 5, 15);	
+		textAlign(RIGHT, TOP);
+		text((int)frameRate, width-5, 3);	
+		
+		drawCursorMessage();
 	}
 
+	public void drawCursorMessage()
+	{
+		if(cursor_message != "")
+		{
+			textFont(consolas_b);
+			textSize(12);
+			float message_width = textWidth(cursor_message)+20;
+			
+			noStroke();
+			fill(0, 50);
+			rect(mouseX-(message_width/2), mouseY-30, message_width, 25);
+			fill(0);
+			textAlign(CENTER, BOTTOM);
+			text(cursor_message,mouseX, mouseY-10);
+		}
+	}
+	
+	public void setCursorMessage(String message)
+	{
+		cursor_message = message;
+	}
+	
+	public void clearCursorMessage()
+	{
+		cursor_message = "";
+	}
+	
 	public void initialiseGestureHandler()
 	{
 		gesture_handler = new GestureHandler(this);

@@ -58,16 +58,41 @@ public class Button{
 	void draw()
 	{
 		p.noStroke();
-		p.fill(0,50);
 		
-		if(pressed)
+		if(behavior == PRESS)
 		{
-			p.fill(0);
+			p.fill(0,50);		
+			if(pressed)
+			{
+				p.fill(0);
+			}
+			else if(hover)
+			{
+				p.fill(0,150);
+			}
 		}
-		else if(hover)
+		else if(behavior == TOGGLE)
 		{
-			p.fill(0,100);
+					
+			if(pressed)
+			{
+				p.fill(0,200);
+				if(hover)
+				{
+					p.fill(0,255);
+				}
+			}
+			else if(!pressed)
+			{
+				p.fill(0,50);
+				if(hover)
+				{
+					p.fill(0,150);
+				}
+			}
 		}
+		
+		
 		p.rect(x, y, w, h);
 		
 		p.fill(255);

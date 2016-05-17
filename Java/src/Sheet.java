@@ -30,6 +30,7 @@ public class Sheet extends Element{
 	ArrayList<Key> possible_selections;
 	
 	int animation_mode = COMPOSITION;
+	ButtonToggleMode button_toggle_mode = new ButtonToggleMode(x, y, 80, 25, p);
 	
 	Sheet(int x, int y, int w, int h, AniSketch p, AnimationController a)
 	{
@@ -59,6 +60,7 @@ public class Sheet extends Element{
 		p.noClip();
 		p.fill(0);
 		
+		/*
 		if(animation_mode == COMPOSITION)
 		{
 			p.text("COMPOSITION MODE", 5, this.h - 20);
@@ -66,11 +68,15 @@ public class Sheet extends Element{
 		else if(animation_mode == DRAW)
 		{
 			p.text("DRAWING MODE", 5, this.h - 20);
-		}	
-		p.text("Number of keys under mouse: " + possible_selections.size(), 5, this.h - 10);
-		p.text("Frame " + a.current_frame, 5, this.h - 30);
+		}
+		*/	
+		//p.text("Number of keys under mouse: " + possible_selections.size(), 5, this.h - 10);
+		//p.text("Frame " + a.current_frame, 5, this.h - 30);
 		
 		update();
+		
+		drawButtons();
+		updateButtons();
 	}
 	
 	void drawKeyShapes()
@@ -166,7 +172,13 @@ public class Sheet extends Element{
 		// 
 		boolean within_bounds = withinBounds(e.getX(), e.getY());
 		
-		a.keyshapes.getWeights(e.getX(), e.getY());
+		checkButtonMouseEvent(e);
+		if(button_toggle_mode.hover)
+		{
+			return;
+		}
+		
+		//a.keyshapes.getWeights(e.getX(), e.getY());
 		
 		if(animation_mode == COMPOSITION)
 		{
@@ -282,5 +294,50 @@ public class Sheet extends Element{
 	}
 	*/
 	
+	public void drawButtons()
+	{
+		button_toggle_mode.draw();
+	}
+	
+	public void checkButtonMouseEvent(MouseEvent e)
+	{
+		button_toggle_mode.checkMouseEvent(e);
+	}
+	
+	public void updateButtons()
+	{
+		button_toggle_mode.update();
+	}
+	
+	public class ButtonToggleMode extends Button{
+
+		ButtonToggleMode(int x, int y, int w, int h, AniSketch p) 
+		{
+			super(x, y, w, h, p);
+			setToToggle();
+			setLabel("COMP");
+		}
+		
+		@Override
+		void update()
+		{
+			this.x = p.main_windows.sheet.x + 10;
+			this.y = p.main_windows.sheet.y + 10;
+		}
+		
+		@Override
+		void toggleOnAction()
+		{
+			setLabel("DRAWING");
+			switchToDrawingMode();
+		}
+		
+		@Override
+		void toggleOffAction()
+		{
+			setLabel("COMP");
+			switchToCompositionMode();
+		}
+	}
 	
 }

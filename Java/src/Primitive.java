@@ -1,3 +1,4 @@
+import java.text.CharacterIterator;
 import java.util.ArrayList;
 
 
@@ -25,8 +26,8 @@ public class Primitive
 	PVector[] bounding_points; // The calculated "true" position of the 4 bounding points that make up the primitive.
 	//SpriteLibrary.Sprite sprite; // *Unused at the moment* Sprite Object
 	boolean marked_for_deletion = false;
-	PShape sprite;
-	
+	//PShape sprite;
+	PImage sprite;
 	//=========// 
 	// HANDLES //
 	//=========//
@@ -107,6 +108,7 @@ public class Primitive
 	//========//
 	// STYLES //
 	//========//
+	Style style_light;
 	Style style_default;
 	Style style_hover;
 	Style style_selected;
@@ -166,17 +168,17 @@ public class Primitive
 		}
 		
 		drawPivot();
-		
 		parentControl();
 		
 		// Ideally we want to make sure that the base (default) key is up top date as much as possible
 		// 
 		if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame == 0) //!!! current_frame == 0 is not a good idea, as it means that we can only adjust the default key at the beginning
 		{
-			setPropertiesToDefaultKey();
+			//setPropertiesToDefaultKey();
 		}
 		//p.println("PO: " + parent_offset + "LO:" + parent_local_offset + "X: " + x);
 		//p.ellipse(stage.camera.x+x-parent_local_offset.x+parent_offset.x+parent.x, stage.camera.y+y-parent_local_offset.y+parent_offset.y+parent.y, 25, 25);
+		
 	}
 	
 	public void setupStyles()
@@ -205,6 +207,11 @@ public class Primitive
 		style_outline_selected.noFill();
 		style_outline_selected.stroke(255,255,255,100);
 		style_outline_selected.strokeWeight(5);
+		
+		style_light = new Style(p);
+		style_light.noFill();
+		style_light.stroke(0,0,0,100);
+		style_light.strokeWeight(1);
 	}
 	
 	public void setupHandles()
@@ -528,7 +535,7 @@ public class Primitive
 				// If a change in parent position was detected
 				if(x_diff !=0 || y_diff !=0)
 				{
-					p.println(x_diff + " " + y_diff);
+					//p.println(x_diff + " " + y_diff);
 					// Add the position difference to the child
 					this.x = this.x + x_diff; 
 					this.y = this.y + y_diff;
@@ -621,8 +628,36 @@ public class Primitive
 		}
 		
 		p.println("NUM OF DETECTED CHILDREN " + num_children);
+	}*/
+	
+	void forceParentControlAndSetToDefaultKey()
+	{
+		if(hasChildren())
+		{
+			ArrayList<Primitive> cur_objects = (ArrayList<Primitive>)children.clone();
+			ArrayList<Primitive> next_objects = new ArrayList<Primitive>();
+					
+			while(cur_objects.size() > 0)
+			{
+				for(Primitive child: cur_objects)
+				{
+					child.parentControl();
+					child.setPropertiesToDefaultKey();
+					
+					if(child.hasChildren())
+					{
+						for(Primitive subchild: child.children)
+						{
+							next_objects.add(subchild);
+						}
+					}
+				}
+				cur_objects.clear();
+				cur_objects = (ArrayList<Primitive>)next_objects.clone();
+				next_objects.clear();
+			}
+		}
 	}
-	*/
 	
 	//==========//
 	// GRAPHICS //
@@ -642,6 +677,8 @@ public class Primitive
 
 	public void drawHandles()
 	{
+		p.pushMatrix();
+		p.translate(0, 0, 10);
 		wh_top_left.drawHandle();
 		wh_bottom_left.drawHandle();
 		wh_bottom_right.drawHandle();
@@ -650,6 +687,7 @@ public class Primitive
 		rt_bottom_left.drawHandle();
 		rt_bottom_right.drawHandle();
 		rt_top_right.drawHandle();
+		p.popMatrix();
 	}
 	
 	public void drawDefaultKeyPosition()
@@ -805,8 +843,11 @@ public class Primitive
 		// DRAW A DOTTED LINE FROM THE CHILD TO THE PARENT
 		if(parent != null)
 		{		
-			style_default.apply();
+			p.pushMatrix();
+			p.translate(0, 0, 10);
+			style_light.apply();
 			Utilities.dottedLine(x+stage.camera.x, y+stage.camera.y, parent.x+stage.camera.x, parent.y+stage.camera.y, 5, 10, p);
+			p.popMatrix();
 		}
 		
 		p.pushMatrix();
@@ -831,13 +872,13 @@ public class Primitive
 		}
 		if(sprite != null)
 		{
-			//sprite.enableStyle();
-			p.shape(sprite, pivot.x-l, pivot.y-t, r+l, t+b);
+			style_light.apply();
+			p.pushMatrix();
+			p.translate(0, 0, 5);
+			p.image(sprite, pivot.x-l, pivot.y-t, r+l, t+b);
+			p.popMatrix();
 		}
 		drawStretchRect(pivot.x, pivot.y, t, b, l, r);
-		
-		p.stroke(0);
-		p.fill(0);
 		
 		//p.text((int)this.x + ", " + (int)this.y, 0, 10);
 		//p.text("Delta Recording: " + delta_recording_start, 0, 20);
@@ -848,16 +889,17 @@ public class Primitive
 	public void drawPivot()
 	{
 		p.pushMatrix();
+		p.translate(0, 0, 10);
 		p.translate(stage.camera.x + x, stage.camera.y + y);
 		//p.translate(-pivot_offset.x, -pivot_offset.y);
 		
-		if(!selected)
+		if(sprite != null)
 		{
-			style_default.apply();
+			style_light.apply();
 		}
 		else
 		{
-			style_selected.apply();
+			style_default.apply();
 		}
 
 		p.strokeWeight(1);
@@ -888,7 +930,7 @@ public class Primitive
 
 	public void loadSprite(String file)
 	{
-		sprite = p.loadShape(file);
+		sprite = p.loadImage(file);
 	}
 	
 	//======================//
@@ -1099,7 +1141,11 @@ public class Primitive
 	//====================//
 	public void doTranslate(float x_input, float y_input)
 	{ 
-		if(a.current_frame != 0) {return;}
+		if(a.current_frame != 0 && !delta_recording_start) 
+		{
+			p.setCursorMessage("OBJECTS CAN ONLY BE EDITED AT FRAME 0");
+			return;
+		}
 		
 		// Does translation of primitive based on the position of x_start & y_start
 		if(transform_mode == NONE) // If translate has not been started, initialise it
@@ -1128,10 +1174,18 @@ public class Primitive
 					delta_local_x += global_to_local.x;
 					delta_local_y += global_to_local.y;
 				}
-				else if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0)
+				else if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame == 0)
 				{
 					//addPropertyToDefaultKey(PROP_X, global_to_local.x);
 					//addPropertyToDefaultKey(PROP_Y, global_to_local.y);
+					
+					addPropertyToDefaultKey(PROP_X, -amount_x);
+					addPropertyToDefaultKey(PROP_Y, -amount_y);
+					
+					if(hasChildren())
+					{
+						forceParentControlAndSetToDefaultKey();
+					}
 				}
 			}
 			else if(delta_recording_start) // If there is no parent, use the global transform for delta recording
@@ -1139,10 +1193,16 @@ public class Primitive
 				delta_local_x -= amount_x;
 				delta_local_y -= amount_y;
 			}			
-			else if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0)
+			else if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame == 0)
 			{
-				//addPropertyToDefaultKey(PROP_X, -amount_x);
-				//addPropertyToDefaultKey(PROP_Y, -amount_y);
+				addPropertyToDefaultKey(PROP_X, -amount_x);
+				addPropertyToDefaultKey(PROP_Y, -amount_y);
+				
+				if(hasChildren())
+				{
+					forceParentControlAndSetToDefaultKey();
+				}
+				
 			}
 		}
 	}
@@ -1150,6 +1210,8 @@ public class Primitive
 	public void endTranslate(float x_input, float y_input)
 	{ 
 		// Ends translation of primitive
+		if(a.current_frame != 0 && !delta_recording_start) {p.clearCursorMessage();}
+		
 		if(transform_mode == MOVE)
 		{
 			transform_mode = NONE;
@@ -1158,6 +1220,12 @@ public class Primitive
 	
 	public void doRotate(float x_input, float y_input)
 	{
+		if(a.current_frame != 0 && !delta_recording_start) 
+		{
+			p.setCursorMessage("OBJECTS CAN ONLY BE EDITED AT FRAME 0");
+			return;
+		}
+		
 		if(transform_mode == NONE)
 		{
 			transform_offset  = new PVector(x_input - (x + stage.camera.x), y_input - (y + stage.camera.y));
@@ -1186,15 +1254,22 @@ public class Primitive
 			{
 				delta_rotation += transform_angle_difference * direction;
 			}
-			else if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0)
+			else if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame == 0)
 			{
-				//addPropertyToDefaultKey(PROP_ROTATION, transform_angle_difference * direction);
+				addPropertyToDefaultKey(PROP_ROTATION, transform_angle_difference * direction);
+				
+				if(hasChildren())
+				{
+					forceParentControlAndSetToDefaultKey();
+				}
 			}
 		}
 	}
 	
 	public void endRotate(float x_input, float y_input)
 	{
+		if(a.current_frame != 0 && !delta_recording_start) {p.clearCursorMessage();}
+		
 		if(transform_mode == ROTATE)
 		{
 			transform_mode = NONE;
@@ -1203,6 +1278,12 @@ public class Primitive
 	
 	public void doWidthHeight(float x_input, float y_input, Handle handle)
 	{ 
+		if(a.current_frame != 0 && !delta_recording_start) 
+		{
+			p.setCursorMessage("OBJECTS CAN ONLY BE EDITED AT FRAME 0");
+			return;
+		}
+		
 		// Does translation of primitive based on the position of x_start & y_start
 		// Needs to be cleaned up
 		if(transform_mode == NONE) // If translate has not been started, initialise it
@@ -1286,9 +1367,13 @@ public class Primitive
 				}
 			}
 			
-			if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0)
+			if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame == 0)
 			{
-				//setPropertiesToDefaultKey();
+				setPropertiesToDefaultKey();
+				if(hasChildren())
+				{
+					forceParentControlAndSetToDefaultKey();
+				}
 			}
 			
 			handle.updateHandlePosition();
@@ -1297,6 +1382,8 @@ public class Primitive
 	
 	public void endWidthHeight(float x_input, float y_input)
 	{ // Ends translation of primitive
+		if(a.current_frame != 0 && !delta_recording_start) {p.clearCursorMessage();}
+		
 		if(transform_mode == WIDTH_HEIGHT)
 		{
 			transform_mode = NONE;

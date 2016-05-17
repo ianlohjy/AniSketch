@@ -40,12 +40,14 @@ public class Stage extends Element{
 		
 		primitives = new ArrayList<Primitive>();
 		
-		addPrimitive(100, 500, 100, 100, this, sheet, p.animation, p);
-		addPrimitive(100, 400, 100, 100, this, sheet, p.animation, p);
+		//addPrimitive(100, 500, 100, 100, this, sheet, p.animation, p);
+		//addPrimitive(100, 400, 100, 100, this, sheet, p.animation, p);
 		//addPrimitive(100, 300, 100, 100, this, p.animation, p);
-		primitives.get(1).setParent(primitives.get(0));
-		primitives.get(1).loadSprite("./resources/sprites/ball.svg");
+		//primitives.get(1).setParent(primitives.get(0));
+		//primitives.get(1).loadSprite("./resources/sprites/ball.svg");
 		//primitives.get(2).setParent(primitives.get(1));
+		
+		exampleMakeElephant();
 		
 	}
 	
@@ -293,6 +295,40 @@ public class Stage extends Element{
 		}
 	}
 
+	void exampleMakeElephant()
+	{
+		Primitive elephant_leg1 = addPrimitive((w/2)-50, (h/2)+70, 33, 65, this, sheet, p.animation, p);
+		elephant_leg1.loadSprite("./resources/sprites/elephant_leg.png");
+		elephant_leg1.setPivot(0, 20);
+		elephant_leg1.setPropertiesToDefaultKey();
+		
+		
+		Primitive elephant_leg2 = addPrimitive((w/2)+40, (h/2)+70, 33, 65, this, sheet, p.animation, p);
+		elephant_leg2.loadSprite("./resources/sprites/elephant_leg.png");
+		elephant_leg2.setPivot(0, 20);
+		elephant_leg2.setPropertiesToDefaultKey();
+		
+		Primitive elephant_body = addPrimitive(w/2, h/2, 215, 137, this, sheet, p.animation, p);
+		elephant_body.loadSprite("./resources/sprites/elephant_body.png");
+		elephant_body.setPropertiesToDefaultKey();
+		
+		Primitive elephant_leg3 = addPrimitive((w/2)-10, (h/2)+70, 33, 65, this, sheet, p.animation, p);
+		elephant_leg3.loadSprite("./resources/sprites/elephant_leg.png");
+		elephant_leg3.setPivot(0, 20);
+		elephant_leg3.setPropertiesToDefaultKey();
+		
+		Primitive elephant_leg4 = addPrimitive((w/2)+80, (h/2)+70, 33, 65, this, sheet, p.animation, p);
+		elephant_leg4.loadSprite("./resources/sprites/elephant_leg.png");
+		elephant_leg4.setPivot(0, 20);
+		elephant_leg4.setPropertiesToDefaultKey();
+		
+		elephant_leg1.setParent(elephant_body);
+		elephant_leg2.setParent(elephant_body);
+		elephant_leg3.setParent(elephant_body);
+		elephant_leg4.setParent(elephant_body);
+	}
+	
+	
 	public void drawButtons()
 	{
 		if(p.main_windows.sheet.active_key_selection != null && p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION)
@@ -317,6 +353,8 @@ public class Stage extends Element{
 		}
 	}
 	
+	
+	
 	public class ButtonGoToKey extends Button{
 
 		ButtonGoToKey(int x, int y, int w, int h, AniSketch p) 
@@ -330,7 +368,7 @@ public class Stage extends Element{
 		void update()
 		{
 			this.x = p.main_windows.stage.x + 10;
-			this.y = p.main_windows.stage.y + 8;
+			this.y = p.main_windows.stage.y + 10;
 		}
 		
 		@Override
