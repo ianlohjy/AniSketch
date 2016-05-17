@@ -13,7 +13,7 @@ public class AnimationController {
 	static final int PLAY = 1;
 	
 	int playback = PAUSE;
-	long frame_range[] = {0, 1};
+	long frame_range[] = {0, 100};
 	long current_frame = 0;		
 	long last_checked_time = System.currentTimeMillis();
 	
@@ -341,8 +341,13 @@ public class AnimationController {
 	
 	void showCurrentFrame(int frame)
 	{
-		if(p.main_windows.sheet.animation_mode == p.main_windows.sheet.DRAW)
+		// Shows the current frame (with delta keys applied to primitives in stage)
+		// Does not show frame when a key is selected and opened
+		// When the sheet is recording, also take into account the mouse position
+		
+		//if(p.main_windows.sheet.animation_mode == p.main_windows.sheet.DRAW)
 		//if(current_frame != 0 && p.main_windows.stage.opened_key == null)
+		if(p.main_windows.stage.opened_key == null)
 		{
 			Key all_keys_added = calculateCurrentFrame(frame);
 			
@@ -420,6 +425,18 @@ public class AnimationController {
 		}
 		
 		showCurrentFrame((int)current_frame);
+	}
+	
+	public boolean isPlaying()
+	{
+		if(playback == PLAY)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	
 	public void checkKeyEvent(KeyEvent e)

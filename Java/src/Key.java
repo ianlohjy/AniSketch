@@ -234,6 +234,51 @@ public class Key {
 		}
 	}
 	
+	// Add a data property for a primitive
+	public void addDataProperty(Primitive primitive, int property, float value)
+	{
+		PrimitiveData found_data = primitiveDataExists(primitive);
+		if(found_data == null)
+		{
+			found_data = new PrimitiveData(primitive);
+			primitive_data.add(found_data);
+		}
+		
+		switch(property) 
+		{
+			case Primitive.PROP_X:
+			found_data.setX(found_data.x+value);
+			return;
+			
+			case Primitive.PROP_Y:
+			found_data.setY(found_data.y+value);
+			return;
+			
+			case Primitive.PROP_LEFT:
+			found_data.setLeft(found_data.l+value);
+			return;
+			
+			case Primitive.PROP_RIGHT:
+			found_data.setRight(found_data.r+value);
+			return;
+			
+			case Primitive.PROP_TOP:
+			found_data.setTop(found_data.t+value);
+			return;
+			
+			case Primitive.PROP_BOTTOM:
+			found_data.setBottom(found_data.b+value);
+			return;
+			
+			case Primitive.PROP_ROTATION:
+			found_data.setRotation(found_data.rt+value);
+			return;
+			
+			default:
+			return;
+		}
+	}
+	
 	// Adds input primitive data to the current key, it it does not exist, then a new Primitive Data will be created
 	public void addPrimitiveData(PrimitiveData data)
 	{
@@ -572,7 +617,7 @@ public class Key {
 						hover = true;
 					}
 					
-					if(selected)
+					if(selected && p.main_windows.sheet.withinBounds(e.getX(), e.getY()))
 					{
 						if(e.getButton() == 37)
 						{

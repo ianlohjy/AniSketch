@@ -17,19 +17,20 @@ public class Stage extends Element{
 	Primitive last_selected_primitive;
 	
 	PVector camera;
-	
+	Sheet sheet;
 	Key opened_key; // Currently selected key
 	
-	boolean showing_compiled_keys = false;
+	//boolean showing_compiled_keys = false;
 	
 	// Buttons
 	ButtonGoToKey button_goto_key = new ButtonGoToKey(x, y, 80, 25, p);
 	
-	Stage(int x, int y, int w, int h, AniSketch p)
+	Stage(int x, int y, int w, int h, Sheet sheet, AniSketch p)
 	{
 		super(x,y,w,h,p);
 		
 		this.camera = new PVector(x,y);
+		this.sheet = sheet;
 		
 		default_style = new Style(p);
 		//default_style.fill(255,70,0,255); // Orange
@@ -39,8 +40,8 @@ public class Stage extends Element{
 		
 		primitives = new ArrayList<Primitive>();
 		
-		addPrimitive(100, 500, 100, 100, this, p.animation, p);
-		addPrimitive(100, 400, 100, 100, this, p.animation, p);
+		addPrimitive(100, 500, 100, 100, this, sheet, p.animation, p);
+		addPrimitive(100, 400, 100, 100, this, sheet, p.animation, p);
 		//addPrimitive(100, 300, 100, 100, this, p.animation, p);
 		primitives.get(1).setParent(primitives.get(0));
 		primitives.get(1).loadSprite("./resources/sprites/ball.svg");
@@ -48,6 +49,8 @@ public class Stage extends Element{
 		
 	}
 	
+	// Adds existing delta recording from primitives to the currently active key
+	// Resets the primitive properties with the default key
 	void exitActiveKey()
 	{
 		if(opened_key != null)
@@ -82,33 +85,48 @@ public class Stage extends Element{
 		}
 		
 		// Set active key to null
+		default_style.fill(150,150,150,255); // Reset background color
 		opened_key = null;		
 	}
 
-	void startCompiledKeys()
+	// Overrides current primitives with the values of a delta key
+	// Enables delta (key) recording of primitives
+	// Sets the 'opened_key' value
+	void goToActiveKey(Key key)
 	{
-		showing_compiled_keys = true;
-	}
-	
-	void stopCompiledKeys()
-	{
-		showing_compiled_keys = false;
-		
-		for(Primitive all_primitives: primitives)
+		Utilities.printAlert("GOING TO ACTIVE KEY");
+		if(sheet.isCompositionMode())
 		{
-			all_primitives.disableParentControl();
-		}
-		
-		p.println("Applying default key to all primitives");
-		for(Primitive all_primitives: primitives)
-		{
-			all_primitives.setPropertiesFromKey(p.animation.default_key);
-		}
-	
-		for(Primitive all_primitives: primitives)
-		{
-			all_primitives.resetLastParentOffset();
-			all_primitives.enableParentControl();
+			// If the key we are going to is NOT already the active key
+			if(opened_key != key)
+			{
+				// If there is no active key, set the new key. This will only be triggered once per key switch
+				if(opened_key == null) 
+				{
+					opened_key = key;
+				}
+				// If there is an active key open, close the active key and set the new one
+				else if(opened_key != null) 
+				{
+					exitActiveKey();
+					opened_key = key;
+				}
+				// For each primitive, override its property values to the default_key + active_key
+				for(Primitive primitive: primitives)
+				{
+					default_style.fill(opened_key.color[0],opened_key.color[1],opened_key.color[2],255);  // Override background color
+					applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, opened_key);
+				}
+			}
+			
+			if(opened_key != null)
+			{
+				// Reset and begin a new delta recording for all primitives
+				for(Primitive primitive: primitives)
+				{
+					primitive.startDeltaRecording();
+				}
+			}
 		}
 	}
 	
@@ -197,44 +215,6 @@ public class Stage extends Element{
 		}
 	}
 	
-	void goToActiveKey(Key key)
-	{
-		Utilities.printAlert("GOING TO ACTIVE KEY");
-		if(p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION)
-		{
-			// If the key we are going to is NOT already the active key
-			if(opened_key != key)
-			{
-				// If there is no active key, set the new key. This will only be triggered once per key switch
-				if(opened_key == null) 
-				{
-					opened_key = key;
-				}
-				// If there is an active key open, close the active key and set the new one
-				else if(opened_key != null) 
-				{
-					exitActiveKey();
-					opened_key = key;
-				}
-				// For each primitive, override its property values to the default_key + active_key
-				for(Primitive primitive: primitives)
-				{
-					applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, opened_key);
-				}
-				
-			}
-			
-			if(opened_key != null)
-			{
-				// Reset and begin a new delta recording for all primitives
-				for(Primitive primitive: primitives)
-				{
-					primitive.startDeltaRecording();
-				}
-			}
-		}
-	}
-	
 	void deletePrimitive(Primitive to_delete)
 	{
 		int index_to_delete = primitives.indexOf(to_delete);
@@ -254,11 +234,6 @@ public class Stage extends Element{
 		p.clip(x, y, w, h);
 
 		default_style.apply(); // Apply style for Stage window
-		
-		if(opened_key != null)
-		{
-			p.fill(opened_key.color[0],opened_key.color[1],opened_key.color[2]); // Override background color if a key is active (selected)
-		}
 		
 		p.rect(x, y, w, h);
 		updatePrimitives();
@@ -291,9 +266,9 @@ public class Stage extends Element{
 		}
 	}
 	
-	Primitive addPrimitive(float x, float y, float w, float h, Stage stage, AnimationController a, AniSketch p)
+	Primitive addPrimitive(float x, float y, float w, float h, Stage stage, Sheet sheet, AnimationController a, AniSketch p)
 	{
-		Primitive new_primitive = new Primitive(x, y, w, h, this, a, p);
+		Primitive new_primitive = new Primitive(x, y, w, h, this, sheet, a, p);
 		primitives.add(new_primitive);
 		buildPrimitiveSelectionRank();
 		return new_primitive;

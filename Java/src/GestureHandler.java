@@ -153,7 +153,7 @@ public class GestureHandler {
             		if(p.main_windows.stage.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
                 	{
             			Stage stage = p.main_windows.stage;
-            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.animation, p);
+            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.main_windows.sheet, p.animation, p);
                 	}
             	}
             p.println("THIS IS A SQUARE");
@@ -169,7 +169,7 @@ public class GestureHandler {
             			if(box_shape != null)
             			{
             				p.println("BOX SHAPE " + box_shape[0] + " " + box_shape[1] + " " + box_shape[2] + " " + box_shape[3] + " " + box_shape[4] + " " );
-            				Primitive new_primitive = p.main_windows.stage.addPrimitive(box_shape[0] - stage.camera.x, box_shape[1] - stage.camera.y, box_shape[3], box_shape[4], p.main_windows.stage, p.animation, p);
+            				Primitive new_primitive = p.main_windows.stage.addPrimitive(box_shape[0] - stage.camera.x, box_shape[1] - stage.camera.y, box_shape[3], box_shape[4], p.main_windows.stage, p.main_windows.sheet, p.animation, p);
             				new_primitive.rotation = box_shape[2]+90;
             				
             			}
@@ -185,7 +185,7 @@ public class GestureHandler {
             		if(p.main_windows.stage.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
                 	{
             			Stage stage = p.main_windows.stage;
-            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.animation, p);
+            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.main_windows.sheet, p.animation, p);
                 	}
             	}
             p.println("THIS IS A RECT");
@@ -197,7 +197,7 @@ public class GestureHandler {
             		if(p.main_windows.stage.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
                 	{
             			Stage stage = p.main_windows.stage;
-            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.animation, p);
+            			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.main_windows.sheet, p.animation, p);
                 	}
             	}
             p.println("THIS IS A RECT");

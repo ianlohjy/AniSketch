@@ -98,9 +98,9 @@ public class AniSketch extends PApplet
 	{
 		background(200);
 		screenResized();
-		animation.update();
 		main_windows.update();
 		gesture_handler.update();
+		animation.update(); // Animation controller is called last. This gives everything else a chance to update any parameters. (esp. Primtives)
 		fill(0);
 		text("Framerate " + (int)frameRate, 5, 15);
 	}

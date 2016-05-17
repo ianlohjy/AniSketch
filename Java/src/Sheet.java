@@ -128,11 +128,34 @@ public class Sheet extends Element{
 		
 		animation_mode = COMPOSITION;
 		//p.main_windows.stage.stopCompiledKeys();
-		if(active_key_selection != null)
+		if(active_key_selection != null && active_key_selection.key_opened)
 		{
 			p.main_windows.stage.goToActiveKey(active_key_selection);
 		}
-		
+	}
+	
+	boolean isCompositionMode()
+	{
+		if(animation_mode == COMPOSITION)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	boolean isDrawMode()
+	{
+		if(animation_mode == DRAW)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	
 	// If an object is selected, we wont select anything new UNLESS it is a click
@@ -194,7 +217,7 @@ public class Sheet extends Element{
 			{
 				if(active_key_selection != null)
 				{
-					//p.main_windows.stage.goToActiveKey(active_key_selection);
+					// If there is a key selected, pass the key to the 'open key' button for handling.
 					p.main_windows.stage.button_goto_key.checkKeyOpenStatus(active_key_selection);
 				}
 				else if(active_key_selection == null)

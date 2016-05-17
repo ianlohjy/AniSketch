@@ -13,6 +13,7 @@ public class Primitive
 	AnimationController a;
 	AniSketch p;
 	Stage stage;
+	Sheet sheet;
 	
 	//======================//
 	// PRIMITIVE PROPERTIES //
@@ -112,11 +113,12 @@ public class Primitive
 	Style style_outline;
 	Style style_outline_selected;
 	
-	Primitive(float x, float y, float w, float h, Stage stage, AnimationController a, AniSketch p)
+	Primitive(float x, float y, float w, float h, Stage stage, Sheet sheet, AnimationController a, AniSketch p)
 	{
 		this.p = p;
 		this.a = a;
 		this.stage = stage;
+		this.sheet = sheet;
 		
 		this.x = x;
 		this.y = y;
@@ -153,17 +155,23 @@ public class Primitive
 			drawRotationGizmo();
 		}
 		
-		if(stage.opened_key != null)
+		if(delta_recording_start)
 		{
 			drawDefaultKeyPosition();
-			drawActiveKeyPosition();
 		}
 		drawBoundingBox();
+		if(delta_recording_start)
+		{
+			drawActiveKeyPosition();
+		}
+		
 		drawPivot();
 		
 		parentControl();
 		
-		if(stage.opened_key == null && p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION && a.current_frame == 0)
+		// Ideally we want to make sure that the base (default) key is up top date as much as possible
+		// 
+		if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame == 0) //!!! current_frame == 0 is not a good idea, as it means that we can only adjust the default key at the beginning
 		{
 			setPropertiesToDefaultKey();
 		}
@@ -352,16 +360,15 @@ public class Primitive
 		key.setDataProperty(this, PROP_RIGHT, this.r);
 	}
 	
-	// Updats the primitive properties to the animation's controller default key if no active key is selected 
+	public void addPropertyToDefaultKey(int property, float value)
+	{
+		a.default_key.addDataProperty(this, property, value);
+	}
+	
+	// Updates the primitive properties to the animations controller's default key
 	public void setPropertiesToDefaultKey()
 	{
-		if(stage.opened_key == null)
-		{
-			if(stage.opened_key == null)
-			{
-				setPropertiesToKey(a.default_key);
-			}
-		}
+		setPropertiesToKey(a.default_key);
 	}
 
 	// Starts delta recording, resets the recorded delta values
@@ -453,7 +460,6 @@ public class Primitive
 		{
 			if(parent != null)
 			{
-				
 				// TRANSLATION CHANGE
 				float x_diff = parent.x - parent_last_x;
 				float y_diff = parent.y - parent_last_y;
@@ -548,7 +554,10 @@ public class Primitive
 				parent_last_rot = parent.rotation;
 				parent_last_centroid = parent_cur_centroid; 
 				
-				
+				if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0 && stage.opened_key == null)
+				{
+					setPropertiesToDefaultKey();
+				}
 			}
 		}
 	}
@@ -642,7 +651,7 @@ public class Primitive
 		}
 		
 		p.noFill();
-		p.stroke(255,20);
+		p.stroke(255,100);
 		p.strokeWeight(2);
 		
 		p.pushMatrix();
@@ -692,6 +701,7 @@ public class Primitive
 		{
 			p.pushMatrix();
 			
+			p.translate(0, 0, 10);
 			p.translate(stage.camera.x + this.x, stage.camera.y + this.y);
 			p.rotate(centroid_no_rotation.heading() + PApplet.HALF_PI); 
 			p.rotate(PApplet.radians(-90));
@@ -748,6 +758,7 @@ public class Primitive
 			}
 			p.popMatrix();
 			// Arrow pop
+			p.translate(0, 0, 10);
 			p.popMatrix();
 		}
 		
@@ -1010,7 +1021,7 @@ public class Primitive
 					hover = true;
 				}
 				
-				if(selected)
+				if(selected && stage.withinBounds(e.getX(), e.getY()))
 				{
 					if(e.getButton() == 37)
 					{
@@ -1092,23 +1103,32 @@ public class Primitive
 			this.x = this.x - amount_x;
 			this.y = this.y - amount_y;
 			
-			if(delta_recording_start) // DELTA RECORDING FOR KEYS
+			if(parent != null) // FINDING THE TRANSLATION RELATIVE TO PARENT
 			{
-				if(parent != null)
+				// If there is a parent, find the movement relative to the rotation of the parent
+				PVector global_to_local = new PVector(-amount_x, -amount_y);
+				global_to_local = global_to_local.rotate(PApplet.radians(-parent.rotation));
+				
+				if(delta_recording_start) // If delta recording is active
 				{
-					// If there is a parent, record the movement relative to the rotation of the parent
-					// Local position should be calculated IF a parent exists.
-					PVector global_to_local = new PVector(-amount_x, -amount_y);
-					global_to_local = global_to_local.rotate(PApplet.radians(-parent.rotation));
-					
 					delta_local_x += global_to_local.x;
 					delta_local_y += global_to_local.y;
 				}
-				else
+				else if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0)
 				{
-					delta_local_x -= amount_x;
-					delta_local_y -= amount_y;
+					addPropertyToDefaultKey(PROP_X, global_to_local.x);
+					addPropertyToDefaultKey(PROP_Y, global_to_local.y);
 				}
+			}
+			else if(delta_recording_start) // If there is no parent, use the global transform for delta recording
+			{
+				delta_local_x -= amount_x;
+				delta_local_y -= amount_y;
+			}			
+			else if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0)
+			{
+				addPropertyToDefaultKey(PROP_X, -amount_x);
+				addPropertyToDefaultKey(PROP_Y, -amount_y);
 			}
 		}
 	}
@@ -1150,6 +1170,10 @@ public class Primitive
 			if(delta_recording_start)
 			{
 				delta_rotation += transform_angle_difference * direction;
+			}
+			else if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0)
+			{
+				addPropertyToDefaultKey(PROP_ROTATION, transform_angle_difference * direction);
 			}
 		}
 	}
@@ -1244,6 +1268,11 @@ public class Primitive
 					delta_l = this.l - transform_init_l; // DELTA RECORDING
 					delta_b = this.b - transform_init_b; // DELTA RECORDING
 				}
+			}
+			
+			if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0)
+			{
+				setPropertiesToDefaultKey();
 			}
 			
 			handle.updateHandlePosition();
