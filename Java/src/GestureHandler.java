@@ -125,24 +125,26 @@ public class GestureHandler {
 			break;
 			
             case "CIRCLE":
-            	if(state.startObjectSize() == 1 && state.endObjectSize() == 0 || state.endObjectSize() == 1)
+            	// BREAKS HERE
+            	if(p.main_windows.stage.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
             	{
-            		if(state.start_point_objects.get(0).isPrimitive() && state.start_point_objects.get(0).selected())
+            		ArrayList<GestureState.ObjectState> found_selected_objects = state.selectedStartObjectsSize();
+            		if(found_selected_objects.size() == 1)
             		{
-	            		if(candidate.initialSize[0] <= 200 && candidate.initialSize[1] <= 200)
+            			if(state.start_point_objects.get(0).isPrimitive())
 	            		{
-	            			Primitive found_object = (Primitive)state.start_point_objects.get(0).object;
-	            			found_object.setPivotUsingGlobalPosition(candidate.centroid.x, candidate.centroid.y);
-	            		}	
+		            		if(candidate.initialSize[0] <= 200 && candidate.initialSize[1] <= 200)
+		            		{
+		            			Primitive found_object = (Primitive)state.start_point_objects.get(0).object;
+		            			found_object.setPivotUsingGlobalPosition(candidate.centroid.x, candidate.centroid.y);
+		            		}	
+	            		}
             		}
             	}
             	if(p.main_windows.sheet.withinBounds((int)response.startPoint.x, (int)response.startPoint.y))
             	{
-            		if(p.main_windows.sheet.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
-                	{
-            			Sheet sheet = p.main_windows.sheet;
-            			p.animation.addKey(candidate.centroid.x, candidate.centroid.y, (candidate.initialSize[0]+candidate.initialSize[1])/2);
-                	}
+            		Sheet sheet = p.main_windows.sheet;
+            		p.animation.addKey(candidate.centroid.x, candidate.centroid.y, (candidate.initialSize[0]+candidate.initialSize[1])/2);
             	}
             p.println("THIS IS A CIRCLE");
             break;
