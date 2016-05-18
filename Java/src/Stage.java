@@ -24,6 +24,9 @@ public class Stage extends Element{
 	
 	// Buttons
 	ButtonGoToKey button_goto_key = new ButtonGoToKey(x, y, 80, 25, p);
+	ButtonMakeFish button_make_fish = new ButtonMakeFish(x, y, 80, 25, p);
+	ButtonMakeBall button_make_ball = new ButtonMakeBall(x, y, 80, 25, p);
+	ButtonMakeElephant button_make_elephant = new ButtonMakeElephant(x, y, 80, 25, p);
 	
 	Stage(int x, int y, int w, int h, Sheet sheet, AniSketch p)
 	{
@@ -47,8 +50,9 @@ public class Stage extends Element{
 		//primitives.get(1).loadSprite("./resources/sprites/ball.svg");
 		//primitives.get(2).setParent(primitives.get(1));
 		
-		exampleMakeElephant();
-		
+		//exampleMakeElephant();
+		//exampleMakeBall();
+		//exampleMakeFish();
 	}
 	
 	// Adds existing delta recording from primitives to the currently active key
@@ -302,7 +306,6 @@ public class Stage extends Element{
 		elephant_leg1.setPivot(0, 20);
 		elephant_leg1.setPropertiesToDefaultKey();
 		
-		
 		Primitive elephant_leg2 = addPrimitive((w/2)+40, (h/2)+70, 33, 65, this, sheet, p.animation, p);
 		elephant_leg2.loadSprite("./resources/sprites/elephant_leg.png");
 		elephant_leg2.setPivot(0, 20);
@@ -328,12 +331,31 @@ public class Stage extends Element{
 		elephant_leg4.setParent(elephant_body);
 	}
 	
+	void exampleMakeBall()
+	{
+		Primitive ball = addPrimitive((w/2), (h/2), 100, 100, this, sheet, p.animation, p);
+		ball.loadSprite("./resources/sprites/ball.png");
+		ball.setPropertiesToDefaultKey();
+	}
+	
+	void exampleMakeFish()
+	{
+		Primitive fish = addPrimitive((w/2), (h/2), 80, 38, this, sheet, p.animation, p);
+		fish.loadSprite("./resources/sprites/fish.png");
+		fish.setPropertiesToDefaultKey();
+	}
 	
 	public void drawButtons()
 	{
 		if(p.main_windows.sheet.active_key_selection != null && p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION)
 		{
 			button_goto_key.draw();
+		}
+		if(!p.animation.isPlaying() && opened_key == null && sheet.isCompositionMode())
+		{
+			button_make_fish.draw();
+			button_make_ball.draw();
+			button_make_elephant.draw();
 		}
 	}
 	
@@ -343,6 +365,12 @@ public class Stage extends Element{
 		{
 			button_goto_key.checkMouseEvent(e);
 		}
+		if(!p.animation.isPlaying() && opened_key == null && sheet.isCompositionMode())
+		{
+			button_make_fish.checkMouseEvent(e);
+			button_make_ball.checkMouseEvent(e);
+			button_make_elephant.checkMouseEvent(e);
+		}
 	}
 	
 	public void updateButtons()
@@ -351,8 +379,83 @@ public class Stage extends Element{
 		{
 			button_goto_key.update();
 		}
+		if(!p.animation.isPlaying() && opened_key == null && sheet.isCompositionMode())
+		{
+			button_make_fish.update();
+			button_make_ball.update();
+			button_make_elephant.update();
+		}
 	}
 	
+	
+	public class ButtonMakeFish extends Button
+	{
+		ButtonMakeFish(int x, int y, int w, int h, AniSketch p) {
+			super(x, y, w, h, p);
+			setToPress();
+			setLabel("SPAWN FISH");
+		}
+		
+		@Override
+		void update()
+		{
+			this.x = p.main_windows.stage.x;
+			this.y = p.main_windows.stage.y+p.main_windows.stage.h-h;
+			this.w = p.main_windows.stage.w/3;
+		}
+		
+		@Override
+		void pressAction()
+		{
+			exampleMakeFish();
+		}
+	}
+	
+	public class ButtonMakeBall extends Button
+	{
+		ButtonMakeBall(int x, int y, int w, int h, AniSketch p) {
+			super(x, y, w, h, p);
+			setToPress();
+			setLabel("SPAWN BALL");
+		}
+		
+		@Override
+		void update()
+		{
+			this.x = p.main_windows.stage.x + p.main_windows.stage.w/3;
+			this.y = p.main_windows.stage.y+p.main_windows.stage.h-h;
+			this.w = p.main_windows.stage.w/3;
+		}
+		
+		@Override
+		void pressAction()
+		{
+			exampleMakeBall();
+		}
+	}
+	
+	public class ButtonMakeElephant extends Button
+	{
+		ButtonMakeElephant(int x, int y, int w, int h, AniSketch p) {
+			super(x, y, w, h, p);
+			setToPress();
+			setLabel("SPAWN ELEPHANT");
+		}
+		
+		@Override
+		void update()
+		{
+			this.x = p.main_windows.stage.x +(p.main_windows.stage.w*(2f/3f));
+			this.y = p.main_windows.stage.y+p.main_windows.stage.h-h;
+			this.w = p.main_windows.stage.w/3;
+		}
+		
+		@Override
+		void pressAction()
+		{
+			exampleMakeElephant();
+		}
+	}
 	
 	
 	public class ButtonGoToKey extends Button{

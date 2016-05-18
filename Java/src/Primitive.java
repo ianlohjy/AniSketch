@@ -150,7 +150,10 @@ public class Primitive
 		calculateBoundingPoints();
 		if(selected)
 		{
-			drawHandles();
+			if(a.isPlaying() && delta_recording_start || !a.isPlaying() && !delta_recording_start || !a.isPlaying() && delta_recording_start)
+			{
+				drawHandles();
+			}
 		}
 		if(transform_mode == ROTATE)
 		{
@@ -167,7 +170,10 @@ public class Primitive
 			drawActiveKeyPosition();
 		}
 		
-		drawPivot();
+		if(a.isPlaying() && delta_recording_start || !a.isPlaying() && !delta_recording_start || !a.isPlaying() && delta_recording_start)
+		{
+			drawPivot();
+		}
 		parentControl();
 		
 		// Ideally we want to make sure that the base (default) key is up top date as much as possible
@@ -843,11 +849,15 @@ public class Primitive
 		// DRAW A DOTTED LINE FROM THE CHILD TO THE PARENT
 		if(parent != null)
 		{		
-			p.pushMatrix();
-			p.translate(0, 0, 10);
-			style_light.apply();
-			Utilities.dottedLine(x+stage.camera.x, y+stage.camera.y, parent.x+stage.camera.x, parent.y+stage.camera.y, 5, 10, p);
-			p.popMatrix();
+			if(a.isPlaying() && delta_recording_start || !a.isPlaying() && !delta_recording_start || !a.isPlaying() && delta_recording_start)
+			{	
+				p.pushMatrix();
+				p.translate(0, 0, 10);
+				style_light.apply();
+				Utilities.dottedLine(x+stage.camera.x, y+stage.camera.y, parent.x+stage.camera.x, parent.y+stage.camera.y, 5, 10, p);
+				p.popMatrix();
+			}
+		
 		}
 		
 		p.pushMatrix();

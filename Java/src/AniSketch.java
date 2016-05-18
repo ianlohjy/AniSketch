@@ -83,9 +83,9 @@ public class AniSketch extends PApplet
 		initialiseMainWindows();
 		initialiseGestureHandler();
 		
-		animation.addKey(100, 100, 100);
-		animation.addKey(200, 200, 100);
-		animation.delta_keys.get(0).connectToKey(animation.delta_keys.get(1));
+		//animation.addKey(100, 100, 100);
+		//animation.addKey(200, 200, 100);
+		//animation.delta_keys.get(0).connectToKey(animation.delta_keys.get(1));
 	}
 	
 	public void initialiseAnimationController()
