@@ -133,7 +133,7 @@ public class GestureHandler {
             		{
             			if(state.start_point_objects.get(0).isPrimitive())
 	            		{
-		            		if(candidate.initialSize[0] <= 200 && candidate.initialSize[1] <= 200)
+		            		if(candidate.initialSize[0] <= 50 && candidate.initialSize[1] <= 50)
 		            		{
 		            			Primitive found_object = (Primitive)state.start_point_objects.get(0).object;
 		            			found_object.setPivotUsingGlobalPosition(candidate.centroid.x, candidate.centroid.y);

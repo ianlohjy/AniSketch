@@ -79,7 +79,7 @@ public class AniSketch extends PApplet
 		frameRate(250);
 		loadFonts();
 		initialisePAppletFrame();
-		initialiseAnimationController(); // Animation Controller needs to be initialised first
+		initialiseAnimationController(); // Animation Controller needs to be initialised first so that it can be passed to other windows
 		initialiseMainWindows();
 		initialiseGestureHandler();
 		

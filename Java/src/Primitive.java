@@ -174,7 +174,7 @@ public class Primitive
 		{
 			drawPivot();
 		}
-		parentControl();
+		parentControl(false);
 		
 		// Ideally we want to make sure that the base (default) key is up top date as much as possible
 		// 
@@ -328,19 +328,19 @@ public class Primitive
 		addPropertyFromKey(key, Primitive.PROP_SHAPE);
 		if(hasChildren())
 		{
-			for(Primitive child: children){child.parentControl();}
+			for(Primitive child: children){child.parentControl(false);}
 		}
 		
 		addPropertyFromKey(key, Primitive.PROP_POSITION);
 		if(hasChildren())
 		{
-			for(Primitive child: children){child.parentControl();}
+			for(Primitive child: children){child.parentControl(false);}
 		}
 		
 		addPropertyFromKey(key, Primitive.PROP_ROTATION);
 		if(hasChildren())
 		{
-			for(Primitive child: children){child.parentControl();}
+			for(Primitive child: children){child.parentControl(false);}
 		}
 	}
 	
@@ -423,6 +423,19 @@ public class Primitive
 		}
 	}
 	
+	// Returns true if it has a parent
+	public boolean hasParent()
+	{
+		if(parent == null)
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+	
 	// Resets last parent offset, and enables parent controls
 	public void enableParentControl()
 	{
@@ -467,8 +480,11 @@ public class Primitive
 	// Parent controls allow the parent to acts a controller for the primitive
 	// This essentially constrains the primitive to the parent's properties
 	// Parent values that affect the child are x,y,rotation,shape changes
-	public void parentControl()
+	public void parentControl(boolean applyChangesToDefaultKey)
 	{
+		// Normally, parent control is applied to the primitive's properties
+		// Using 'applyChangesToDefaultKey' argument will also apply changes to the default key as well
+		
 		if(parent_control)
 		{
 			if(parent != null)
@@ -531,24 +547,53 @@ public class Primitive
 					this.x = this.x + centroid_diff.x;
 					this.y = this.y + centroid_diff.y;
 					
-					if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0 && stage.opened_key == null)
+					/*
+					if(applyChangesToDefaultKey)
 					{
-						//setPropertiesToDefaultKey();
-					}
+						if(hasParent())
+						{
+							PVector parent_adjustment = new PVector(centroid_diff.x, centroid_diff.y);
+							parent_adjustment = parent_adjustment.rotate(PApplet.radians(-parent.rotation));
+							
+							addPropertyToDefaultKey(PROP_X, parent_adjustment.x);
+							addPropertyToDefaultKey(PROP_Y, parent_adjustment.y);
+						}
+						else
+						{
+							addPropertyToDefaultKey(PROP_X, centroid_diff.x);
+							addPropertyToDefaultKey(PROP_Y, centroid_diff.y);
+						}
+					}*/
 				}
 				
 				// TRANSLATION CONTROL
 				// If a change in parent position was detected
 				if(x_diff !=0 || y_diff !=0)
 				{
-					//p.println(x_diff + " " + y_diff);
+					
+					PVector computed_pos = new PVector(this.x, this.y);
+					
 					// Add the position difference to the child
 					this.x = this.x + x_diff; 
 					this.y = this.y + y_diff;
 					
-					if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0 && stage.opened_key == null)
+					computed_pos = new PVector(this.x, this.y).sub(computed_pos);
+					
+					if(applyChangesToDefaultKey)
 					{
-						//setPropertiesToDefaultKey();
+						//if(hasParent())
+						//{
+						//	PVector parent_adjustment = new PVector(x_diff, y_diff);
+						//	parent_adjustment = parent_adjustment.rotate(PApplet.radians(-parent.rotation));
+							
+						//	addPropertyToDefaultKey(PROP_X, parent_adjustment.x);
+						//	addPropertyToDefaultKey(PROP_Y, parent_adjustment.y);
+						//}
+						//else
+						//{
+							addPropertyToDefaultKey(PROP_X, computed_pos.x);
+							addPropertyToDefaultKey(PROP_Y, computed_pos.y);
+						//}
 					}
 				}
 				
@@ -556,19 +601,71 @@ public class Primitive
 				// If the rotation has been changed
 				if(rot_diff != 0)
 				{
-					PVector child_to_parent = new PVector(this.x - parent.x, this.y - parent.y); // Get the vector betwen pivot points
+					PVector child_to_parent = new PVector(this.x - parent.x, this.y - parent.y); // Get the vector between pivot points
 					PVector rot_vector = child_to_parent.copy();
 					rot_vector = rot_vector.rotate(PApplet.radians(rot_diff)); // Rotate the vector by the change in rotation
 					rot_vector = rot_vector.sub(child_to_parent); // Find the change in position needed
+					
+					PVector computed_pos = new PVector(this.x, this.y); // The current computed position
+					float computed_rotation = rotation; // The current computed rotation
+					
 					// Apply the position change, add rotation difference to the current rotation
 					this.x = this.x + rot_vector.x; 
 					this.y = this.y + rot_vector.y;
 					this.rotation = this.rotation + rot_diff;	
 					
-					if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame != 0 && stage.opened_key == null)
+					computed_pos = new PVector(this.x, this.y).sub(computed_pos);
+					
+					p.println(computed_pos);
+					//computed_rotation = rotation - computed_rotation;
+					
+					if(applyChangesToDefaultKey)
 					{
-						//setPropertiesToDefaultKey();
+						float computed_default_diff = 0;
+						
+						Key.PrimitiveData default_data = a.default_key.getData(this);
+						if(default_data != null)
+						{
+							computed_default_diff = computed_rotation - default_data.rt;
+						}
+						
+						computed_pos.rotate(PApplet.radians(-computed_default_diff));
+						
+						addPropertyToDefaultKey(PROP_X, computed_pos.x);
+						addPropertyToDefaultKey(PROP_Y, computed_pos.y);
+						addPropertyToDefaultKey(PROP_ROTATION, rot_diff);
 					}
+					
+					/*
+					if(applyChangesToDefaultKey)
+					{
+						if(hasParent())
+						{
+							Key.PrimitiveData parent_data = a.default_key.getData(parent);
+							Key.PrimitiveData child_data = a.default_key.getData(this);
+							
+							if(parent_data != null && child_data != null)
+							{
+								float default_parent_rotation = parent_data.rt;
+								
+								PVector default_child_to_parent = new PVector(child_data.x - parent_data.x, child_data.y - parent_data.y); // Get the vector between pivot points
+								PVector default_rot_vector = default_child_to_parent.copy();
+								default_rot_vector = default_rot_vector.rotate(PApplet.radians(rot_diff)); // Rotate the vector by the change in rotation
+								default_rot_vector = default_rot_vector.sub(default_child_to_parent); // Find the change in position needed
+								
+								addPropertyToDefaultKey(PROP_X, default_rot_vector.x);
+								addPropertyToDefaultKey(PROP_Y, default_rot_vector.y);
+								addPropertyToDefaultKey(PROP_ROTATION, rot_diff);
+							}
+						}
+						else
+						{
+							p.println("????");
+							addPropertyToDefaultKey(PROP_X, rot_vector.x);
+							addPropertyToDefaultKey(PROP_Y, rot_vector.y);
+							addPropertyToDefaultKey(PROP_ROTATION, rot_diff);
+						}
+					}*/
 				}	
 				
 				// UPDATE LAST KNOWN PARENT PROPERTIES
@@ -647,8 +744,8 @@ public class Primitive
 			{
 				for(Primitive child: cur_objects)
 				{
-					child.parentControl();
-					child.setPropertiesToDefaultKey();
+					child.parentControl(true);
+					//child.setPropertiesToDefaultKey();
 					
 					if(child.hasChildren())
 					{
@@ -903,16 +1000,9 @@ public class Primitive
 		p.translate(stage.camera.x + x, stage.camera.y + y);
 		//p.translate(-pivot_offset.x, -pivot_offset.y);
 		
-		if(sprite != null)
-		{
-			style_light.apply();
-		}
-		else
-		{
-			style_default.apply();
-		}
-
-		p.strokeWeight(1);
+		style_light.apply();
+		
+		p.strokeWeight(2);
 		p.line(-5, -5, 5, 5);
 		p.line(-5, 5, 5, -5);
 		
@@ -1098,10 +1188,6 @@ public class Primitive
 				else {hover = false;}
 			}
 		}
-			// Regardless of state of handles, pass these mouse events
-			//
-			// ...
-			//
 		
 		return !handles_mouse_event_state;
 	}
@@ -1167,9 +1253,11 @@ public class Primitive
 		}
 		if(transform_mode == MOVE)
 		{
+			if(a.current_frame == 0) {a.lockFrameUpdate();} // This prevents the animation controller from modifying the primitive properties
+			
 			float amount_x = this.x - (x_input - transform_offset.x);
 			float amount_y = this.y - (y_input - transform_offset.y);
-			
+
 			this.x = this.x - amount_x;
 			this.y = this.y - amount_y;
 			
@@ -1212,7 +1300,6 @@ public class Primitive
 				{
 					forceParentControlAndSetToDefaultKey();
 				}
-				
 			}
 		}
 	}
@@ -1220,6 +1307,8 @@ public class Primitive
 	public void endTranslate(float x_input, float y_input)
 	{ 
 		// Ends translation of primitive
+		a.unlockFrameUpdate();
+		
 		if(a.current_frame != 0 && !delta_recording_start) {p.clearCursorMessage();}
 		
 		if(transform_mode == MOVE)
@@ -1243,6 +1332,8 @@ public class Primitive
 		}
 		if(transform_mode == ROTATE)
 		{
+			if(a.current_frame == 0) {a.lockFrameUpdate();} // This prevents the animation controller from modifying the primitive properties
+			
 			PVector cur_vector = new PVector(x_input - (x + stage.camera.x), y_input - (y + stage.camera.y));
 			int direction = 0;
 
@@ -1278,6 +1369,8 @@ public class Primitive
 	
 	public void endRotate(float x_input, float y_input)
 	{
+		a.unlockFrameUpdate();
+		
 		if(a.current_frame != 0 && !delta_recording_start) {p.clearCursorMessage();}
 		
 		if(transform_mode == ROTATE)
@@ -1327,13 +1420,22 @@ public class Primitive
 		
 		if(transform_mode == WIDTH_HEIGHT)
 		{
+			if(a.current_frame == 0) {a.lockFrameUpdate();} // This prevents the animation controller from modifying the primitive properties
+			
 			PVector transform_amount = new PVector(x_input-transform_offset.x, y_input-transform_offset.y);
 			transform_amount = transform_amount.rotate(PApplet.radians(-rotation));
 			
 			//PApplet.println("Transform Amount" + transform_amount);
 			
+			float local_init_t = this.t;
+			float local_init_b = this.b;
+			float local_init_l = this.l;
+			float local_init_r = this.r;
+			
 			if(handle.handle_position == Handle.TOP_LEFT)
 			{
+				local_init_t = this.t;
+				local_init_l = this.l;
 				setLeft(transform_init_l - transform_amount.x);
 				setTop(transform_init_t - transform_amount.y);
 				
@@ -1345,6 +1447,8 @@ public class Primitive
 			}
 			if(handle.handle_position == Handle.TOP_RIGHT)
 			{
+				local_init_r = this.r;
+				local_init_t = this.t;
 				setRight(transform_init_r + transform_amount.x);
 				setTop(transform_init_t - transform_amount.y);
 				
@@ -1356,6 +1460,8 @@ public class Primitive
 			}
 			if(handle.handle_position == Handle.BOTTOM_RIGHT)
 			{
+				local_init_r = this.r;
+				local_init_b = this.b;
 				setRight(transform_init_r + transform_amount.x);
 				setBottom(transform_init_b + transform_amount.y);
 				
@@ -1367,6 +1473,8 @@ public class Primitive
 			}
 			if(handle.handle_position == Handle.BOTTOM_LEFT)
 			{
+				local_init_b = this.b;
+				local_init_l = this.l;
 				setLeft(transform_init_l - transform_amount.x);
 				setBottom(transform_init_b + transform_amount.y);
 				
@@ -1379,7 +1487,11 @@ public class Primitive
 			
 			if(!delta_recording_start && !a.isPlaying() && sheet.isCompositionMode() && a.current_frame == 0)
 			{
-				setPropertiesToDefaultKey();
+				addPropertyToDefaultKey(PROP_TOP   , this.t-local_init_t);
+				addPropertyToDefaultKey(PROP_BOTTOM, this.b-local_init_b);
+				addPropertyToDefaultKey(PROP_LEFT  , this.l-local_init_l);
+				addPropertyToDefaultKey(PROP_RIGHT , this.r-local_init_r);
+
 				if(hasChildren())
 				{
 					forceParentControlAndSetToDefaultKey();
@@ -1392,6 +1504,8 @@ public class Primitive
 	
 	public void endWidthHeight(float x_input, float y_input)
 	{ // Ends translation of primitive
+		a.unlockFrameUpdate();
+		
 		if(a.current_frame != 0 && !delta_recording_start) {p.clearCursorMessage();}
 		
 		if(transform_mode == WIDTH_HEIGHT)
