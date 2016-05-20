@@ -13,7 +13,7 @@ public class AnimationController {
 	static final int PLAY = 1;
 	
 	int playback = PAUSE;
-	long frame_range[] = {0, 25};
+	long frame_range[] = {0, 100};
 	long current_frame = 0;		
 	long last_checked_time = System.currentTimeMillis();
 	
@@ -414,7 +414,7 @@ public class AnimationController {
 						p.println(System.currentTimeMillis());
 					}	
 				}
-				//p.println("FRAME " + current_frame);
+				p.println("FRAME " + current_frame);
 				// Update strokes
 				for(Stroke stroke: strokes)
 				{
