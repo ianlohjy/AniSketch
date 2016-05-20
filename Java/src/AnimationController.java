@@ -33,6 +33,7 @@ public class AnimationController {
 	Key default_key;
 	
 	boolean showing_compiled_keys = false;
+	boolean lock_frame_update = false;
 	
 	public AnimationController(AniSketch p) 
 	{
@@ -41,6 +42,16 @@ public class AnimationController {
 		keyshapes = new KeyShapes(p);
 		delta_keys = new ArrayList<Key>();
 		default_key = new Key(0, 0, 0, p);
+	}
+	
+	public void lockFrameUpdate()
+	{
+		lock_frame_update = true;
+	}
+	
+	public void unlockFrameUpdate()
+	{
+		lock_frame_update = false;
 	}
 
 	public Key compileDeltaKeys(float x_input, float y_input)
@@ -349,15 +360,18 @@ public class AnimationController {
 		//if(current_frame != 0 && p.main_windows.stage.opened_key == null)
 		if(p.main_windows.stage.opened_key == null)
 		{
-			Key all_keys_added = calculateCurrentFrame(frame);
-			
-			if(p.main_windows.stage.opened_key != null)
+			if(!lock_frame_update)
 			{
-				p.main_windows.stage.exitActiveKey();
+				Key all_keys_added = calculateCurrentFrame(frame);
+				
+				if(p.main_windows.stage.opened_key != null)
+				{
+					p.main_windows.stage.exitActiveKey();
+				}
+				//p.println("DELTAS ARE");
+				//p.animation.compileDeltaKeys(x_input, y_input).printDeltaData();
+				p.main_windows.stage.applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, all_keys_added);
 			}
-			//p.println("DELTAS ARE");
-			//p.animation.compileDeltaKeys(x_input, y_input).printDeltaData();
-			p.main_windows.stage.applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, all_keys_added);
 		}
 	}
 	
@@ -414,7 +428,7 @@ public class AnimationController {
 						p.println(System.currentTimeMillis());
 					}	
 				}
-				p.println("FRAME " + current_frame);
+				//p.println("FRAME " + current_frame);
 				// Update strokes
 				for(Stroke stroke: strokes)
 				{
