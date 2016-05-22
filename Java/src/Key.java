@@ -520,7 +520,7 @@ public class Key {
 			{
 				if(e.getButton() == 37) // If it was a left-click
 				{
-					// If withing bounds
+					// If within bounds
 					if(within_bounds)
 					{
 						// If the active key is NOT selectable, meaning that the current selected key is not in the possible selection list 

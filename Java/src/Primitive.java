@@ -125,6 +125,11 @@ public class Primitive
 	Style style_outline;
 	Style style_outline_selected;
 	
+	//===========//
+	// SELECTION //
+	//===========//
+	long last_time_selected = 0;
+	
 	Primitive(float x, float y, float w, float h, Stage stage, Sheet sheet, AnimationController a, AniSketch p)
 	{
 		this.p = p;
@@ -170,7 +175,7 @@ public class Primitive
 			drawRotationGizmo();
 		}
 		
-		if(delta_recording_start || true)
+		if(delta_recording_start)
 		{
 			drawDefaultKeyPosition();
 		}
@@ -225,12 +230,12 @@ public class Primitive
 		
 		style_outline = new Style(p);
 		style_outline.noFill();
-		style_outline.stroke(255,255,255,50);
+		style_outline.stroke(255,255,255,100);
 		style_outline.strokeWeight(5);
 		
 		style_outline_selected = new Style(p);
 		style_outline_selected.noFill();
-		style_outline_selected.stroke(255,255,255,100);
+		style_outline_selected.stroke(255,255,255,200);
 		style_outline_selected.strokeWeight(5);
 		
 		style_light = new Style(p);
@@ -885,7 +890,12 @@ public class Primitive
 		//   |_________| 
 		//
 		//        b	
-		p.quad(x-l, y-t, x+r, y-t, x+r, y+b, x-l, y+b);
+		
+		p.line(x-l, y-t, x+r, y-t);
+		p.line(x+r, y-t, x+r, y+b);
+		p.line(x+r, y+b, x-l, y+b);
+		p.line(x-l, y+b, x-l, y-t);
+		//p.quad(x-l, y-t, x+r, y-t, x+r, y+b, x-l, y+b);
 	}
 
 	public void drawHandles()
@@ -1059,7 +1069,7 @@ public class Primitive
 			if(a.isPlaying() && delta_recording_start || !a.isPlaying() && !delta_recording_start || !a.isPlaying() && delta_recording_start)
 			{	
 				p.pushMatrix();
-				p.translate(0, 0, 10);
+				p.translate(0, 0, stage.primitives.size()+1);
 				style_light.apply();
 				Utilities.dottedLine(x+stage.camera.x, y+stage.camera.y, parent.x+stage.camera.x, parent.y+stage.camera.y, 5, 10, p);
 				p.popMatrix();
@@ -1069,24 +1079,10 @@ public class Primitive
 		
 		p.pushMatrix();
 		p.translate(stage.camera.x+x, stage.camera.y+y);
-		//p.text("ROTATION: " + rotation, 10, 0);
 		p.rotate(PApplet.radians(rotation));
 
 		style_default.apply();
 		
-		if(selected)
-		{
-			style_outline_selected.apply();
-			drawStretchRect(pivot.x, pivot.y, t, b, l, r);
-			style_selected.apply();
-		}
-		if(hover)
-		{
-			// Draw an outline
-			style_outline.apply();
-			drawStretchRect(pivot.x, pivot.y, t, b, l, r);
-			style_hover.apply();
-		}
 		if(sprite != null)
 		{
 			style_light.apply();
@@ -1095,11 +1091,42 @@ public class Primitive
 			p.image(sprite, pivot.x-l, pivot.y-t, r+l, t+b);
 			p.popMatrix();
 		}
-		drawStretchRect(pivot.x, pivot.y, t, b, l, r);
 		
-		//p.text((int)this.x + ", " + (int)this.y, 0, 10);
-		//p.text("Delta Recording: " + delta_recording_start, 0, 20);
-		p.text("RT: " + this.rotation, 0, 20);
+		if(a.isPlaying() && delta_recording_start || !a.isPlaying() && !delta_recording_start || !a.isPlaying() && delta_recording_start)
+		{	
+			if(selected)
+			{
+	
+				p.pushMatrix();
+				p.translate(0, 0, stage.primitives.size()+1);
+				style_outline_selected.apply();
+				drawStretchRect(pivot.x, pivot.y, t, b, l, r);
+				p.popMatrix();
+				style_selected.apply();
+			}
+			if(hover && !selected)
+			{
+				// Draw an outline
+				p.pushMatrix();
+				p.translate(0, 0, stage.primitives.size()+1);
+				style_outline.apply();
+				drawStretchRect(pivot.x, pivot.y, t, b, l, r);
+				p.popMatrix();
+				style_hover.apply();
+			}
+		}
+		
+		if(a.isPlaying() && delta_recording_start || !a.isPlaying() && !delta_recording_start || !a.isPlaying() && delta_recording_start || sprite == null)
+		{	
+			p.pushMatrix();
+			p.translate(0, 0, stage.primitives.size()+1);
+			drawStretchRect(pivot.x, pivot.y, t, b, l, r);
+			p.popMatrix();
+		}
+		
+		//p.fill(0);
+		//p.textAlign(p.LEFT);
+		//p.text(Long.toString(last_time_selected), 0, -25);
 		
 		p.popMatrix();
 	}
@@ -1122,6 +1149,8 @@ public class Primitive
 	
 	public void drawRotationGizmo()
 	{
+		p.pushMatrix();
+		p.translate(0, 0, stage.primitives.size()+1);
 		p.noFill();
 		p.stroke(0);
 		p.strokeWeight(1);
@@ -1136,6 +1165,7 @@ public class Primitive
 		p.line(p.mouseX, p.mouseY, pivot_x, pivot_y);
 		p.strokeWeight(3);
 		p.point(p.mouseX, p.mouseY);
+		p.popMatrix();
 		//p.ellipse(p.mouseX, p.mouseY, 10, 10);
 	}
 
@@ -1203,40 +1233,62 @@ public class Primitive
 	//================//
 	// MOUSE HANDLING //
 	//================//
-	public boolean checkMouseEvent(MouseEvent e, boolean ignore_selection)
-	{
+	public int[] checkMouseEvent(MouseEvent e, Primitive active_selection, ArrayList<Primitive> selectables, boolean allowed_to_select)
+	{	
+		// Response details:
+		// [within bounds, selection status]
+		// within bounds : 0 is outside bounds, 1 is within bounds
+		// selection status : 0 is no change is status, 1 is has become selected, -1 has become deselected
+		
+		int[] response = {0,0};
 		boolean handles_mouse_event_state = false;
 		boolean within_bounds = withinBounds(e.getX(), e.getY());
 		
-		// For selection ranking
-		if(ignore_selection)
-		{
-			selected = false;
-		}
+		if(within_bounds){response[0] = 1;}
+		
 		
 		// If the primitive is already selected, pass the mouse event to the handles first
 		if(selected)
 		{
 			handles_mouse_event_state = checkMouseEventHandles(e);
 		}
+		if(!allowed_to_select && !handles_mouse_event_state){selected = false;}
 		
 		// If the handles do not register any mouse events, continue to pass the mouse event to the primitive proper
 		if(!handles_mouse_event_state)
 		{
+			boolean selection_triggered = false;
+			
 			if(e.getAction() == 1) // When mouse is pressed (down)
 			{
 				if(e.getButton() == 37)
 				{
 					if(within_bounds) 
 					{
-						if(!ignore_selection)
+						// We are only allowed to select an object when
+						// 1. The active selection cannot be selected
+						// 2. The object's last selection time is the lowest
+						if(!selectables.contains(active_selection))
 						{
-							selected = true;
+							if(this.lastSelectionTimeIsLowestOf(selectables))
+							{
+								if(allowed_to_select)
+								{
+									selected = true;
+									response[1] = 1;
+									selection_triggered = true;
+									last_time_selected = System.currentTimeMillis();
+								}
+							}
 						}
 					}
 					else if(!within_bounds)
 					{
-						selected = false;
+						if(selected)
+						{
+							selected = false;
+							response[1] = -1;
+						}	
 					}
 				}
 				
@@ -1270,13 +1322,29 @@ public class Primitive
 			}
 			else if(e.getAction() == 3) // When mouse is clicked (down then up)
 			{
-				/*
-				if(selected)
+				if(within_bounds)
 				{
-					PApplet.println("CLICKED");
-					setPivotUsingGlobalPosition(e.getX(), e.getY());
+					if(e.getButton() == 37)
+					{
+						if(active_selection == this && selectables.size() > 1) // Clicking a selected object will deselect it and cycle the selections
+						{	
+							selected = false;
+							response[1] = -1;
+						}	
+						else
+						{
+							if(lastSelectionTimeIsLowestOf(selectables))
+							{
+								if(allowed_to_select)
+								{
+									selected = true;
+									last_time_selected = System.currentTimeMillis();
+									response[1] = 1;
+								}
+							}
+						}
+					}
 				}
-				*/
 			}
 			else if(e.getAction() == 4) // When mouse is dragged
 			{
@@ -1300,7 +1368,7 @@ public class Primitive
 			}
 		}
 		
-		return !handles_mouse_event_state;
+		return response;
 	}
 	
 	public boolean checkMouseEventHandles(MouseEvent e)
@@ -1343,6 +1411,24 @@ public class Primitive
 		return mouse_state;
 	}
 
+	//====================//
+	// SELECTION HANDLING //
+	//====================//
+	
+	public boolean lastSelectionTimeIsLowestOf(ArrayList<Primitive> selectables)
+	{
+		// Checks if the current Primitive's last selected time is the lowest of all selectables
+		// Returns true if it is the lowest
+		for(Primitive other_primitives: selectables)
+		{
+			if(other_primitives.last_time_selected < this.last_time_selected)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	//====================//
 	// TRANSFORM HANDLING //
 	//====================//

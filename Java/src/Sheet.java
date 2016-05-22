@@ -10,7 +10,7 @@ public class Sheet extends Element{
 	//ArrayList<PVector> drawn_points;
 	PVector camera;
 	boolean drawing;
-	long time_since_last_point = System.currentTimeMillis();
+	//long time_since_last_point = System.currentTimeMillis();
 	
 	static final int UP = 0;
 	static final int DOWN = 1;
@@ -18,8 +18,8 @@ public class Sheet extends Element{
 	static final int COMPOSITION = 1;
 	
 	
-	int framerate = 25; // The framerate sets limits the number of points per second that you are able to draw
-	int millis_per_frame = 1000/25;
+	//int framerate = 25; // The framerate sets limits the number of points per second that you are able to draw
+	//int millis_per_frame = 1000/25;
 	
 	int mouse_state = UP;
 	AnimationController a;

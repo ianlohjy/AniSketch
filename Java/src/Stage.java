@@ -13,13 +13,16 @@ public class Stage extends Element{
 	float count = 1;
 	ArrayList<Primitive> primitives;
 	ArrayList<Primitive> primitive_delete_list;
-	ArrayList<Primitive> primitive_selection_rank; // Selection rank determines which primitive to select when the mouse is over multiple primitives
+	//ArrayList<Primitive> primitive_selection_rank; // Selection rank determines which primitive to select when the mouse is over multiple primitives
 	Primitive last_selected_primitive;
 	
 	PVector camera;
 	Sheet sheet;
 	Key opened_key; // Currently selected key
 	
+	// Selection handling
+	ArrayList<Primitive> selectable_primitives;
+	Primitive active_primitve_selection = null;
 	//boolean showing_compiled_keys = false;
 	
 	// Buttons
@@ -43,9 +46,9 @@ public class Stage extends Element{
 		
 		primitives = new ArrayList<Primitive>();
 		
-		addPrimitive(100, 500, 100, 100, this, sheet, p.animation, p);
-		addPrimitive(100, 400, 100, 100, this, sheet, p.animation, p);
-		addPrimitive(100, 300, 100, 100, this, sheet, p.animation, p);
+		//addPrimitive(100, 500, 100, 100, this, sheet, p.animation, p);
+		//addPrimitive(100, 400, 100, 100, this, sheet, p.animation, p);
+		//addPrimitive(100, 300, 100, 100, this, sheet, p.animation, p);
 		//primitives.get(1).setParent(primitives.get(0));
 		//primitives.get(1).loadSprite("./resources/sprites/ball.svg");
 		//primitives.get(2).setParent(primitives.get(1));
@@ -259,7 +262,6 @@ public class Stage extends Element{
 				p--;
 			}
 		}		
-		buildPrimitiveSelectionRank();
 	}
 	
 	void updatePrimitives()
@@ -276,14 +278,28 @@ public class Stage extends Element{
 	{
 		Primitive new_primitive = new Primitive(x, y, w, h, this, sheet, a, p);
 		primitives.add(new_primitive);
-		buildPrimitiveSelectionRank();
+		//buildPrimitiveSelectionRank();
 		return new_primitive;
 	}
 	
+	/*
 	void buildPrimitiveSelectionRank()
 	{
 		primitive_selection_rank = (ArrayList<Primitive>) primitives.clone();
 		//last_selected_primitive = null;
+	}
+	*/
+	
+	boolean not(Boolean value)
+	{
+		if(value == true)
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
 	}
 	
 	void checkMouseEvent(MouseEvent e)
@@ -292,10 +308,42 @@ public class Stage extends Element{
 		{
 			checkButtonMouseEvent(e);
 			
-			for(int p=0; p<primitive_selection_rank.size(); p++)
+			ArrayList<Primitive> new_selectables = new ArrayList<Primitive>();
+			Primitive last_active_selection = active_primitve_selection;
+			boolean allowed_to_select = true;
+			
+			if(active_primitve_selection != null)
 			{
-				primitives.get(p).checkMouseEvent(e, false);
+				if(active_primitve_selection.checkMouseEventHandles(e))
+				{
+					p.println("HI");
+					allowed_to_select = false;
+				}
 			}
+			
+			
+			for(Primitive cur_primitive: primitives)
+			{
+				int[] response = cur_primitive.checkMouseEvent(e, active_primitve_selection, selectable_primitives, allowed_to_select);
+				
+				if(response[0] == 1) // If the object was within bounds
+				{
+					new_selectables.add(cur_primitive);
+				}	
+				if(response[1] == 1) // If the object was selected
+				{
+					if(allowed_to_select)
+					{
+						active_primitve_selection = cur_primitive;
+						allowed_to_select = false;
+					}
+				}
+				if(response[1] == -1 && active_primitve_selection == cur_primitive) // If the object was deselected
+				{
+					active_primitve_selection = null;
+				}
+			}
+			selectable_primitives = new_selectables;
 		}
 	}
 
