@@ -83,7 +83,7 @@ public class Primitive
 	final static int USE_GLOBAL = 3;
 	final static int TRANSLATION = 4;
 	final static int ROTATION = 5;
-	final static int WIDT_HEIGHT = 6;
+	final static int SHAPE = 6;
 	
 	
 	//=====================//
@@ -562,13 +562,30 @@ public class Primitive
 					centroid_diff = centroid_diff.add(extra_distance); // Add extra distance to centroid difference
 					centroid_diff = centroid_diff.rotate(PApplet.radians(parent.rotation)); // Rotate centroid difference vector to its original angle
 					
+					float live_rotation = this.rotation;
+					
 					// Apply the difference to child's position
 					this.x = this.x + centroid_diff.x;
 					this.y = this.y + centroid_diff.y;
 					
-					/*
-					if(applyChangesToDefaultKey)
+					
+					if(control_mode == DEFAULT_KEY)
 					{
+						Key.PrimitiveData default_child = a.default_key.getData(this);
+						PVector computed_pos = new PVector(centroid_diff.x, centroid_diff.y);
+						computed_pos = computed_pos.rotate(PApplet.radians(-live_rotation));
+						//p.println("XDEFF2: " + computed_pos.x + " YDEFF2: " + computed_pos.y);
+						computed_pos = computed_pos.rotate(PApplet.radians(default_child.rt));
+						
+						//p.println("XDEFF3: " + computed_pos.x + " YDEFF3: " + computed_pos.y);
+						p.println("!");
+						addPropertyToDefaultKey(PROP_X, computed_pos.x);
+						addPropertyToDefaultKey(PROP_Y, computed_pos.y);
+						
+						//addPropertyToDefaultKey(PROP_X, centroid_diff.x);
+						//addPropertyToDefaultKey(PROP_Y, centroid_diff.y);
+						
+						/*
 						if(hasParent())
 						{
 							PVector parent_adjustment = new PVector(centroid_diff.x, centroid_diff.y);
@@ -582,7 +599,8 @@ public class Primitive
 							addPropertyToDefaultKey(PROP_X, centroid_diff.x);
 							addPropertyToDefaultKey(PROP_Y, centroid_diff.y);
 						}
-					}*/
+						*/
+					}
 				}
 				
 				// TRANSLATION CONTROL
@@ -628,7 +646,7 @@ public class Primitive
 								addPropertyToDefaultKey(PROP_X, computed_pos.x);
 								addPropertyToDefaultKey(PROP_Y, computed_pos.y);
 							}
-							else if(transform_type == ROTATION)
+							else if(transform_type == ROTATION || transform_type == SHAPE)
 							{
 								//p.println("XDEFF1: " + computed_pos.x + " YDEFF1: " + computed_pos.y);
 								//computed_pos = computed_pos.rotate(PApplet.radians(-live_rotation));
@@ -1613,10 +1631,10 @@ public class Primitive
 				addPropertyToDefaultKey(PROP_LEFT  , this.l-local_init_l);
 				addPropertyToDefaultKey(PROP_RIGHT , this.r-local_init_r);
 
-				//if(hasChildren())
-				//{
-				//	forceParentControlAndSetToDefaultKey();
-				//}
+				if(hasChildren())
+				{
+					forceParentControlAndSetToDefaultKey(DEFAULT_KEY, SHAPE, NORMAL);
+				}
 			}
 			
 			handle.updateHandlePosition();
