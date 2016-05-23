@@ -363,6 +363,19 @@ public class Timeline extends Element{
 				p.textFont(p.default_font);
 				p.textSize(14);
 				
+				if(active_stroke.play_mode == active_stroke.PLAY_ONCE)
+				{
+					button_loop.setLabel("PLAY ONCE");
+				}
+				else if(active_stroke.play_mode == active_stroke.LOOP)
+				{
+					button_loop.setLabel("LOOP");
+				}
+				if(active_stroke.play_mode == active_stroke.HOLD)
+				{
+					button_loop.setLabel("HOLD");
+				}
+
 				label_start = "F" + Long.toString(active_stroke.start_frame);
 				label_end = "F" + (active_stroke.start_frame+active_stroke.points.size());
 				float handle_start_width = width_buffer + p.textWidth(label_start) + width_buffer;
@@ -447,11 +460,6 @@ public class Timeline extends Element{
 			p.textAlign(p.LEFT, p.BOTTOM); // Reset text alignment
 		}
 		
-		void update()
-		{
-			
-		}
-		
 		void checkMouseEvent(MouseEvent e)
 		{
 			if(p.main_windows.sheet.active_stroke_selection != null)
@@ -465,8 +473,17 @@ public class Timeline extends Element{
 			HandleSubButton(int w, int h, AniSketch p) 
 			{
 				super(0, 0, w, h, p);
-				setLabel("PLAY ONCE");
 			}	
+			
+			@Override
+			void pressAction()
+			{
+				if(p.main_windows.sheet.active_stroke_selection != null)
+				{
+					p.main_windows.sheet.active_stroke_selection.cyclePlayMode();
+				}
+			}
+			
 		}
 		
 		

@@ -311,6 +311,23 @@ public class Stroke
 		marked_for_deletion = true;
 	}
 	
+	// Cycles in between the different possible stroke play modes
+	void cyclePlayMode()
+	{
+		if(play_mode == PLAY_ONCE)
+		{
+			play_mode = HOLD;
+		}
+		else if(play_mode == HOLD)
+		{
+			play_mode = LOOP;
+		}
+		else if(play_mode == LOOP)
+		{
+			play_mode = PLAY_ONCE;
+		}
+	}
+	
 	//======================//
 	// STROKE DATA HANDLING //
 	//======================//
