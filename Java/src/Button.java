@@ -1,3 +1,5 @@
+import processing.core.PImage;
+import processing.core.PShape;
 import processing.event.MouseEvent;
 
 public class Button{
@@ -17,6 +19,11 @@ public class Button{
 	
 	int behavior = PRESS;
 	int font_size;
+	
+	PImage on_image;
+	PImage off_image;
+	float[] on_image_size;
+	float[] off_image_size;		
 	
 	Button(int x, int y, int w, int h, AniSketch p) 
 	{
@@ -45,6 +52,22 @@ public class Button{
 	{
 	}
 	
+	void setOnImage(String path, float width, float height)
+	{
+		on_image = p.loadImage(path);
+		on_image_size = new float[2];
+		on_image_size[0] = width;
+		on_image_size[1] = height;
+	}
+	
+	void setOffImage(String path, float width, float height)
+	{
+		off_image = p.loadImage(path);
+		off_image_size = new float[2];
+		off_image_size[0] = width;
+		off_image_size[1] = height;
+	}
+	
 	void setLabel(String new_label)
 	{
 		label = new_label;
@@ -64,21 +87,32 @@ public class Button{
 			p.fill(0,50);		
 			if(pressed)
 			{
+				if(on_image != null)
+				{
+					p.image(on_image, (this.w/2f)-(on_image_size[0]/2f), (this.h/2f)-(on_image_size[1]/2f), on_image_size[0], on_image_size[1]);
+				}
 				p.fill(0);
 			}
 			else if(hover)
 			{
+				if(off_image != null)
+				{
+					p.image(off_image, (this.w/2f)-(off_image_size[0]/2f), (this.h/2f)-(off_image_size[1]/2f), off_image_size[0], off_image_size[1]);
+				}
 				p.fill(0,150);
 			}
 		}
 		else if(behavior == TOGGLE)
-		{
-					
+		{	
 			if(pressed)
 			{
 				p.fill(0,200);
 				if(hover)
 				{
+					if(on_image != null)
+					{
+						p.image(on_image, (this.w/2f)-(on_image_size[0]/2f), (this.h/2f)-(on_image_size[1]/2f), on_image_size[0], on_image_size[1]);
+					}
 					p.fill(0,255);
 				}
 			}
@@ -87,12 +121,14 @@ public class Button{
 				p.fill(0,50);
 				if(hover)
 				{
+					if(off_image != null)
+					{
+						p.image(off_image, (this.w/2f)-(off_image_size[0]/2f), (this.h/2f)-(off_image_size[1]/2f), off_image_size[0], off_image_size[1]);
+					}
 					p.fill(0,150);
 				}
 			}
-		}
-		
-		
+		}	
 		p.rect(x, y, w, h);
 		
 		p.fill(255);
