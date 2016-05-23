@@ -1087,7 +1087,7 @@ public class Primitive
 		{
 			style_light.apply();
 			p.pushMatrix();
-			p.translate(0, 0, 5);
+			p.translate(0, 0, 0);
 			p.image(sprite, pivot.x-l, pivot.y-t, r+l, t+b);
 			p.popMatrix();
 		}

@@ -116,7 +116,9 @@ public class Timeline extends Element{
 			base_style.fill(255,255,255,255);
 			progression_style = new Style(p);
 			progression_style.noStroke();
-			progression_style.fill(150,150,150,255);
+			//progression_style.fill(150,150,150,255);
+			progression_style.fill(194,53,51,255);
+			//p.fill();
 		}
 		
 		void draw()
@@ -125,7 +127,7 @@ public class Timeline extends Element{
 			if(progression > 1) {progression = 1;}
 			
 			this.x = t.x+side_margin;
-			this.y = t.y+(int)(t.h*0.5f)-(int)(h*0.5f);
+			this.y = t.y+(int)(t.h*0.35f)-(int)(h*0.35f);
 			this.w = t.w-(side_margin*2);
 			
 			base_style.apply();
