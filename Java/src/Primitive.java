@@ -1003,7 +1003,7 @@ public class Primitive
 			if((int)Math.abs(delta_rotation_live)/360 != 0)
 			{
 				p.fill(255,150);
-				p.textFont(p.consolas_b);
+				p.textFont(p.default_font);
 				p.textAlign(p.LEFT, p.CENTER);
 				p.textSize(14);
 				p.text( ((int)Math.abs(delta_rotation_live)/360) + "x", (rotation_arc_radius/2)+6, -2);

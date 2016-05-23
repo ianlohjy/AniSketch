@@ -4,6 +4,7 @@
 
 //import processing.awt.PSurfaceAWT.SmoothCanvas;
 
+
 import processing.core.*;
 import processing.event.KeyEvent;
 import processing.event.MouseEvent;
@@ -19,9 +20,11 @@ public class AniSketch extends PApplet
 	GestureHandler gesture_handler;
 	MainWindows main_windows;
 	AnimationController animation;
-	PFont consolas_b;
+	PFont default_font;
 	
 	String cursor_message = "";
+	
+	final boolean export = false;
 	
 	public static void main(String args[])
 	{
@@ -70,7 +73,10 @@ public class AniSketch extends PApplet
 	
 	public void loadFonts()
 	{
-		consolas_b = createFont("./consolab", 32);
+		String font_url = getResource("/resources/fonts/OpenSans-Semibold.ttf");
+		//File font_file = new File(font_url);
+		//println("!!! " + font_url);
+		default_font = createFont(font_url, 32);
 	}
 	
 	public void setup()
@@ -113,7 +119,7 @@ public class AniSketch extends PApplet
 	{
 		if(cursor_message != "")
 		{
-			textFont(consolas_b);
+			textFont(default_font);
 			textSize(12);
 			float message_width = textWidth(cursor_message)+20;
 			
@@ -180,6 +186,18 @@ public class AniSketch extends PApplet
 	public void keyPressed(KeyEvent e) 
 	{
 		animation.checkKeyEvent(e);
+	}
+	
+	public String getResource(String resource_path)
+	{
+		if(export)
+		{
+			return AniSketch.class.getResource(resource_path).toString();
+		}
+		else
+		{
+			return AniSketch.class.getResource(resource_path).getPath();
+		}
 	}
 	
 }

@@ -349,27 +349,30 @@ public class Stage extends Element{
 
 	void exampleMakeElephant()
 	{
+		String elephant_body_url = p.getResource("/resources/sprites/elephant_body.png");
+		String elephant_leg_url = p.getResource("/resources/sprites/elephant_leg.png");
+		
 		Primitive elephant_leg1 = addPrimitive((w/2)-50, (h/2)+70, 33, 65, this, sheet, p.animation, p);
-		elephant_leg1.loadSprite("./resources/sprites/elephant_leg.png");
+		elephant_leg1.loadSprite(elephant_leg_url);
 		elephant_leg1.setPivot(0, 20);
 		elephant_leg1.setPropertiesToDefaultKey();
 		
 		Primitive elephant_leg2 = addPrimitive((w/2)+40, (h/2)+70, 33, 65, this, sheet, p.animation, p);
-		elephant_leg2.loadSprite("./resources/sprites/elephant_leg.png");
+		elephant_leg2.loadSprite(elephant_leg_url);
 		elephant_leg2.setPivot(0, 20);
 		elephant_leg2.setPropertiesToDefaultKey();
 		
 		Primitive elephant_body = addPrimitive(w/2, h/2, 215, 137, this, sheet, p.animation, p);
-		elephant_body.loadSprite("./resources/sprites/elephant_body.png");
+		elephant_body.loadSprite(elephant_body_url);
 		elephant_body.setPropertiesToDefaultKey();
 		
 		Primitive elephant_leg3 = addPrimitive((w/2)-10, (h/2)+70, 33, 65, this, sheet, p.animation, p);
-		elephant_leg3.loadSprite("./resources/sprites/elephant_leg.png");
+		elephant_leg3.loadSprite(elephant_leg_url);
 		elephant_leg3.setPivot(0, 20);
 		elephant_leg3.setPropertiesToDefaultKey();
 		
 		Primitive elephant_leg4 = addPrimitive((w/2)+80, (h/2)+70, 33, 65, this, sheet, p.animation, p);
-		elephant_leg4.loadSprite("./resources/sprites/elephant_leg.png");
+		elephant_leg4.loadSprite(elephant_leg_url);
 		elephant_leg4.setPivot(0, 20);
 		elephant_leg4.setPropertiesToDefaultKey();
 		
@@ -381,15 +384,17 @@ public class Stage extends Element{
 	
 	void exampleMakeBall()
 	{
+		String ball_url = p.getResource("/resources/sprites/ball.png");
 		Primitive ball = addPrimitive((w/2), (h/2), 100, 100, this, sheet, p.animation, p);
-		ball.loadSprite("./resources/sprites/ball.png");
+		ball.loadSprite(ball_url);
 		ball.setPropertiesToDefaultKey();
 	}
 	
 	void exampleMakeFish()
 	{
+		String fish_url = p.getResource("/resources/sprites/fish.png");
 		Primitive fish = addPrimitive((w/2), (h/2), 80, 38, this, sheet, p.animation, p);
-		fish.loadSprite("./resources/sprites/fish.png");
+		fish.loadSprite(fish_url);
 		fish.setPropertiesToDefaultKey();
 	}
 	

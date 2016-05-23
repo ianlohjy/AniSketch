@@ -32,7 +32,9 @@ public class GestureHandler {
 	{
 		gesture_state = new GestureState();
 		gesture_engine = new GestureEngine();
-		gesture_engine.loadGestureTemplatesFrom("./gestures/", false);
+		String gestures_url = p.getResource("/resources/gestures/");
+		p.println(gestures_url);
+		gesture_engine.loadGestureTemplatesFrom(gestures_url, false);
 	}
 	
 	public void setupStyles()

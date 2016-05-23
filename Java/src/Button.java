@@ -132,7 +132,7 @@ public class Button{
 		p.rect(x, y, w, h);
 		
 		p.fill(255);
-		p.textFont(p.consolas_b, font_size);
+		p.textFont(p.default_font, font_size);
 		p.textAlign(p.CENTER, p.CENTER);
 		p.text(label, x+(w/2), y+(h/2)-2);
 	}

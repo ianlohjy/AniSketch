@@ -137,7 +137,7 @@ public class Timeline extends Element{
 			p.rect(x, y, w*progression, h);
 			
 			p.fill(255);
-			p.textFont(p.consolas_b);
+			p.textFont(p.default_font);
 			p.textSize(14);
 			
 			p.textAlign(PApplet.LEFT, PApplet.BOTTOM);
@@ -180,7 +180,7 @@ public class Timeline extends Element{
 		
 		float findWidth(String cursor_label)
 		{
-			p.textFont(p.consolas_b);
+			p.textFont(p.default_font);
 			p.textSize(font_size);
 			
 			int new_width = (int)p.textWidth(cursor_label) + width_buffer;
@@ -271,9 +271,6 @@ public class Timeline extends Element{
 			p.text(label, x+(w/2), y+h-5);
 			
 			p.textAlign(PApplet.LEFT, PApplet.BOTTOM);
-			
-
-			
 		}
 		
 		void checkMouseEvent(MouseEvent e)
