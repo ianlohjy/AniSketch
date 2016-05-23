@@ -84,21 +84,14 @@ public class Button{
 		
 		if(behavior == PRESS)
 		{
-			p.fill(0,50);		
+			p.fill(0,50);	
+			
 			if(pressed)
 			{
-				if(on_image != null)
-				{
-					p.image(on_image, (this.w/2f)-(on_image_size[0]/2f), (this.h/2f)-(on_image_size[1]/2f), on_image_size[0], on_image_size[1]);
-				}
 				p.fill(0);
 			}
 			else if(hover)
 			{
-				if(off_image != null)
-				{
-					p.image(off_image, (this.w/2f)-(off_image_size[0]/2f), (this.h/2f)-(off_image_size[1]/2f), off_image_size[0], off_image_size[1]);
-				}
 				p.fill(0,150);
 			}
 		}
@@ -109,10 +102,6 @@ public class Button{
 				p.fill(0,200);
 				if(hover)
 				{
-					if(on_image != null)
-					{
-						p.image(on_image, (this.w/2f)-(on_image_size[0]/2f), (this.h/2f)-(on_image_size[1]/2f), on_image_size[0], on_image_size[1]);
-					}
 					p.fill(0,255);
 				}
 			}
@@ -121,10 +110,6 @@ public class Button{
 				p.fill(0,50);
 				if(hover)
 				{
-					if(off_image != null)
-					{
-						p.image(off_image, (this.w/2f)-(off_image_size[0]/2f), (this.h/2f)-(off_image_size[1]/2f), off_image_size[0], off_image_size[1]);
-					}
 					p.fill(0,150);
 				}
 			}
@@ -135,6 +120,45 @@ public class Button{
 		p.textFont(p.default_font, font_size);
 		p.textAlign(p.CENTER, p.CENTER);
 		p.text(label, x+(w/2), y+(h/2)-2);
+		
+		if(behavior == PRESS)
+		{
+			if(hover || pressed)
+			{
+				drawOnImage();
+			}
+			else
+			{
+				drawOffImage();
+			}
+		}
+		else if(behavior == TOGGLE)
+		{
+			if(pressed)
+			{
+				drawOnImage();
+			}
+			else 
+			{
+				drawOffImage();
+			}
+		}
+	}
+	
+	void drawOnImage()
+	{
+		if(on_image != null)
+		{
+			p.image(on_image, (this.x)+(this.w/2f)-(on_image_size[0]/2f), (this.y)+(this.h/2f)-(on_image_size[1]/2f), on_image_size[0], on_image_size[1]);
+		}
+	}
+	
+	void drawOffImage()
+	{
+		if(off_image != null)
+		{
+			p.image(off_image, (this.x)+(this.w/2f)-(off_image_size[0]/2f), (this.y)+(this.h/2f)-(off_image_size[1]/2f), off_image_size[0], off_image_size[1]);
+		}
 	}
 	
 	void checkMouseEvent(MouseEvent e)
@@ -187,6 +211,16 @@ public class Button{
 		}
 	}
 	
+	void on()
+	{
+		pressed = true;
+	}
+	
+	void off()
+	{
+		pressed = false;
+	}
+	
 	void pressAction()
 	{
 		Utilities.printAlert("PRESS ACTION");
@@ -202,5 +236,20 @@ public class Button{
 		Utilities.printAlert("TOGGLE OFF ACTION");
 	}
 	
-
+	void setHoverStyle(Style style)
+	{
+		
+	}
+	
+	void setPressedStyle(Style style)
+	{
+		
+	}
+	
+	
+	
+	
+	
+	
+	
 }

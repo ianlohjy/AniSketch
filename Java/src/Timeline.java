@@ -8,6 +8,10 @@ public class Timeline extends Element{
 	
 	TimelineBar timeline_bar;
 	CursorHandle cursor_handle;
+	StrokeHandle stroke_handle;
+	ButtonPlay button_play;
+	ButtonStop button_stop;
+	ButtonLoop button_loop;
 	
 	Timeline(int x, int y, int w, int h, AniSketch p, AnimationController a)
 	{
@@ -17,6 +21,10 @@ public class Timeline extends Element{
 		default_style.fill(30,30,30,255);
 		timeline_bar = new TimelineBar(5, this, p);
 		cursor_handle = new CursorHandle(timeline_bar, p);
+		stroke_handle = new StrokeHandle(timeline_bar, p);
+		button_play = new ButtonPlay(50, 25, timeline_bar, p);
+		button_stop = new ButtonStop(50, 25, timeline_bar, p);
+		button_loop = new ButtonLoop(50, 25, timeline_bar, p);
 	}
 	
 	void draw()
@@ -39,6 +47,14 @@ public class Timeline extends Element{
 
 		timeline_bar.draw();
 		cursor_handle.draw();
+		stroke_handle.draw();
+		
+		button_play.update();
+		button_play.draw();
+		button_stop.update();
+		button_stop.draw();
+		button_loop.update();
+		button_loop.draw();
 	}
 	
 	void checkMouseEvent(MouseEvent e)
@@ -47,49 +63,10 @@ public class Timeline extends Element{
 		
 		timeline_bar.checkMouseEvent(e);
 		cursor_handle.checkMouseEvent(e);
-		
-		if(!cursor_handle.hover)
-		{
-			if(e.getAction() == 1) // When mouse is pressed (down)
-			{
-				if(within_bounds)
-				{
-					pressed = true;
-				}
-				else
-				{
-					pressed = false;
-				}
-			}
-			else if(e.getAction() == 2) // When mouse is released
-			{
-				if(pressed && within_bounds)
-				{
-					a.togglePlayback();
-				}
-				pressed = false;
-			}
-			else if(e.getAction() == 3) // When mouse is clicked (down then up)
-			{
-				//a.togglePlayback();
-			}
-			else if(e.getAction() == 4) // When mouse is dragged
-			{
-			}
-			else if(e.getAction() == 5) // When mouse is moved
-			{
-				if(within_bounds)
-				{
-					hover = true;
-				}
-				else
-				{
-					hover = false;
-				}
-			}
-		}
-			
-		//if(e.getAction() =)
+		stroke_handle.checkMouseEvent(e);
+		button_play.checkMouseEvent(e);
+		button_stop.checkMouseEvent(e);
+		button_loop.checkMouseEvent(e);
 	}
 	
 	///////////////////////////////////
@@ -127,7 +104,7 @@ public class Timeline extends Element{
 			if(progression > 1) {progression = 1;}
 			
 			this.x = t.x+side_margin;
-			this.y = t.y+(int)(t.h*0.35f)-(int)(h*0.35f);
+			this.y = t.y+(int)(t.h*0.30f)-(int)(h*0.30f);
 			this.w = t.w-(side_margin*2);
 			
 			base_style.apply();
@@ -141,13 +118,13 @@ public class Timeline extends Element{
 			p.textSize(14);
 			
 			p.textAlign(PApplet.LEFT, PApplet.BOTTOM);
-			p.text("F0", x, y-5);
+			p.text("F0", x, y-3);
 			
 			p.textAlign(PApplet.RIGHT, PApplet.BOTTOM);
 			if(a.recording_stroke && a.frame_range[1] < a.current_frame)
-			{p.text("F"+a.current_frame, x+w, y-5);}
+			{p.text("F"+a.current_frame, x+w, y-3);}
 			else 
-			{p.text("F"+a.frame_range[1], x+w, y-5);}
+			{p.text("F"+a.frame_range[1], x+w, y-3);}
 			
 			p.textAlign(PApplet.LEFT, PApplet.BOTTOM);
 		}
@@ -169,7 +146,7 @@ public class Timeline extends Element{
 		
 		public CursorHandle(TimelineBar b, AniSketch p) 
 		{
-			super(0,0,0,26,p);
+			super(0,0,0,25,p);
 			this.b = b;
 		} 	
 		
@@ -260,7 +237,7 @@ public class Timeline extends Element{
 			p.fill(194,53,51);
 			}
 			p.rect(x, y, w, h);
-			p.rect(b.x+(progression*(b.w-5)), b.y, 5, b.h);
+			p.rect((int)(b.x+(progression*(b.w-5))), b.y, 5, b.h);
 			
 			p.textSize(14);
 			//p.textFont(p.consolas_b);
@@ -268,8 +245,7 @@ public class Timeline extends Element{
 			p.fill(255);
 			p.textAlign(PApplet.CENTER, PApplet.BOTTOM);
 
-			p.text(label, x+(w/2), y+h-5);
-			
+			p.text(label, x+(w/2), y+h-3);
 			p.textAlign(PApplet.LEFT, PApplet.BOTTOM);
 		}
 		
@@ -316,7 +292,6 @@ public class Timeline extends Element{
 			}
 		}
 
-		
 		float findProgression(float x_input)
 		{
 			float progression = (x_input-b.x)/b.w;
@@ -356,8 +331,233 @@ public class Timeline extends Element{
 		{ 
 			// Ends translation
 			moving = false;
+		}	
+	}
+	
+	class StrokeHandle extends Element
+	{
+		TimelineBar t;
+		int min_width = 30;
+		int width_buffer = 5;
+		String label_start = "";
+		String label_end = "";
+		int font_size = 14;
+		
+		HandleSubButton button_loop = new HandleSubButton(80, 25, p);
+		
+		StrokeHandle(TimelineBar t, AniSketch p) 
+		{
+			super(0,0,0,25,p);
+			this.t = t;
+		} 	
+		
+		void draw()
+		{
+			if(p.main_windows.sheet.active_stroke_selection != null)
+			{
+				Stroke active_stroke = p.main_windows.sheet.active_stroke_selection;
+				
+				float stroke_start = (float)active_stroke.start_frame/(float)a.frame_range[1];
+				float stroke_end = (float)(active_stroke.start_frame+active_stroke.points.size())/(float)a.frame_range[1];
+				
+				p.textFont(p.default_font);
+				p.textSize(14);
+				
+				label_start = "F" + Long.toString(active_stroke.start_frame);
+				label_end = "F" + (active_stroke.start_frame+active_stroke.points.size());
+				float handle_start_width = width_buffer + p.textWidth(label_start) + width_buffer;
+				float handle_end_width = width_buffer + p.textWidth(label_end) + width_buffer;
+				
+				if(stroke_end > 1) {stroke_end = 1f;}
+				if(stroke_start < 0) {stroke_start = 0f;}
+				
+				int handle_start_mark = (int)(stroke_start*(t.w-5)) + (t.x);
+				int handle_end_mark = (int)(stroke_end*(t.w-5)) + (t.x);
+				int handle_width = handle_end_mark - handle_start_mark + 5;
+				
+				// Draw the 'ticks'
+				p.fill(150,200);
+				p.rect(handle_start_mark, t.y, 5, t.h);
+				p.rect(handle_end_mark, t.y, 5, t.h);
+				
+				// Draw the handle
+				// If the handle width is less than half the timeline, then we can place the sub button outside the handle
+
+				// If the handle width is too short, just show the start handle and the sub button
+				if(handle_width < (handle_start_width+handle_start_width))
+				{
+					this.x = handle_start_mark;
+					this.y = t.y+t.h;
+					
+					// If the handle width is even shorter than the start handle
+					if(handle_width < handle_start_width)
+					{	
+						this.w = (int)handle_start_width;
+					}
+					else
+					{
+						this.w = handle_width;
+					}
+					p.rect(this.x, this.y, this.w, this.h); // Draw the start handle
+					p.fill(30);
+					p.textSize(font_size);
+					//p.textFont(p.default_font);
+					p.textAlign(p.CENTER, p.TOP);
+					p.text(label_start, this.x+(this.w/2f), this.y+2);
+				
+				}
+				else
+				{
+					this.x = handle_start_mark;
+					this.y = t.y+t.h;
+					this.w = handle_width;
+					p.rect(this.x, this.y, this.w, this.h);
+					p.fill(30);
+					p.textSize(font_size);
+					//p.textFont(p.default_font);
+					p.textAlign(p.CENTER, p.TOP);
+					p.text(label_start, this.x+(handle_start_width/2f), this.y+2);
+					p.textAlign(p.CENTER, p.TOP);
+					p.text(label_end, this.x+handle_width-(handle_end_width/2f), this.y+2);
+				}
+				
+				// Figure out the sub button placement
+				// Ideally the button should be placed on the right hand side of the handle
+				if((t.w+t.x)-handle_end_mark < button_loop.w+5)
+				{
+					if((this.w - handle_start_width - handle_end_width) >= button_loop.w+5)
+					{
+						button_loop.x = this.x + this.w - handle_end_width - button_loop.w ;
+						button_loop.y = this.y;
+					}
+					else
+					{
+						button_loop.x = this.x - button_loop.w;
+						button_loop.y = this.y;
+					}
+				}
+				else
+				{
+					button_loop.x = this.x + this.w;
+					button_loop.y = this.y;	
+				}
+				
+				button_loop.draw();
+			}	
+			p.textAlign(p.LEFT, p.BOTTOM); // Reset text alignment
 		}
 		
+		void update()
+		{
+			
+		}
+		
+		void checkMouseEvent(MouseEvent e)
+		{
+			if(p.main_windows.sheet.active_stroke_selection != null)
+			{
+				button_loop.checkMouseEvent(e);
+			}
+		}
+		
+		class HandleSubButton extends Button
+		{
+			HandleSubButton(int w, int h, AniSketch p) 
+			{
+				super(0, 0, w, h, p);
+				setLabel("PLAY ONCE");
+			}	
+		}
+		
+		
+	}
+	
+	class ButtonPlay extends Button
+	{
+		TimelineBar t;
+		
+		ButtonPlay(int w, int h, TimelineBar t, AniSketch p) 
+		{
+			super(0, 0, w, h, p);
+			this.t = t;
+			setToToggle();
+			setOffImage(p.getResource("/resources/icons/play.png"), 11, 14);
+			setOnImage(p.getResource("/resources/icons/pause.png"), 14, 14);
+		}
+		
+		@Override
+		void update()
+		{
+			this.x = (t.x) + (t.w/2f) - (this.w/2);
+			this.y = t.y + 35;
+		}			
+		
+		void toggleOnAction()
+		{
+			a.play();
+		}
+		
+		void toggleOffAction()
+		{
+			a.pause();
+		}
+	}
+	
+	class ButtonStop extends Button
+	{
+		TimelineBar t;
+		
+		ButtonStop(int w, int h, TimelineBar t, AniSketch p) 
+		{
+			super(0, 0, w, h, p);
+			this.t = t;
+			setToPress();
+			setOffImage(p.getResource("/resources/icons/stop.png"), 14, 14);
+			setOnImage(p.getResource("/resources/icons/stop.png"), 14, 14);
+		}
+		
+		@Override
+		void update()
+		{
+			this.x = (t.x) + (t.w/2f) - (this.w/2) - this.w;
+			this.y = t.y + 35;
+		}		
+		
+		void pressAction()
+		{
+			a.stop();
+		}
+	}
+	
+	class ButtonLoop extends Button
+	{
+		TimelineBar t;
+		
+		ButtonLoop(int w, int h, TimelineBar t, AniSketch p) 
+		{
+			super(0, 0, w, h, p);
+			this.t = t;
+			setToToggle();
+			setOffImage(p.getResource("/resources/icons/back.png"), 14, 14);
+			setOnImage(p.getResource("/resources/icons/loop.png"), 14, 14);
+		}
+		
+		@Override
+		void update()
+		{
+			this.x = (t.x) + (t.w/2f) - (this.w/2) + this.w;
+			this.y = t.y + 35;
+		}			
+		
+		void toggleOnAction()
+		{
+			a.setToLoop();
+		}
+		
+		void toggleOffAction()
+		{
+			a.setToPlayOnce();
+		}
 	}
 	
 }

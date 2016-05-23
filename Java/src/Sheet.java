@@ -26,6 +26,8 @@ public class Sheet extends Element{
 	
 	// SELECTION //
 	Key active_key_selection; // Currently selected key (There can only be one key selected at a time)
+	Stroke active_stroke_selection; 
+	
 	int number_keys_under_mouse = 0;
 	ArrayList<Key> possible_selections;
 	
@@ -271,10 +273,15 @@ public class Sheet extends Element{
 		
 		if(within_bounds && animation_mode == COMPOSITION)
 		{
+			active_stroke_selection = null;
 			for(Stroke stroke: a.strokes)
 			{
 				stroke.checkMouseEvent(e);
-			}
+				if(stroke.selected)
+				{
+					active_stroke_selection = stroke;
+				}
+			}	
 		}
 	}
 	

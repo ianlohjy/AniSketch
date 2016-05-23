@@ -22,7 +22,8 @@ public class AnimationController {
 	// Strokes
 	ArrayList<Stroke> strokes;
 	Stroke recorded_stroke;
-
+	
+	boolean loop_playback = false;
 	boolean recording_stroke = false;
 	boolean was_playing = false;
 	float last_recording_input_x = 0;
@@ -424,7 +425,14 @@ public class AnimationController {
 					if(current_frame > frame_range[1])
 					{
 						current_frame = frame_range[0];
-						pause();
+						if(loop_playback)
+						{
+							play();
+						}
+						else
+						{
+							pause();
+						}
 						p.println(System.currentTimeMillis());
 					}	
 				}
@@ -458,7 +466,7 @@ public class AnimationController {
 		if(playback == PAUSE)
 		{
 			//p.println(System.currentTimeMillis());
-			play();
+			play();	
 		}
 		else if(playback == PLAY)
 		{
@@ -503,12 +511,30 @@ public class AnimationController {
 	public void play()
 	{
 		playback = PLAY;
+		p.main_windows.timeline.button_play.on();
 		p.println("ANIMATION PLAYING");
 	}
 	
 	public void pause()
 	{
 		playback = PAUSE;
+		p.main_windows.timeline.button_play.off();
 		p.println("ANIMATION PAUSED");
-	}	
+	}
+	
+	public void stop()
+	{
+		pause();
+		current_frame = 0;
+	}
+	
+	public void setToLoop()
+	{
+		loop_playback = true;
+	}
+	
+	public void setToPlayOnce()
+	{
+		loop_playback = false;
+	}
 }

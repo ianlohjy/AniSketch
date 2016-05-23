@@ -16,6 +16,10 @@ public class Stroke
 	long start_frame = 0;
 	ArrayList<StrokePoint> points;
 	boolean marked_for_deletion = false;
+	final static int PLAY_ONCE = 0;
+	final static int LOOP = 1;
+	final static int HOLD = 2;
+	int play_mode = PLAY_ONCE;
 	
 	//====================//
 	// DISPLAY PROPERTIES //
@@ -170,6 +174,14 @@ public class Stroke
 		if(a.current_frame >= start_frame && a.current_frame <= start_frame+points.size())
 		{
 			drawInkCursor((int)(a.current_frame-start_frame));
+		}
+		else if(play_mode == HOLD && a.current_frame > start_frame+points.size())
+		{
+			drawInkCursor(points.size());
+		}
+		else if(play_mode == LOOP && a.current_frame > start_frame+points.size())
+		{
+			drawInkCursor((int)(a.current_frame%points.size())-1);
 		}
 	}
 	
@@ -373,7 +385,15 @@ public class Stroke
 		{
 			return points.get(frame_number-(int)start_frame).pos;
 		}
-		else
+		else if(frame_number > start_frame+points.size()-1 && play_mode == HOLD)
+		{
+			return points.get(points.size()-1).pos;
+		}
+		else if(frame_number > start_frame+points.size() && play_mode == LOOP)
+		{
+			return points.get((frame_number%points.size())).pos;
+		}
+		else 
 		{
 			return null;
 		}
