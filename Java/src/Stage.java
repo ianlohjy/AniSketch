@@ -124,13 +124,14 @@ public class Stage extends Element{
 				// For each primitive, override its property values to the default_key + active_key
 				for(Primitive primitive: primitives)
 				{
-					default_style.fill(opened_key.color[0],opened_key.color[1],opened_key.color[2],255);  // Override background color
 					applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, opened_key);
 				}
 			}
 			
 			if(opened_key != null)
 			{
+				setBackgroundColour(opened_key.colour[0],opened_key.colour[1],opened_key.colour[2]); // Override background color
+				
 				// Reset and begin a new delta recording for all primitives
 				for(Primitive primitive: primitives)
 				{
@@ -138,6 +139,11 @@ public class Stage extends Element{
 				}
 			}
 		}
+	}
+	
+	void setBackgroundColour(int r, int g, int b)
+	{
+		default_style.fill(r, g, b, 255);  // Override background color
 	}
 	
 	void setAllPrimitivesToDefaultKey()
@@ -432,14 +438,14 @@ public class Stage extends Element{
 		}
 		if(showing_open_key_button && not(showing_load_img_button))
 		{
-			button_goto_key.x = p.main_windows.stage.x + 10;
-			button_goto_key.y = p.main_windows.stage.y + 10;
+			button_goto_key.x = this.x + 10;
+			button_goto_key.y = this.y + 10;
 			button_goto_key.draw();
 		}
 		else if(showing_load_img_button && not(showing_open_key_button))
 		{
-			button_load_image.x = p.main_windows.stage.x + 10;
-			button_load_image.y = p.main_windows.stage.y + 10;
+			button_load_image.x = this.x + 10;
+			button_load_image.y = this.y + 10;
 			button_load_image.updateLabelState();
 			button_load_image.draw();
 		}
@@ -449,8 +455,8 @@ public class Stage extends Element{
 			button_goto_key.y = p.main_windows.stage.y + 10;
 			button_goto_key.draw();
 			
-			button_load_image.x = p.main_windows.stage.x + 10;
-			button_load_image.y = button_goto_key.y + button_goto_key.h + 5;
+			button_load_image.x = this.x + 10;
+			button_load_image.y = button_goto_key.y + button_goto_key.h + 2;
 			button_load_image.updateLabelState();
 			button_load_image.draw();
 		}
@@ -600,16 +606,19 @@ public class Stage extends Element{
 			{
 				if(active_primitve_selection.sprite == null)
 				{
+					font_size = 12;
 					setLabel("LOAD IMG");
 				}
 				else
 				{
 					if(hover)
 					{
+						font_size = 12;
 						setLabel("CLEAR IMG");
 					}
 					else
 					{
+						font_size = 11;
 						setLabel("IMG LOADED");
 					}
 				}

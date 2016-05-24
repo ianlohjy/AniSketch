@@ -161,7 +161,7 @@ public class Button{
 		}
 	}
 	
-	void checkMouseEvent(MouseEvent e)
+	MouseEvent checkMouseEvent(MouseEvent e)
 	{
 		boolean within_bounds = Utilities.withinBounds(x, y, w, h, e.getX(),e.getY());
 		
@@ -209,6 +209,22 @@ public class Button{
 			else
 			{hover = false;}
 		}
+		
+		if(within_bounds)
+		{
+			mouseEventCallback(e);
+		}
+		else
+		{
+			mouseEventCallback(e);
+		}
+		
+		return e;
+	}
+	
+	void mouseEventCallback(MouseEvent e)
+	{
+		
 	}
 	
 	void on()
@@ -245,5 +261,7 @@ public class Button{
 	{
 		
 	}
+
+
 	
 }

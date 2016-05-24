@@ -369,11 +369,11 @@ public class KeyShapes {
 			p.noStroke();
 
 			p.beginShape(p.TRIANGLES);
-			p.fill(key1.color[0]+100, key1.color[1]+100, key1.color[2]+100, 255);
+			p.fill(key1.colour[0]+100, key1.colour[1]+100, key1.colour[2]+100, 255);
 			p.vertex(key1.x, key1.y);
-			p.fill(key2.color[0]+100, key2.color[1]+100, key2.color[2]+100, 255);
+			p.fill(key2.colour[0]+100, key2.colour[1]+100, key2.colour[2]+100, 255);
 			p.vertex(key2.x, key2.y);
-			p.fill(key3.color[0]+100, key3.color[1]+100, key3.color[2]+100, 255);
+			p.fill(key3.colour[0]+100, key3.colour[1]+100, key3.colour[2]+100, 255);
 			p.vertex(key3.x, key3.y);
 			p.endShape();
 			
@@ -552,16 +552,16 @@ public class KeyShapes {
 			{
 				p.beginShape(p.QUADS);
 				
-				p.fill(key1.color[0]+100, key1.color[1]+100, key1.color[2]+100, 255);
+				p.fill(key1.colour[0]+100, key1.colour[1]+100, key1.colour[2]+100, 255);
 				p.vertex(key1.x, key1.y);
 				
-				p.fill(key1.color[0]+180, key1.color[1]+180, key1.color[2]+180);
+				p.fill(key1.colour[0]+180, key1.colour[1]+180, key1.colour[2]+180);
 				p.vertex(key1.x+key1_disp.x, key1.y+key1_disp.y);
 				
-				p.fill(key2.color[0]+180, key2.color[1]+180, key2.color[2]+180);
+				p.fill(key2.colour[0]+180, key2.colour[1]+180, key2.colour[2]+180);
 				p.vertex(key2.x+key2_disp.x, key2.y+key2_disp.y);
 				
-				p.fill(key2.color[0]+100, key2.color[1]+100, key2.color[2]+100, 255);
+				p.fill(key2.colour[0]+100, key2.colour[1]+100, key2.colour[2]+100, 255);
 				p.vertex(key2.x, key2.y);
 				
 				p.endShape();
@@ -571,16 +571,16 @@ public class KeyShapes {
 			{
 				p.beginShape(p.QUADS);
 				
-				p.fill(key1.color[0]+100, key1.color[1]+100, key1.color[2]+100, 255);
+				p.fill(key1.colour[0]+100, key1.colour[1]+100, key1.colour[2]+100, 255);
 				p.vertex(key1.x, key1.y);
 				
-				p.fill(key1.color[0]+180, key1.color[1]+180, key1.color[2]+180);
+				p.fill(key1.colour[0]+180, key1.colour[1]+180, key1.colour[2]+180);
 				p.vertex(key1.x-key1_disp.x, key1.y-key1_disp.y);
 				
-				p.fill(key2.color[0]+180, key2.color[1]+180, key2.color[2]+180);
+				p.fill(key2.colour[0]+180, key2.colour[1]+180, key2.colour[2]+180);
 				p.vertex(key2.x-key2_disp.x, key2.y-key2_disp.y);
 				
-				p.fill(key2.color[0]+100, key2.color[1]+100, key2.color[2]+100, 255);
+				p.fill(key2.colour[0]+100, key2.colour[1]+100, key2.colour[2]+100, 255);
 				p.vertex(key2.x, key2.y);
 				
 				p.endShape();

@@ -1098,6 +1098,9 @@ public class Primitive
 		
 		if(sprite != null)
 		{
+			if(delta_recording_start){p.tint(255, 150);}
+			else{p.tint(255, 255);}
+			
 			style_light.apply();
 			p.pushMatrix();
 			p.translate(0, 0, 0);
@@ -1109,7 +1112,6 @@ public class Primitive
 		{	
 			if(selected)
 			{
-	
 				p.pushMatrix();
 				p.translate(0, 0, stage.primitives.size()+1);
 				style_outline_selected.apply();

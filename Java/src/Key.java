@@ -12,7 +12,7 @@ public class Key {
 	float y;
 	float d;
 	float deviation_width;
-	float[] color = new float[3];
+	int[] colour = new int[3];
 	float min_d = 50;
 	float weight = 1; // Holds weight data. Only used when compiling key weights. Set to 1 by default for Stage.goToActiveKey()
 	
@@ -58,7 +58,7 @@ public class Key {
 		
 		primitive_data = new ArrayList<PrimitiveData>();
 		connections = new ArrayList<Key>();
-		color = Utilities.randomColorPallete();
+		colour = Utilities.randomColorPallete();
 		cacheCircle(30);
 	}
 	
@@ -339,13 +339,13 @@ public class Key {
 	public void draw()
 	{
 		p.noStroke();
-		p.fill(color[0]+100,color[1]+100,color[2]+100,255);		
+		p.fill(colour[0]+100,colour[1]+100,colour[2]+100,255);		
 		// Insert center vertex
 		p.beginShape(p.TRIANGLE_FAN);
 		p.vertex(x,y);
 		
 		//p.fill(color[0],color[1],color[2],0);
-		p.fill(color[0]+180,color[1]+180,color[2]+180);
+		p.fill(colour[0]+180,colour[1]+180,colour[2]+180);
 		for(float[] point: shape)
 		{
 			p.vertex((d/2*point[0]) + x,(d/2*point[1]) + y);
@@ -365,21 +365,21 @@ public class Key {
 			ring_handle.draw();
 			p.noFill();
 			p.strokeWeight(3);
-			p.stroke(color[0]+50,color[1]+50,color[2]+50);
+			p.stroke(colour[0]+50,colour[1]+50,colour[2]+50);
 			//p.ellipse(x,y,d,d);
 		}
 		
 		p.noStroke();
 		if(p.main_windows.sheet.active_key_selection == this)
 		{
-			p.fill(color[0],color[1],color[2]);
+			p.fill(colour[0],colour[1],colour[2]);
 		}
 		else
 		{
 			p.fill(0,0,0);
 		}
 		
-		p.fill(color[0],color[1],color[2]);
+		p.fill(colour[0],colour[1],colour[2]);
 		p.rectMode(p.CENTER);
 		p.rect(x, y, 5, 5);
 		p.rectMode(p.CORNER);
@@ -485,6 +485,16 @@ public class Key {
 			p.main_windows.sheet.active_key_selection = null;
 		}
 		marked_for_deletion = true;
+	}
+	
+	void updateColour(int[] new_colour)
+	{
+		colour = new_colour;
+		
+		if(p.main_windows.stage.opened_key == this)
+		{
+			p.main_windows.stage.setBackgroundColour(new_colour[0], new_colour[1], new_colour[2]);
+		}
 	}
 	
 	public boolean withinBounds(float x_input, float y_input)
@@ -703,7 +713,7 @@ public class Key {
 		void draw()
 		{
 			//p.stroke();
-			p.stroke(color[0]+70,color[1]+70,color[2]+70);
+			p.stroke(colour[0]+70,colour[1]+70,colour[2]+70);
 			p.strokeWeight(ring_width);
 			p.noFill();
 			p.ellipse(key.x, key.y, (key.d)-(ring_width/2), (key.d)-(ring_width/2));

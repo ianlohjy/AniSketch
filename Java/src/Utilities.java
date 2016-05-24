@@ -79,15 +79,57 @@ public class Utilities {
 		return PApplet.exp(-(((position-offset)*(position-offset))/(2*(deviation)*(deviation))));
 	}
 	
-	public static float[] randomColorPallete()
+	public static int[] randomColorPallete()
 	{
+		// Colours have been taken from the Google Material Design Specification
+		// @ https://www.google.com/design/spec/style/color.html#color-color-palette
+		
+		int[][] colours = new int[9][3];
+		
+		int[] red     = {244,67,54 };
+		int[] teal    = {0,150,136 };
+		int[] blue    = {30,136,229};
+		int[] orange  = {255,87,34 };
+		int[] green   = {76,175,80 };
+		int[] l_blue  = {41,182,246};
+		int[] amber   = {255,193,7 };
+		int[] l_green = {139,195,74};
+		int[] b_grey  = {96,125,139};
+		
+		colours[0] = red;
+		colours[1] = teal;
+		colours[2] = blue;
+		colours[3] = orange;
+		colours[4] = green;
+		colours[5] = l_blue;
+		colours[6] = amber;
+		colours[7] = l_green;
+		colours[8] = b_grey;
+		
+		int selection = (int)(Math.random()*colours.length);
+		
+		switch(selection)
+		{
+			case 0:  return colours[0];
+			case 1:  return colours[1];
+			case 2:  return colours[2];
+			case 3:  return colours[3];
+			case 4:  return colours[4];
+			case 5:  return colours[5];
+			case 6:  return colours[6];
+			case 7:  return colours[7];
+			case 8:  return colours[8];
+			default: return colours[0];
+		}
+		
+		/*
 		float lightness = 1;//(float)(0.75+(Math.random()*0.5));
 		float google_blue[] = {lightness*66,lightness*133,lightness*244}; // Google Blue
 		float google_green[] = {lightness*52,lightness*168,lightness*83}; // Google Green
 		float google_yellow[] = {lightness*251,lightness*188,lightness*5}; // Google Yellow
 		float google_red[] = {lightness*234,lightness*67,lightness*53}; // Google Red
 		float illustrator_orange[] = {lightness*255,lightness*123,lightness*25};
-		
+	
 		int selection = (int)(Math.random()*4);
 		
 		switch(selection)
@@ -98,6 +140,7 @@ public class Utilities {
 			case 3:  return google_red;
 			default: return google_blue;
 		}
+		*/
 	}
 	
 	public static float[] cartesianToBarycentric(float x1, float y1, float x2, float y2, float x3, float y3, float x_input, float y_input)
