@@ -246,10 +246,4 @@ public class Button{
 		
 	}
 	
-	
-	
-	
-	
-	
-	
 }

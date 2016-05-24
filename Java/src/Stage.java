@@ -1,5 +1,5 @@
+import java.io.File;
 import java.util.ArrayList;
-
 import processing.core.PApplet;
 import processing.core.PVector;
 import processing.event.MouseEvent;
@@ -27,6 +27,7 @@ public class Stage extends Element{
 	
 	// Buttons
 	ButtonGoToKey button_goto_key = new ButtonGoToKey(x, y, 80, 25, p);
+	ButtonLoadImage button_load_image = new ButtonLoadImage(x, y, 80, 25, p);
 	ButtonMakeFish button_make_fish = new ButtonMakeFish(x, y, 80, 25, p);
 	ButtonMakeBall button_make_ball = new ButtonMakeBall(x, y, 80, 25, p);
 	ButtonMakeElephant button_make_elephant = new ButtonMakeElephant(x, y, 80, 25, p);
@@ -230,6 +231,11 @@ public class Stage extends Element{
 		
 		if(index_to_delete != -1)
 		{
+			// Clear active primitive selection
+			if(active_primitve_selection == primitives.get(index_to_delete))
+			{
+				active_primitve_selection = null;
+			}
 			primitives.remove(index_to_delete);
 		}
 		else
@@ -247,9 +253,8 @@ public class Stage extends Element{
 		p.rect(x, y, w, h);
 		updatePrimitives();
 		p.noClip();
-		
-		updateButtons();
-		drawButtons();
+	
+		updateAndDrawButtons();
 	}
 
 	void handlePrimitiveDeletion()
@@ -290,6 +295,18 @@ public class Stage extends Element{
 	}
 	*/
 	
+	boolean hasPrimitiveSelected()
+	{
+		if(active_primitve_selection != null)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
 	boolean not(Boolean value)
 	{
 		if(value == true)
@@ -306,44 +323,45 @@ public class Stage extends Element{
 	{
 		if(withinBounds(e.getX(), e.getY()))
 		{
-			checkButtonMouseEvent(e);
+			boolean buttons_in_use = checkButtonMouseEvent(e);
 			
-			ArrayList<Primitive> new_selectables = new ArrayList<Primitive>();
-			Primitive last_active_selection = active_primitve_selection;
-			boolean allowed_to_select = true;
-			
-			if(active_primitve_selection != null)
+			if(!buttons_in_use)
 			{
-				if(active_primitve_selection.checkMouseEventHandles(e))
-				{
-					p.println("HI");
-					allowed_to_select = false;
-				}
-			}
-			
-			
-			for(Primitive cur_primitive: primitives)
-			{
-				int[] response = cur_primitive.checkMouseEvent(e, active_primitve_selection, selectable_primitives, allowed_to_select);
+				ArrayList<Primitive> new_selectables = new ArrayList<Primitive>();
+				Primitive last_active_selection = active_primitve_selection;
+				boolean allowed_to_select = true;
 				
-				if(response[0] == 1) // If the object was within bounds
+				if(active_primitve_selection != null)
 				{
-					new_selectables.add(cur_primitive);
-				}	
-				if(response[1] == 1) // If the object was selected
-				{
-					if(allowed_to_select)
+					if(active_primitve_selection.checkMouseEventHandles(e))
 					{
-						active_primitve_selection = cur_primitive;
 						allowed_to_select = false;
 					}
 				}
-				if(response[1] == -1 && active_primitve_selection == cur_primitive) // If the object was deselected
+				
+				for(Primitive cur_primitive: primitives)
 				{
-					active_primitve_selection = null;
+					int[] response = cur_primitive.checkMouseEvent(e, active_primitve_selection, selectable_primitives, allowed_to_select);
+					
+					if(response[0] == 1) // If the object was within bounds
+					{
+						new_selectables.add(cur_primitive);
+					}	
+					if(response[1] == 1) // If the object was selected
+					{
+						if(allowed_to_select)
+						{
+							active_primitve_selection = cur_primitive;
+							allowed_to_select = false;
+						}
+					}
+					if(response[1] == -1 && active_primitve_selection == cur_primitive) // If the object was deselected
+					{
+						active_primitve_selection = null;
+					}
 				}
+				selectable_primitives = new_selectables;
 			}
-			selectable_primitives = new_selectables;
 		}
 	}
 
@@ -398,48 +416,89 @@ public class Stage extends Element{
 		fish.setPropertiesToDefaultKey();
 	}
 	
-	public void drawButtons()
+	public void updateAndDrawButtons()
 	{
-		if(p.main_windows.sheet.active_key_selection != null && p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION)
+		// Drawing 'open key' and 'load image' buttons 
+		boolean showing_open_key_button = false;
+		boolean showing_load_img_button = false;
+		
+		if(hasPrimitiveSelected())
 		{
+			showing_load_img_button = true;
+		}
+		if(p.main_windows.sheet.hasKeySelected() && p.main_windows.sheet.isCompositionMode())
+		{
+			showing_open_key_button = true;
+		}
+		if(showing_open_key_button && not(showing_load_img_button))
+		{
+			button_goto_key.x = p.main_windows.stage.x + 10;
+			button_goto_key.y = p.main_windows.stage.y + 10;
 			button_goto_key.draw();
 		}
+		else if(showing_load_img_button && not(showing_open_key_button))
+		{
+			button_load_image.x = p.main_windows.stage.x + 10;
+			button_load_image.y = p.main_windows.stage.y + 10;
+			button_load_image.updateLabelState();
+			button_load_image.draw();
+		}
+		else if(showing_load_img_button && showing_open_key_button)
+		{
+			button_goto_key.x = p.main_windows.stage.x + 10;
+			button_goto_key.y = p.main_windows.stage.y + 10;
+			button_goto_key.draw();
+			
+			button_load_image.x = p.main_windows.stage.x + 10;
+			button_load_image.y = button_goto_key.y + button_goto_key.h + 5;
+			button_load_image.updateLabelState();
+			button_load_image.draw();
+		}
+		
+		// Drawing example object buttons
 		if(!p.animation.isPlaying() && opened_key == null && sheet.isCompositionMode())
 		{
+			button_make_fish.update();
+			button_make_ball.update();
+			button_make_elephant.update();
 			button_make_fish.draw();
 			button_make_ball.draw();
 			button_make_elephant.draw();
 		}
 	}
 	
-	public void checkButtonMouseEvent(MouseEvent e)
+	public boolean checkButtonMouseEvent(MouseEvent e)
 	{
-		if(p.main_windows.sheet.active_key_selection != null && p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION)
+		boolean buttons_in_use = false; 
+		
+		if(hasPrimitiveSelected())
+		{
+			button_load_image.checkMouseEvent(e);
+			if(button_load_image.hover) {buttons_in_use = true;}
+		}
+		if(p.main_windows.sheet.hasKeySelected() && p.main_windows.sheet.isCompositionMode())
 		{
 			button_goto_key.checkMouseEvent(e);
+			if(button_goto_key.hover) {buttons_in_use = true;}
 		}
+		
 		if(!p.animation.isPlaying() && opened_key == null && sheet.isCompositionMode())
 		{
 			button_make_fish.checkMouseEvent(e);
 			button_make_ball.checkMouseEvent(e);
 			button_make_elephant.checkMouseEvent(e);
+			if(button_make_fish.hover || button_make_ball.hover || button_make_elephant.hover) 
+			{
+				buttons_in_use = true;
+			}
 		}
+		
+		return buttons_in_use;
 	}
 	
-	public void updateButtons()
-	{
-		if(p.main_windows.sheet.active_key_selection != null && p.main_windows.sheet.animation_mode == p.main_windows.sheet.COMPOSITION)
-		{
-			button_goto_key.update();
-		}
-		if(!p.animation.isPlaying() && opened_key == null && sheet.isCompositionMode())
-		{
-			button_make_fish.update();
-			button_make_ball.update();
-			button_make_elephant.update();
-		}
-	}
-	
+	//===============//
+	// STAGE BUTTONS //
+	//===============//
 	
 	public class ButtonMakeFish extends Button
 	{
@@ -510,6 +569,91 @@ public class Stage extends Element{
 		}
 	}
 	
+	public class ButtonLoadImage extends Button
+	{
+		ButtonLoadImage(int x, int y, int w, int h, AniSketch p) 
+		{
+			super(x, y, w, h, p);
+			setToPress();
+			setLabel("LOAD IMG");
+		}
+		
+		@Override
+		void pressAction()
+		{
+			if(active_primitve_selection != null)
+			{
+				if(active_primitve_selection.sprite != null)
+				{
+					active_primitve_selection.clearSprite();
+				}
+				else
+				{
+					selectFile("Select an image to load");
+				}
+			}	
+		}
+		
+		void updateLabelState()
+		{
+			if(active_primitve_selection != null)
+			{
+				if(active_primitve_selection.sprite == null)
+				{
+					setLabel("LOAD IMG");
+				}
+				else
+				{
+					if(hover)
+					{
+						setLabel("CLEAR IMG");
+					}
+					else
+					{
+						setLabel("IMG LOADED");
+					}
+				}
+			}
+		}
+		
+		public void selectFile(String dialog_message)
+		{
+			p.selectInput(dialog_message, "selectedFileCallback", null, this);
+		}
+		
+		public void selectedFileCallback(File selection)
+		{
+			if(selection != null)
+			{
+				String file = selection.getAbsolutePath();
+				Utilities.printAlert("Selected file " + file);
+				
+				if(file.endsWith(".gif") 
+				|| file.endsWith(".jpg") 
+				|| file.endsWith(".tga") 
+				|| file.endsWith(".png")
+			    || file.endsWith(".GIF") 
+				|| file.endsWith(".JPG") 
+				|| file.endsWith(".TGA") 
+				|| file.endsWith(".PNG"))
+				{
+					if(active_primitve_selection != null)
+					{
+						Utilities.printAlert("Loading image file");
+						active_primitve_selection.loadSprite(file);
+					}
+				}
+				else
+				{
+					Utilities.printAlert("Selected file not supported");
+				}
+			}
+			else
+			{
+				Utilities.printAlert("No file selected");
+			}
+		}
+	}
 	
 	public class ButtonGoToKey extends Button{
 
@@ -518,13 +662,6 @@ public class Stage extends Element{
 			super(x, y, w, h, p);
 			setToToggle();
 			setLabel("OPEN KEY");
-		}
-		
-		@Override
-		void update()
-		{
-			this.x = p.main_windows.stage.x + 10;
-			this.y = p.main_windows.stage.y + 10;
 		}
 		
 		@Override

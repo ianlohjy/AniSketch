@@ -1174,6 +1174,11 @@ public class Primitive
 		sprite = p.loadImage(file);
 	}
 	
+	public void clearSprite()
+	{
+		sprite = null;
+	}
+	
 	//======================//
 	// COLLISION AND BOUNDS //
 	//======================//

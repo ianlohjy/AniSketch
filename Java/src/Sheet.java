@@ -166,6 +166,18 @@ public class Sheet extends Element{
 		}
 	}
 	
+	boolean hasKeySelected()
+	{
+		if(active_key_selection != null)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
 	// If an object is selected, we wont select anything new UNLESS it is a click
 	// Mouse event checking needs to return a true 
 	void checkMouseEvent(MouseEvent e)

@@ -2,6 +2,7 @@
 import java.util.ArrayList;
 
 import processing.core.PApplet;
+import processing.core.PImage;
 import processing.core.PVector;
 import processing.event.MouseEvent;
 
@@ -754,6 +755,7 @@ public class Key {
 	{
 		Primitive primitive;
 		float x, y, t, l, b, r, rt;
+		PImage sprite;
 		//float x, y, t, l, b, r, rotation;
 		
 		PrimitiveData(Primitive primitive)
