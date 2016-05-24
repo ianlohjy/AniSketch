@@ -1087,7 +1087,6 @@ public class Primitive
 				Utilities.dottedLine(x+stage.camera.x, y+stage.camera.y, parent.x+stage.camera.x, parent.y+stage.camera.y, 5, 10, p);
 				p.popMatrix();
 			}
-		
 		}
 		
 		p.pushMatrix();
@@ -1098,7 +1097,7 @@ public class Primitive
 		
 		if(sprite != null)
 		{
-			if(delta_recording_start){p.tint(255, 150);}
+			if(delta_recording_start){p.tint(255, 200);}
 			else{p.tint(255, 255);}
 			
 			style_light.apply();

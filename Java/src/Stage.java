@@ -1,6 +1,7 @@
 import java.io.File;
 import java.util.ArrayList;
 import processing.core.PApplet;
+import processing.core.PImage;
 import processing.core.PVector;
 import processing.event.MouseEvent;
 
@@ -19,6 +20,9 @@ public class Stage extends Element{
 	PVector camera;
 	Sheet sheet;
 	Key opened_key; // Currently selected key
+	PImage background;
+	float background_x = 0;
+	float background_y = 0;
 	
 	// Selection handling
 	ArrayList<Primitive> selectable_primitives;
@@ -31,6 +35,7 @@ public class Stage extends Element{
 	ButtonMakeFish button_make_fish = new ButtonMakeFish(x, y, 80, 25, p);
 	ButtonMakeBall button_make_ball = new ButtonMakeBall(x, y, 80, 25, p);
 	ButtonMakeElephant button_make_elephant = new ButtonMakeElephant(x, y, 80, 25, p);
+	ButtonLoadBackground button_load_background = new ButtonLoadBackground(x, y, 80, 25, p);
 	
 	Stage(int x, int y, int w, int h, Sheet sheet, AniSketch p)
 	{
@@ -257,6 +262,14 @@ public class Stage extends Element{
 		default_style.apply(); // Apply style for Stage window
 		
 		p.rect(x, y, w, h);
+		if(background != null)
+		{
+			if(p.animation.isPlaying() && opened_key == null){p.tint(255,255);}
+			else{p.tint(255,100);}
+			
+			p.image(background, background_x, background_y, background.width, background.height);
+			p.tint(255,255);
+		}
 		updatePrimitives();
 		p.noClip();
 	
@@ -467,9 +480,11 @@ public class Stage extends Element{
 			button_make_fish.update();
 			button_make_ball.update();
 			button_make_elephant.update();
+			button_load_background.update();
 			button_make_fish.draw();
 			button_make_ball.draw();
 			button_make_elephant.draw();
+			button_load_background.draw();
 		}
 	}
 	
@@ -493,13 +508,27 @@ public class Stage extends Element{
 			button_make_fish.checkMouseEvent(e);
 			button_make_ball.checkMouseEvent(e);
 			button_make_elephant.checkMouseEvent(e);
-			if(button_make_fish.hover || button_make_ball.hover || button_make_elephant.hover) 
+			button_load_background.checkMouseEvent(e);
+			
+			if(button_make_fish.hover || button_make_ball.hover || button_make_elephant.hover || button_load_background.hover) 
 			{
 				buttons_in_use = true;
 			}
 		}
 		
 		return buttons_in_use;
+	}
+	
+	public void loadBackground(String path)
+	{
+		background = p.loadImage(path);
+		background_x = this.x + (this.w/2f) - (background.width/2f);
+		background_y = this.y + (this.h/2f) - (background.height/2f);
+	}
+	
+	public void clearBackground()
+	{
+		background = null;
 	}
 	
 	//===============//
@@ -511,7 +540,7 @@ public class Stage extends Element{
 		ButtonMakeFish(int x, int y, int w, int h, AniSketch p) {
 			super(x, y, w, h, p);
 			setToPress();
-			setLabel("SPAWN FISH");
+			setLabel("CREATE FISH");
 		}
 		
 		@Override
@@ -519,7 +548,7 @@ public class Stage extends Element{
 		{
 			this.x = p.main_windows.stage.x;
 			this.y = p.main_windows.stage.y+p.main_windows.stage.h-h;
-			this.w = p.main_windows.stage.w/3;
+			this.w = p.main_windows.stage.w/4;
 		}
 		
 		@Override
@@ -534,15 +563,15 @@ public class Stage extends Element{
 		ButtonMakeBall(int x, int y, int w, int h, AniSketch p) {
 			super(x, y, w, h, p);
 			setToPress();
-			setLabel("SPAWN BALL");
+			setLabel("CREATE BALL");
 		}
 		
 		@Override
 		void update()
 		{
-			this.x = p.main_windows.stage.x + p.main_windows.stage.w/3;
+			this.x = p.main_windows.stage.x + p.main_windows.stage.w/4;
 			this.y = p.main_windows.stage.y+p.main_windows.stage.h-h;
-			this.w = p.main_windows.stage.w/3;
+			this.w = p.main_windows.stage.w/4;
 		}
 		
 		@Override
@@ -557,21 +586,109 @@ public class Stage extends Element{
 		ButtonMakeElephant(int x, int y, int w, int h, AniSketch p) {
 			super(x, y, w, h, p);
 			setToPress();
-			setLabel("SPAWN ELEPHANT");
+			setLabel("CREATE ELEPHANT");
 		}
 		
 		@Override
 		void update()
 		{
-			this.x = p.main_windows.stage.x +(p.main_windows.stage.w*(2f/3f));
+			this.x = p.main_windows.stage.x +(p.main_windows.stage.w*(2f/4f));
 			this.y = p.main_windows.stage.y+p.main_windows.stage.h-h;
-			this.w = p.main_windows.stage.w/3;
+			this.w = p.main_windows.stage.w/4;
 		}
 		
 		@Override
 		void pressAction()
 		{
 			exampleMakeElephant();
+		}
+	}
+
+	public class ButtonLoadBackground extends Button
+	{
+		ButtonLoadBackground(int x, int y, int w, int h, AniSketch p) {
+			super(x, y, w, h, p);
+			setToPress();
+			setLabel("LOAD BACKGROUND");
+		}
+		
+		@Override
+		void update()
+		{
+			updateLabelState();
+			this.x = p.main_windows.stage.x +(p.main_windows.stage.w*(3f/4f));
+			this.y = p.main_windows.stage.y+p.main_windows.stage.h-h;
+			this.w = p.main_windows.stage.w/4;
+		}
+		
+		void updateLabelState()
+		{
+			if(background == null)
+			{
+				font_size = 12;
+				setLabel("LOAD BACKGROUND");
+			}
+			else
+			{
+				if(hover)
+				{
+					font_size = 12;
+					setLabel("CLEAR BACKGROUND");
+				}
+				else
+				{
+					font_size = 12;
+					setLabel("BACKGROUND LOADED");
+				}
+			}
+		}
+		
+		@Override
+		void pressAction()
+		{
+			if(background != null)
+			{
+				Stage.this.clearBackground();
+			}
+			else
+			{
+				selectFile("Select an image to load");
+			}
+		}
+		
+		public void selectFile(String dialog_message)
+		{
+			p.selectInput(dialog_message, "selectedFileCallback", null, this);
+		}
+		
+		public void selectedFileCallback(File selection)
+		{
+			if(selection != null)
+			{
+				String file = selection.getAbsolutePath();
+				Utilities.printAlert("Selected file " + file);
+				
+				if(file.endsWith(".gif") 
+				|| file.endsWith(".jpg") 
+				|| file.endsWith(".tga") 
+				|| file.endsWith(".png")
+			    || file.endsWith(".GIF") 
+				|| file.endsWith(".JPG") 
+				|| file.endsWith(".TGA") 
+				|| file.endsWith(".PNG"))
+				{
+					Utilities.printAlert("Loading image file");
+					Stage.this.loadBackground(file);
+				}
+				else
+				{
+					Utilities.printAlert("Selected file not supported");
+				}
+			}
+			else
+			{
+				Utilities.printAlert("No file selected");
+			}
 		}
 	}
 	
