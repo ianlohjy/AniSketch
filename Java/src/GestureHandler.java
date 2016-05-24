@@ -646,6 +646,4 @@ public class GestureHandler {
 		}
 	}
 	
-	
-	
 }

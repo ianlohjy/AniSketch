@@ -114,6 +114,7 @@ public class Primitive
 	static final int PROP_RIGHT    			= 4;
 	static final int PROP_TOP      			= 5;
 	static final int PROP_BOTTOM   			= 6;
+	static final int PROP_SPRITE   			= 7;
 	
 	//========//
 	// STYLES //
@@ -336,6 +337,15 @@ public class Primitive
 						this.rotation += found_data.rt;
 						return;
 					
+					case Primitive.PROP_SPRITE:
+						// "Adding" a sprite property actually replaces the current sprite if the Key's sprite is not null
+						// AND if the provided key's weight is greater than a certain amount
+						if(found_data.sprite != null && key.weight > 0.1f)
+						{
+							this.sprite = found_data.sprite;
+						}
+						return;
+						
 					default:
 						Utilities.printError("Could not add property code " + property + " to " + this.toString());
 						return;
@@ -366,6 +376,7 @@ public class Primitive
 		{
 			for(Primitive child: children){child.parentControl(NORMAL, NORMAL, NORMAL);}
 		}
+		addPropertyFromKey(key, Primitive.PROP_SPRITE);
 	}
 	
 	//  Overrides the primitive's properties with the properties from the key
@@ -382,6 +393,7 @@ public class Primitive
 			this.b = found_data.b;
 			this.l = found_data.l;
 			this.r = found_data.r;
+			this.sprite = found_data.sprite;
 		}
 	}
 	
@@ -395,6 +407,7 @@ public class Primitive
 		key.setDataProperty(this, PROP_LEFT, this.l);
 		key.setDataProperty(this, PROP_BOTTOM, this.b);
 		key.setDataProperty(this, PROP_RIGHT, this.r);
+		// * Sprites are not handled here, instead, they are set and removed in loadSprite() & clearSprite()
 	}
 	
 	public void addPropertyToDefaultKey(int property, float value)
@@ -1172,11 +1185,35 @@ public class Primitive
 	public void loadSprite(String file)
 	{
 		sprite = p.loadImage(file);
+		
+		if(delta_recording_start) // If delta recording is started
+		{
+			if(sheet.active_key_selection != null)
+			{
+				sheet.active_key_selection.setDataProperty(this, PROP_SPRITE, sprite);
+			}
+		}	
+		else if(!delta_recording_start) // Else, if we are working with the default key
+		{
+			a.default_key.setDataProperty(this, PROP_SPRITE, sprite);
+		}
 	}
 	
 	public void clearSprite()
 	{
 		sprite = null;
+		
+		if(delta_recording_start) // If delta recording is started
+		{
+			if(sheet.active_key_selection != null)
+			{
+				sheet.active_key_selection.setDataProperty(this, PROP_SPRITE, sprite);
+			}
+		}	
+		else if(!delta_recording_start) // Else, if we are working with the default key
+		{
+			a.default_key.setDataProperty(this, PROP_SPRITE, sprite);
+		}
 	}
 	
 	//======================//

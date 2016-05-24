@@ -68,15 +68,28 @@ public class AnimationController {
 			// If the delta key has no connections (ie. if its not part of a bigger shape)
 			if(delta_key.connections.size() == 0)
 			{
-				if(delta_key.getWeight(x_input, y_input) > highest_weight)
-				{
-					highest_weight = delta_key.getWeight(x_input, y_input);
-				}
 				// For all data in delta keys
 				for(Key.PrimitiveData primitive_data: delta_key.primitive_data)
 				{ 
 					// Add the primitive data contained in the delta key, multiplied by the delta key's weighting
 					compiled_key.addPrimitiveData(primitive_data.mult(delta_key.getWeight(x_input, y_input)));
+					compiled_key.weight = highest_weight;
+				}
+				
+				// Check for the highest weight. This is important for deciding what sprite to apply
+				if(delta_key.getWeight(x_input, y_input) > highest_weight)
+				{
+					// If a higher weight is detected, set the compiled key's sprite to that highest key
+					highest_weight = delta_key.getWeight(x_input, y_input);
+					
+					for(Key.PrimitiveData primitive_data: delta_key.primitive_data)
+					{ 
+						// If the primitive data has a sprite
+						if(primitive_data.sprite != null)
+						{
+							compiled_key.setDataProperty(primitive_data.primitive, Primitive.PROP_SPRITE, primitive_data.sprite);
+						}
+					}
 				}
 			}
 		}
@@ -90,23 +103,25 @@ public class AnimationController {
 				// Add the primitive data contained in the delta key, multiplied by the delta key's weighting
 				compiled_key.addPrimitiveData(primitive_data.mult(delta_key.weight));
 			}
+			
+			// Check for the highest weight. This is important for deciding what sprite to apply
+			if(delta_key.weight > highest_weight)
+			{
+				// If a higher weight is detected, set the compiled key's sprite to that highest key
+				highest_weight = delta_key.weight;
+				compiled_key.weight = highest_weight;
+				
+				for(Key.PrimitiveData primitive_data: delta_key.key.primitive_data)
+				{ 
+					// If the primitive data has a sprite
+					if(primitive_data.sprite != null)
+					{
+						compiled_key.setDataProperty(primitive_data.primitive, Primitive.PROP_SPRITE, primitive_data.sprite);
+					}
+				}
+			}
 		}
-		
-		/*
-		float multiplier = 1f/highest_weight;
-		
-		if(highest_weight < 0.0000000000000000000001)
-		{
-			multiplier = 1;
-		}
-		
-		p.println("HIGHEST WEIGHT IS : " + highest_weight + ", " + multiplier + ", " + highest_weight*multiplier);
-		
-		for(Key.PrimitiveData data: compiled_key.primitive_data)
-		{
-			data.set(data.mult(multiplier));
-		}
-		*/
+		compiled_key.weight = highest_weight;
 		return compiled_key;
 	}
 	
@@ -329,14 +344,20 @@ public class AnimationController {
 	
 	public Key calculateCurrentFrame(int frame)
 	{
-		Key added_keys = new Key(0,0,0,p);
+		Key added_keys = new Key(0, 0, 1, p);
+		Key playback_keys = null;
+		Key live_keys = null;
+		
 		
 		for(Stroke stroke: strokes)
 		{
 			PVector stroke_position = stroke.positionAtFrame(frame);
 			if(stroke_position != null)
 			{
-				added_keys = added_keys.add(compileDeltaKeys(stroke_position.x, stroke_position.y));
+				playback_keys = compileDeltaKeys(stroke_position.x, stroke_position.y);
+				added_keys = added_keys.add(playback_keys);
+				added_keys.weight = playback_keys.weight;
+				//playback_keys = playback_keys.add(compileDeltaKeys(stroke_position.x, stroke_position.y));
 			}
 		}
 		
@@ -344,7 +365,33 @@ public class AnimationController {
 		{
 			if(p.main_windows.sheet.withinBounds(p.mouseX, p.mouseY));
 			{
-				added_keys = added_keys.add(compileDeltaKeys(p.mouseX, p.mouseY));
+				live_keys = compileDeltaKeys(p.mouseX, p.mouseY);
+				added_keys = added_keys.add(live_keys);
+				added_keys.weight = live_keys.weight;
+				//live_keys = added_keys.add(compileDeltaKeys(p.mouseX, p.mouseY));
+			}
+		}
+		
+		// Find the right sprite to use based on weights
+		if(playback_keys != null && live_keys != null)
+		{
+			if(playback_keys.weight > live_keys.weight)
+			{
+				added_keys.weight = playback_keys.weight; // Pass the (highest) weight over
+				for(Key.PrimitiveData primitive_data: playback_keys.primitive_data)
+				{ 	if(primitive_data.sprite != null)
+					{	added_keys.setDataProperty(primitive_data.primitive, Primitive.PROP_SPRITE, primitive_data.sprite);
+					}
+				}
+			} 
+			else
+			{
+				added_keys.weight = live_keys.weight; // Pass the (highest) weight over
+				for(Key.PrimitiveData primitive_data: live_keys.primitive_data)
+				{ 	if(primitive_data.sprite != null)
+					{	added_keys.setDataProperty(primitive_data.primitive, Primitive.PROP_SPRITE, primitive_data.sprite);
+					}
+				}
 			}
 		}
 		
@@ -369,6 +416,7 @@ public class AnimationController {
 				{
 					p.main_windows.stage.exitActiveKey();
 				}
+				
 				//p.println("DELTAS ARE");
 				//p.animation.compileDeltaKeys(x_input, y_input).printDeltaData();
 				p.main_windows.stage.applyDeltaKeyToAllPrimitivesInOrder(p.animation.default_key, all_keys_added);

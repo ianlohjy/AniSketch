@@ -14,6 +14,7 @@ public class Key {
 	float deviation_width;
 	float[] color = new float[3];
 	float min_d = 50;
+	float weight = 1; // Holds weight data. Only used when compiling key weights. Set to 1 by default for Stage.goToActiveKey()
 	
 	AniSketch p;
 	ArrayList<PrimitiveData> primitive_data;
@@ -228,6 +229,27 @@ public class Key {
 			
 			case Primitive.PROP_ROTATION:
 			found_data.setRotation(value);
+			return;
+		
+			default:
+			return;
+		}
+	}
+	
+	// Overloaded method for setting sprites
+	public void setDataProperty(Primitive primitive, int property, PImage sprite)
+	{
+		PrimitiveData found_data = primitiveDataExists(primitive);
+		if(found_data == null)
+		{
+			found_data = new PrimitiveData(primitive);
+			primitive_data.add(found_data);
+		}
+		
+		switch(property) 
+		{
+			case Primitive.PROP_SPRITE:
+			found_data.setSprite(sprite);
 			return;
 			
 			default:
@@ -839,6 +861,11 @@ public class Key {
 		void setRotation(float value)
 		{
 			this.rt = value;
+		}
+		
+		void setSprite(PImage input_sprite)
+		{
+			this.sprite = input_sprite;
 		}
 		
 		boolean matchesPrimitive(Primitive primitive)
