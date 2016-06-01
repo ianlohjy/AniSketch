@@ -116,6 +116,22 @@ public class AniSketch extends PApplet
 		text((int)frameRate, width-5, 3);	
 		
 		drawCursorMessage();
+		
+		/*
+		for(int x=0; x<513; x++)
+		{
+			for(int y=0; y<513; y++)
+			{
+				noStroke();
+				float value = Utilities.gaussian1d(x, 0, 0.3333333333333333333f*512) * Utilities.gaussian1d(y, 0, 0.3333333333333333333f*512);;
+				fill(255*value);
+				rect(x,y,1,1);
+			}
+		}
+		*/
+		//println(Utilities.gaussian1d(0, 0, 0.333333f));
+		//println(Utilities.gaussian1d(0.5f, 0, 0.333333f));
+		//println(Utilities.gaussian1d(1f, 0,0.333333f));
 	}
 
 	public void drawCursorMessage()

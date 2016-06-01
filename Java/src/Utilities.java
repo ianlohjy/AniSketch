@@ -76,6 +76,7 @@ public class Utilities {
 		// Returns the value (0-1) at 'position'
 		// Offset moves the center of the gaussian curve
 		// Deviation is the width of 1 standard deviation (You should expect close to 0 by the 3rd or 4th deviation [+-3s/+-4s] )
+		// deviation = deviation * 2.35482f;
 		return PApplet.exp(-(((position-offset)*(position-offset))/(2*(deviation)*(deviation))));
 	}
 	

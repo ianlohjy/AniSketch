@@ -161,9 +161,14 @@ public class Button{
 		}
 	}
 	
+	boolean withinBounds(float x_input, float y_input)
+	{
+		return Utilities.withinBounds(x, y, w, h, x_input, y_input);
+	}
+	
 	MouseEvent checkMouseEvent(MouseEvent e)
 	{
-		boolean within_bounds = Utilities.withinBounds(x, y, w, h, e.getX(),e.getY());
+		boolean within_bounds = withinBounds(e.getX(),e.getY());
 		
 		if(e.getAction() == 1) // When mouse is pressed (down)
 		{

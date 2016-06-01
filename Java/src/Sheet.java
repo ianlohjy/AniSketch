@@ -387,7 +387,10 @@ public class Sheet extends Element{
 		@Override
 		void mouseEventCallback(MouseEvent e)
 		{
+			//if(this.hover)
+			//{
 			palette.checkMouseEvent(e);
+			//}
 			
 			if(this.hover || palette.hover)
 			{
@@ -451,6 +454,16 @@ public class Sheet extends Element{
 			void mouseInputResponse(MouseEvent e)
 			{
 				// Checking what colour the mouse is over
+				
+				if(ButtonKeyColour.this.withinBounds(e.getX(),e.getY()))
+				{
+					hover = true;
+				}
+				else
+				{
+					hover = false;
+				}
+				
 				if(withinBounds(e.getX(), e.getY()))
 				{
 					ButtonKeyColour.this.hover = true;
