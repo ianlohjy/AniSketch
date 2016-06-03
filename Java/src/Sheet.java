@@ -392,7 +392,7 @@ public class Sheet extends Element{
 			palette.checkMouseEvent(e);
 			//}
 			
-			if(this.hover || palette.hover)
+			if(palette.hover)
 			{
 				show_palette = true;
 			}
@@ -417,12 +417,13 @@ public class Sheet extends Element{
 			int[][][] colours;
 			int[] selection = {0,0};
 			int[] active_selection = {0,0};
-			
 			ColourPalette(int w, int h, AniSketch p) 
 			{
 				super(0, 0, w, h, p);
 				setupColours();
 			}
+			boolean button_last_hover = false;
+			boolean allow_open = false;
 			
 			void setupColours()
 			{
@@ -457,11 +458,11 @@ public class Sheet extends Element{
 				
 				if(ButtonKeyColour.this.withinBounds(e.getX(),e.getY()))
 				{
-					hover = true;
+					//hover = true;
 				}
 				else
 				{
-					hover = false;
+					//hover = false;
 				}
 				
 				if(withinBounds(e.getX(), e.getY()))
@@ -475,6 +476,9 @@ public class Sheet extends Element{
 					
 					int pos_x = (int)(((e.getX()-this.x)/(float)this.w)*3);
 					int pos_y = (int)(((e.getY()-this.y)/(float)this.h)*3);
+					
+					//drawBoundingBox();
+							
 					selection[0] = pos_x;
 					selection[1] = pos_y;
 					
@@ -483,6 +487,9 @@ public class Sheet extends Element{
 						active_key_selection.updateColour(colours[pos_x][pos_y]);
 					}
 				}
+				
+				
+				//ButtonKeyColour.this.hover
 			}
 			
 			int[] findKeyColourPosition(Key key)
