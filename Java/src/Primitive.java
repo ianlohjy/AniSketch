@@ -168,7 +168,10 @@ public class Primitive
 		{
 			if(a.isPlaying() && delta_recording_start || !a.isPlaying() && !delta_recording_start || !a.isPlaying() && delta_recording_start)
 			{
-				drawHandles();
+				if(!p.rendering)
+				{
+					drawHandles();
+				}
 			}
 		}
 		if(transform_mode == ROTATE)
@@ -188,7 +191,10 @@ public class Primitive
 		
 		if(a.isPlaying() && delta_recording_start || !a.isPlaying() && !delta_recording_start || !a.isPlaying() && delta_recording_start)
 		{
-			drawPivot();
+			if(!p.rendering)
+			{
+				drawPivot();
+			}
 		}
 		
 		if(a.lock_frame_update && !delta_recording_start)
@@ -1081,11 +1087,14 @@ public class Primitive
 		{		
 			if(a.isPlaying() && delta_recording_start || !a.isPlaying() && !delta_recording_start || !a.isPlaying() && delta_recording_start)
 			{	
-				p.pushMatrix();
-				p.translate(0, 0, stage.primitives.size()+1);
-				style_light.apply();
-				Utilities.dottedLine(x+stage.camera.x, y+stage.camera.y, parent.x+stage.camera.x, parent.y+stage.camera.y, 5, 10, p);
-				p.popMatrix();
+				if(!p.rendering)
+				{
+					p.pushMatrix();
+					p.translate(0, 0, stage.primitives.size()+1);
+					style_light.apply();
+					Utilities.dottedLine(x+stage.camera.x, y+stage.camera.y, parent.x+stage.camera.x, parent.y+stage.camera.y, 5, 10, p);
+					p.popMatrix();
+				}
 			}
 		}
 		
@@ -1109,33 +1118,39 @@ public class Primitive
 		
 		if(a.isPlaying() && delta_recording_start || !a.isPlaying() && !delta_recording_start || !a.isPlaying() && delta_recording_start)
 		{	
-			if(selected)
+			if(!p.rendering)
 			{
-				p.pushMatrix();
-				p.translate(0, 0, stage.primitives.size()+1);
-				style_outline_selected.apply();
-				drawStretchRect(pivot.x, pivot.y, t, b, l, r);
-				p.popMatrix();
-				style_selected.apply();
-			}
-			if(hover && !selected)
-			{
-				// Draw an outline
-				p.pushMatrix();
-				p.translate(0, 0, stage.primitives.size()+1);
-				style_outline.apply();
-				drawStretchRect(pivot.x, pivot.y, t, b, l, r);
-				p.popMatrix();
-				style_hover.apply();
+				if(selected)
+				{
+					p.pushMatrix();
+					p.translate(0, 0, stage.primitives.size()+1);
+					style_outline_selected.apply();
+					drawStretchRect(pivot.x, pivot.y, t, b, l, r);
+					p.popMatrix();
+					style_selected.apply();
+				}
+				if(hover && !selected)
+				{
+					// Draw an outline
+					p.pushMatrix();
+					p.translate(0, 0, stage.primitives.size()+1);
+					style_outline.apply();
+					drawStretchRect(pivot.x, pivot.y, t, b, l, r);
+					p.popMatrix();
+					style_hover.apply();
+				}
 			}
 		}
 		
 		if(a.isPlaying() && delta_recording_start || !a.isPlaying() && !delta_recording_start || !a.isPlaying() && delta_recording_start || sprite == null)
 		{	
-			p.pushMatrix();
-			p.translate(0, 0, stage.primitives.size()+1);
-			drawStretchRect(pivot.x, pivot.y, t, b, l, r);
-			p.popMatrix();
+			if(!p.rendering && sprite != null)
+			{
+				p.pushMatrix();
+				p.translate(0, 0, stage.primitives.size()+1);
+				drawStretchRect(pivot.x, pivot.y, t, b, l, r);
+				p.popMatrix();
+			}
 		}
 		
 		//p.fill(0);

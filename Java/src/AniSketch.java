@@ -2,6 +2,8 @@
 //import java.awt.Dimension;
 //import java.awt.event.*;
 //import processing.awt.PSurfaceAWT.SmoothCanvas;
+import java.io.File;
+
 import processing.core.*;
 import processing.event.KeyEvent;
 import processing.event.MouseEvent;
@@ -23,6 +25,14 @@ public class AniSketch extends PApplet
 	
 	final boolean export = false;
 	String version_info = "AniSketch 0.8 (24/05/2016)";
+	
+	// RENDER & EXPORT
+	boolean rendering = false;
+	boolean init_render = false;
+	int last_rendered_frame = 0;
+	String render_path = "";
+	String render_name = "";
+	
 	
 	public static void main(String args[])
 	{
@@ -111,23 +121,8 @@ public class AniSketch extends PApplet
 		textAlign(RIGHT, TOP);
 		text((int)frameRate, width-5, 3);	
 		
-		drawCursorMessage();
-		
-		/*
-		for(int x=0; x<513; x++)
-		{
-			for(int y=0; y<513; y++)
-			{
-				noStroke();
-				float value = Utilities.gaussian1d(x, 0, 0.3333333333333333333f*512) * Utilities.gaussian1d(y, 0, 0.3333333333333333333f*512);;
-				fill(255*value);
-				rect(x,y,1,1);
-			}
-		}
-		*/
-		//println(Utilities.gaussian1d(0, 0, 0.333333f));
-		//println(Utilities.gaussian1d(0.5f, 0, 0.333333f));
-		//println(Utilities.gaussian1d(1f, 0,0.333333f));
+		drawCursorMessage();	
+		handleRender();
 	}
 
 	public void drawCursorMessage()
@@ -162,15 +157,13 @@ public class AniSketch extends PApplet
 		gesture_handler = new GestureHandler(this);
 	}
 	
-	public void setupWindows()
-	{
-		
-	}
-	
 	public void passMouseEvents(MouseEvent e)
 	{
-		main_windows.checkMouseEvent(e);
-		gesture_handler.checkMouseEvent(e);
+		if(!rendering)
+		{
+			main_windows.checkMouseEvent(e);
+			gesture_handler.checkMouseEvent(e);
+		}
 	}
 	
 	public void mouseClicked(MouseEvent e)
@@ -200,7 +193,23 @@ public class AniSketch extends PApplet
 	
 	public void keyPressed(KeyEvent e) 
 	{
-		animation.checkKeyEvent(e);
+		if(!rendering)
+		{
+			animation.checkKeyEvent(e);
+		}
+		
+		// Divert escape key press
+		if(e.getKeyCode() == 27)
+		{
+			key=0;
+			println("ESC key pressed");
+			
+			if(rendering)
+			{
+				Utilities.printAlert("Stopping render");
+				stopRendering();
+			}
+		}
 	}
 	
 	public void setIconAndTitle()
@@ -219,8 +228,78 @@ public class AniSketch extends PApplet
 		icon_graphics.endDraw();
 		frame.setIconImage(icon_graphics.image);
 		*/
-		surface.setTitle("AniSketch Developer Beta");
+		surface.setTitle("AniSketch Developer Alpha");
 
+	}
+	
+	public void startRender(String input_path)
+	{
+		if(!rendering)
+		{
+			// Make the directory
+			if(new File(input_path).exists())
+			{
+				Utilities.printAlert("Render folder already exists");
+			}
+			else
+			{
+				boolean success = new File(input_path).mkdir();
+				
+				if(success)
+				{
+					Utilities.printAlert("Render folder created");
+				}
+				else
+				{
+					Utilities.printAlert("Could not create render folder. Check permissions?");
+					return;
+				}
+			}
+			
+			init_render = false;
+			rendering = true;
+			last_rendered_frame = 0;
+			render_path = input_path;
+			render_name = new File(input_path).getName();
+		}
+	}
+	
+	public void stopRendering()
+	{
+		rendering = false;
+		last_rendered_frame = 0;
+		render_path = "";
+		render_name = "";
+		init_render = false;
+	}
+	
+	public void handleRender()
+	{ 
+		if(rendering)
+		{
+			// If rendering was just started, reset the timeline and let AniSketch update the timeline before saving out.
+			if(init_render)
+			{
+				animation.current_frame = last_rendered_frame;
+				
+				int frame_digits = String.valueOf(animation.frame_range[1]).length();
+				String post_fix  = "_" + String.format("%0"+frame_digits+"d", animation.current_frame);
+				Utilities.printAlert("Saving " + render_name + post_fix);
+				
+				save(render_path + "/" + render_name + post_fix + ".png");
+				
+				last_rendered_frame++;
+				if(last_rendered_frame > animation.frame_range[1])
+				{
+					stopRendering();
+				}
+			}
+			else if(!init_render)
+			{
+				animation.current_frame = 0;
+				init_render = true;
+			}
+		}
 	}
 	
 	//===================//

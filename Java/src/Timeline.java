@@ -1,3 +1,5 @@
+import java.io.File;
+
 import processing.core.PApplet;
 import processing.core.PVector;
 import processing.event.MouseEvent;
@@ -12,6 +14,7 @@ public class Timeline extends Element{
 	ButtonPlay button_play;
 	ButtonStop button_stop;
 	ButtonLoop button_loop;
+	ButtonRender button_render;
 	
 	Timeline(int x, int y, int w, int h, AniSketch p, AnimationController a)
 	{
@@ -25,6 +28,7 @@ public class Timeline extends Element{
 		button_play = new ButtonPlay(50, 25, timeline_bar, p);
 		button_stop = new ButtonStop(50, 25, timeline_bar, p);
 		button_loop = new ButtonLoop(50, 25, timeline_bar, p);
+		button_render = new ButtonRender(80, 25, p);
 	}
 	
 	void draw()
@@ -55,6 +59,8 @@ public class Timeline extends Element{
 		button_stop.draw();
 		button_loop.update();
 		button_loop.draw();
+		button_render.update();
+		button_render.draw();
 	}
 	
 	void checkMouseEvent(MouseEvent e)
@@ -67,6 +73,7 @@ public class Timeline extends Element{
 		button_play.checkMouseEvent(e);
 		button_stop.checkMouseEvent(e);
 		button_loop.checkMouseEvent(e);
+		button_render.checkMouseEvent(e);
 	}
 	
 	///////////////////////////////////
@@ -577,4 +584,43 @@ public class Timeline extends Element{
 		}
 	}
 	
+	public class ButtonRender extends Button
+	{
+		ButtonRender(int w, int h, AniSketch p) 
+		{
+			super(0, 0, w, h, p);
+			setToPress();
+			setLabel("RENDER");
+		}
+		
+		public void update()
+		{
+			this.x = Timeline.this.x + Timeline.this.w - this.w;
+			this.y = Timeline.this.y + Timeline.this.h - this.h; 
+		}
+		
+		public void pressAction()
+		{
+			selectSaveLocation("Select a location to render to");
+		}
+		
+		public void selectSaveLocation(String dialog_message)
+		{
+			p.selectOutput(dialog_message, "selectLocationCallback", null, this);
+		}
+		
+		public void selectLocationCallback(File selection)
+		{
+			if(selection != null)
+			{
+				String file = selection.getAbsolutePath();
+				Utilities.printAlert("Selected path " + file);
+				p.startRender(file);
+			}
+			else
+			{
+				Utilities.printAlert("No path selected");
+			}
+		}
+	}
 }
