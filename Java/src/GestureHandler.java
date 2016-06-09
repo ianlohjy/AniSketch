@@ -1,8 +1,20 @@
 import java.awt.dnd.peer.DropTargetPeer;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.security.CodeSource;
 import java.util.ArrayList;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import com.jogamp.common.util.IOUtil;
 
 import processing.core.PApplet;
 import processing.core.PVector;
+import processing.data.JSONObject;
 import processing.event.MouseEvent;
 
 
@@ -32,9 +44,105 @@ public class GestureHandler {
 	{
 		gesture_state = new GestureState();
 		gesture_engine = new GestureEngine();
-		String gestures_url = p.getResource("/resources/gestures/");
-		p.println(gestures_url);
-		gesture_engine.loadGestureTemplatesFrom(gestures_url, false);
+		
+		// Load gesture templates
+		if(p.export)
+		{
+			// If AniSketch is packaged into a jar file, we need to extract the gestures beforehand
+			
+			try
+			{	
+				// Adapted from http://stackoverflow.com/questions/1429172/how-do-i-list-the-files-inside-a-jar-file
+				CodeSource src = AniSketch.class.getProtectionDomain().getCodeSource();
+				if(src != null)
+				{
+					URL jar = src.getLocation();
+					ZipInputStream zip = new ZipInputStream(jar.openStream());
+					
+					while(true) 
+					{
+						ZipEntry e = zip.getNextEntry();
+					    if (e == null)
+					    {
+					    	break;
+					    }
+					    
+					    String gesture_path = e.getName();
+					    // If a gesture was found, load it
+					    if(gesture_path.endsWith(".gst"))
+					    {
+					    	p.println("Found gesture @ " + gesture_path);
+					    	// Loading gesture into template
+					    	// Adapted from 
+					    	// http://stackoverflow.com/questions/11496040/how-should-resources-in-a-compiled-jar-be-accessed
+					    	// http://stackoverflow.com/questions/22461663/convert-inputstream-to-jsonobject
+					    	
+					    	//InputStream input_stream = AniSketch.class.getResourceAsStream("/resources/gestures/ARROW_0.gst");
+					    	InputStream input_stream = AniSketch.class.getResourceAsStream("/" + gesture_path);
+					    	
+							try
+							{
+								BufferedReader reader = new BufferedReader(new InputStreamReader(input_stream, "UTF-8"));
+								StringBuilder out_string = new StringBuilder();
+								String read_string;
+								
+								while(true)
+								{
+									read_string = reader.readLine();
+									
+									if(read_string == null)
+									{
+										break;
+									}
+									out_string.append(read_string);
+								}
+								JSONObject return_json = p.parseJSONObject(out_string.toString());
+								gesture_engine.loadGestureTemplate(return_json, false);
+								Utilities.printAlert("Gesture loaded successfully");
+							}
+							catch(Exception e1)
+							{
+								Utilities.printError("Could not parse gesture");
+								e1.printStackTrace();
+							}
+					    }
+					}
+				}
+			}
+			catch(Exception e)
+			{
+				Utilities.printError("There was a problem unpacking gestures");
+				e.printStackTrace();
+			}
+			
+			
+			
+			//String test_gesture_url = p.getResource("/resources/gestures/ARROW_0.gst");
+			
+			//ClassLoader classLoader = getClass().getClassLoader();
+			//File file = new File(classLoader.getResourceAsStream("/resources/gestures/ARROW_0.gst").ger);
+			
+			//p.println("THIS IS A TEST " + file.getAbsolutePath());
+			
+			//URL test_gesture_url = AniSketch.class.getResource("/resources/gestures/ARROW_0.gst");
+
+			
+			
+			
+			//InputStream is = AniSketch.class.getResourceAsStream("/resources/gestures/ARROW_0.gst");
+			//JSONObject test = PApplet.loadJSONObject(new File("/C:/Users/Ian/Desktop/AniSketchDemo.jar!/resources/gestures/ARROW_0.gst")); 
+			//p.println(" !TESF " + is.toString());
+			
+			
+			
+			
+		}
+		else
+		{
+			String gestures_url = p.getResource("/resources/gestures/");
+			p.println(gestures_url);
+			gesture_engine.loadGestureTemplatesFromFolder(gestures_url, false);
+		}
 	}
 	
 	public void setupStyles()

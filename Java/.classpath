@@ -17,6 +17,6 @@
 	<classpathentry kind="lib" path="libs/Processing/jogl-all-natives-macosx-universal.jar"/>
 	<classpathentry kind="lib" path="libs/Processing/jogl-all-natives-windows-i586.jar"/>
 	<classpathentry kind="lib" path="libs/Processing/jogl-all.jar"/>
-	<classpathentry kind="lib" path="libs/GestureEngine-160507/GestureEngine.jar"/>
+	<classpathentry kind="lib" path="libs/GestureEngine-160906/GestureEngine.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

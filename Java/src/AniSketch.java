@@ -1,12 +1,7 @@
 
 //import java.awt.Dimension;
 //import java.awt.event.*;
-
 //import processing.awt.PSurfaceAWT.SmoothCanvas;
-
-
-import java.io.File;
-
 import processing.core.*;
 import processing.event.KeyEvent;
 import processing.event.MouseEvent;
@@ -26,7 +21,7 @@ public class AniSketch extends PApplet
 	
 	String cursor_message = "";
 	
-	final boolean export = false;
+	final boolean export = true;
 	String version_info = "AniSketch 0.8 (24/05/2016)";
 	
 	public static void main(String args[])
