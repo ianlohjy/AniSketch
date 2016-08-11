@@ -1116,6 +1116,7 @@ public class Primitive
 			p.popMatrix();
 		}
 		
+		// DRAW AN EXTRA RECT AS AN OUTLINE
 		if(a.isPlaying() && delta_recording_start || !a.isPlaying() && !delta_recording_start || !a.isPlaying() && delta_recording_start)
 		{	
 			if(!p.rendering)
@@ -1139,6 +1140,9 @@ public class Primitive
 					p.popMatrix();
 					style_hover.apply();
 				}
+				// NEEDS WORK
+				style_default.apply();
+				drawStretchRect(pivot.x, pivot.y, t, b, l, r);
 			}
 		}
 		
