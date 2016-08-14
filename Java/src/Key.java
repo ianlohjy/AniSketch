@@ -348,7 +348,13 @@ public class Key {
 		p.vertex(x,y);
 		
 		//p.fill(color[0],color[1],color[2],0);
-		p.fill(colour[0]+180,colour[1]+180,colour[2]+180);
+		
+		float faded1 = PApplet.lerp(colour[0],255,0.90f);
+		float faded2 = PApplet.lerp(colour[1],255,0.90f);
+		float faded3 = PApplet.lerp(colour[2],255,0.90f);
+		
+		p.fill(faded1,faded2,faded3);
+		//p.fill(colour[0]+180,colour[1]+180,colour[2]+180);
 		for(float[] point: shape)
 		{
 			p.vertex((d/2*point[0]) + x,(d/2*point[1]) + y);

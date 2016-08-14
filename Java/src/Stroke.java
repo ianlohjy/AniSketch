@@ -58,13 +58,13 @@ public class Stroke
 	
 	void draw()
 	{
-		if(selected && p.main_windows.sheet.isCompositionMode())
+		if(selected && p.main_windows.sheet.isCompositionMode() && !a.isPlaying())
 		{
-			drawInk((int)a.current_frame-(int)start_frame, visible_range, range_fade_amount, false, 30, 150);	
+			drawInk((int)a.current_frame-(int)start_frame, visible_range, range_fade_amount, false, 30, 180);	
 		}
 		else
 		{
-			drawInk((int)a.current_frame-(int)start_frame, visible_range, range_fade_amount, false, 100, 30);
+			drawInk((int)a.current_frame-(int)start_frame, visible_range, range_fade_amount, false, 100, 50);
 		}
 		
 		if(hover_focus != -1)

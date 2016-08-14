@@ -100,7 +100,7 @@ public class Utilities {
 		int[] orange  = {255,87,34 };
 		int[] green   = {76,175,80 };
 		int[] l_blue  = {41,182,246};
-		int[] amber   = {255,193,7 };
+		int[] amber   = {255,150,7 }; // This has been adjusted for blending
 		int[] l_green = {139,195,74};
 		int[] b_grey  = {96,125,139};
 		
