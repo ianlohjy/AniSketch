@@ -233,7 +233,7 @@ public class Sheet extends Element{
 					if(mouse_status[0] == 1)
 					{
 						t_possible_selections.add(key);
-					}
+					} 
 					
 					if(mouse_status[1] == 1)
 					{
