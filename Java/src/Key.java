@@ -713,10 +713,13 @@ public class Key {
 		void draw()
 		{
 			//p.stroke();
-			p.stroke(colour[0]+70,colour[1]+70,colour[2]+70);
-			p.strokeWeight(ring_width);
-			p.noFill();
-			p.ellipse(key.x, key.y, (key.d)-(ring_width/2), (key.d)-(ring_width/2));
+			if(p.main_windows.sheet.isCompositionMode())
+			{
+				p.stroke(colour[0]+70,colour[1]+70,colour[2]+70);
+				p.strokeWeight(ring_width);
+				p.noFill();
+				p.ellipse(key.x, key.y, (key.d)-(ring_width/2), (key.d)-(ring_width/2));
+			}
 		}
 		
 		boolean withinBounds(float x_input, float y_input)

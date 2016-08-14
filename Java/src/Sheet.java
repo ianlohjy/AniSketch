@@ -32,7 +32,8 @@ public class Sheet extends Element{
 	
 	int animation_mode = COMPOSITION;
 	ButtonToggleMode button_toggle_mode = new ButtonToggleMode(80, 25, p);
-	ButtonKeyColour button_key_colour = new ButtonKeyColour(80, 25, p);
+	//ButtonKeyColour button_key_colour = new ButtonKeyColour(80, 25, p);
+	ColourStrip colour_strip = new ColourStrip(25, 25, p); 
 	
 	Sheet(int x, int y, int w, int h, AniSketch p, AnimationController a)
 	{
@@ -330,23 +331,23 @@ public class Sheet extends Element{
 		
 		if(active_key_selection != null && isCompositionMode())
 		{
-			button_key_colour.x = this.x + 10;
-			button_key_colour.y = button_toggle_mode.y + button_toggle_mode.h + 2;
-			button_key_colour.draw();
-			button_key_colour.drawPalette();
+			colour_strip.x = (int)(button_toggle_mode.x + button_toggle_mode.w + 2);
+			colour_strip.y = (int)button_toggle_mode.y;
+			colour_strip.draw();
 		}
+		
 	}
 	
 	public boolean checkButtonMouseEvent(MouseEvent e)
 	{
 		button_toggle_mode.checkMouseEvent(e);
 		
-		if(active_key_selection != null)
+		if(active_key_selection != null && isCompositionMode())
 		{
-			button_key_colour.checkMouseEvent(e);
+			colour_strip.checkMouseEvent(e);
 		}
 		
-		if(button_toggle_mode.hover || button_key_colour.hover || button_key_colour.palette.hover)
+		if(colour_strip.hover || button_toggle_mode.hover)
 		{
 			return true;
 		}
@@ -398,6 +399,205 @@ public class Sheet extends Element{
 		}
 	}
 	
+	public class ColourStrip extends Element
+	{
+		int[][] colours;
+		int selection = -1;
+		int active_selection = -1;
+		int box_w;
+		int box_h;
+		
+		ColourStrip(int box_w, int box_h, AniSketch p) 
+		{
+			super(0, 0, 0, 0, p);
+			setupColours();
+			this.box_h = box_h;
+			this.box_w = box_w;
+			this.w = colours.length*box_w;
+			this.h = box_h;
+		}
+		
+		//boolean button_last_hover = false;
+		//boolean allow_open = false;
+		
+		void setupColours()
+		{
+			// Colours have been taken from the Google Material Design Specification
+			// @ https://www.google.com/design/spec/style/color.html#color-color-palette
+			
+			int[] red     = {244,67,54 };
+			int[] teal    = {0,150,136 };
+			int[] blue    = {30,136,229};
+			int[] orange  = {255,87,34 };
+			int[] green   = {76,175,80 };
+			int[] l_blue  = {41,182,246};
+			int[] amber   = {255,193,7 };
+			int[] l_green = {139,195,74};
+			int[] b_grey  = {96,125,139};
+			
+			colours = new int[9][3];
+			colours[0] = red;
+			colours[1] = orange;
+			colours[2] = amber;
+			colours[3] = l_green;
+			colours[4] = green;
+			colours[5] = teal;
+			colours[6] = l_blue;
+			colours[7] = blue;
+			colours[8] = b_grey;
+		}
+		
+		void mouseInputResponse(MouseEvent e)
+		{
+			// Checking what colour the mouse is over
+
+			if(this.withinBounds(e.getX(),e.getY()))
+			{
+				if(active_key_selection != null)
+				{
+					if(hover)
+					{
+						// Find which colour the mouse is on
+						int location = (int)(((e.getX()-this.x)/(float)this.w)*colours.length);
+						selection = location;
+						p.println(location);
+						
+						// If the mouse is down, we will select and update the colour of the selected key
+						if(pressed)
+						{
+							active_key_selection.updateColour(colours[selection]);
+						}
+						
+					}
+				}
+			}
+			else
+			{
+				selection = -1;
+			}
+			/*
+			else
+			{
+				//hover = false;
+			}
+			
+			if(withinBounds(e.getX(), e.getY()))
+			{
+				ButtonKeyColour.this.hover = true;
+				
+				if(active_key_selection != null)
+				{
+					active_selection = findKeyColourPosition(active_key_selection);
+				}
+				
+				int pos_x = (int)(((e.getX()-this.x)/(float)this.w)*3);
+				int pos_y = (int)(((e.getY()-this.y)/(float)this.h)*3);
+				
+				//drawBoundingBox();
+						
+				selection[0] = pos_x;
+				selection[1] = pos_y;
+				
+				if(pressed && active_key_selection != null)
+				{
+					active_key_selection.updateColour(colours[pos_x][pos_y]);
+				}
+			}
+			
+			
+			//ButtonKeyColour.this.hover
+			 * 
+			 */
+		}
+		
+		
+		int findKeyColourPosition(Key key)
+		{
+			int position = -1;
+			
+			for(int c=0; c<colours.length; c++)
+			{
+				if(key.colour[0] == colours[c][0]
+				&& key.colour[1] == colours[c][1]
+				&& key.colour[2] == colours[c][2])
+				{
+					position = c;
+					return position;
+				}		
+			}
+			return position;
+		}
+		
+		void draw()
+		{
+			// Draw colour choices as a line of boxes
+			
+			if(active_key_selection != null)
+			{
+				active_selection = findKeyColourPosition(active_key_selection);
+			}
+			else
+			{
+				active_selection = -1;
+			}
+			
+			for(int c=0; c<colours.length; c++)
+			{
+				int opacity = 100;
+				
+				if(active_selection == c || selection == c)
+				{
+					opacity = 255;
+				}
+				
+				if(active_selection == c)
+				{
+					p.stroke(0);
+					p.strokeWeight(2);
+					p.rect(x+(c*box_w)+1, y+1, box_w-2, box_h-2);
+				}
+
+				p.noStroke();
+				p.fill(colours[c][0],colours[c][1],colours[c][2],opacity);
+				p.rect(x+(c*box_w), y, box_w, box_h);
+			}
+			
+			/*
+			for(int cx=0; cx<colours.length; cx++)
+			{
+				for(int cy=0; cy<colours[cx].length; cy++)
+				{
+					int opacity = 125;
+					if(cx == selection[0] && cy == selection[1])
+					{
+						if(hover)
+						{
+							opacity = 200;
+						}
+						if(pressed)
+						{
+							opacity = 255;
+						}
+					}	
+					
+					if(cx == active_selection[0] && cy == active_selection[1])
+					{
+						opacity = 255;
+					}	
+					
+					p.noStroke();
+					p.fill(colours[cx][cy][0], colours[cx][cy][1], colours[cx][cy][2], opacity);
+					p.rect(2+this.x+(cx*colour_box_width), this.y+(cy*colour_box_width), colour_box_width, colour_box_width);
+				}
+			}
+		}
+		*/
+		}
+	}
+	
+	/* 
+	 * Depreciated
+	 * 
 	public class ButtonKeyColour extends Button
 	{
 		ColourPalette palette;
@@ -575,8 +775,8 @@ public class Sheet extends Element{
 			}
 		}
 	}
+	*/
 	
-
 }
 
 
