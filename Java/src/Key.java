@@ -576,8 +576,8 @@ public class Key {
 								// Select this key is this has the oldest last selection time
 								if(oldestSelectionOf(selectable_keys))
 								{
-									//selected = true;
-									//updateSelectionTime();
+									selected = true;
+									updateSelectionTime();
 									mouse_status[1] = 1;
 									p.println("PRESS");
 								}
@@ -643,8 +643,8 @@ public class Key {
 										other_keys.selected = false;
 									}
 									
-									//selected = true;
-									//updateSelectionTime();
+									selected = true;
+									updateSelectionTime();
 									mouse_status[1] = 1;
 									p.println("PRESS");
 								}

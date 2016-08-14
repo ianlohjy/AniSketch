@@ -29,6 +29,7 @@ public class Sheet extends Element{
 	
 	int number_keys_under_mouse = 0;
 	int number_strokes_under_mouse = 0;
+	int last_selected_object_type = 1; // 0 is key, 1 is stroke
 	ArrayList<Key> selectable_keys;
 	ArrayList<Stroke> selectable_strokes;
 	
@@ -255,8 +256,7 @@ public class Sheet extends Element{
 						if(!selection_has_switched)
 						{
 							Utilities.printAlert("SWITCHING ACTIVE KEY");
-							//active_key_selection = key;
-							key_selection_candidate = key;
+							active_key_selection = key;
 						}
 						selection_has_switched = true;
 					}	
@@ -270,6 +270,19 @@ public class Sheet extends Element{
 				// Update selectable keys
 				selectable_keys = _selectable_keys;
 				
+				// Check key state
+				if(last_active_key != active_key_selection)
+				{
+					if(active_key_selection != null)
+					{
+						// If there is a key selected, pass the key to the 'open key' button for handling. This ensures that the "open key" button state is correct.
+						p.main_windows.stage.button_goto_key.checkKeyOpenStatus(active_key_selection);
+					}
+					else if(active_key_selection == null)
+					{
+						p.main_windows.stage.exitActiveKey();
+					}
+				}
 				
 				 
 				selection_has_switched = false;
@@ -301,8 +314,7 @@ public class Sheet extends Element{
 						if(!selection_has_switched)
 						{
 							Utilities.printAlert("SWITCHING ACTIVE STROKE TO " + stroke);
-							stroke_selection_candidate = stroke;
-							//active_stroke_selection = stroke;
+							active_stroke_selection = stroke;
 						}
 						selection_has_switched = true;
 					}	
@@ -316,35 +328,59 @@ public class Sheet extends Element{
 				// Update selectable strokes
 				selectable_strokes = _selectable_strokes;	
 				
+				/*
 				// DECIDE WHETHER TO SELECT STROKES OR KEYS
 				
-				if(key_selection_candidate != null)
+				// If there only keys available to select
+				if(key_selection_candidate != null && stroke_selection_candidate == null)
 				{
 					key_selection_candidate.selected = true;
 					key_selection_candidate.updateSelectionTime();
 					active_key_selection = key_selection_candidate;
+					last_selected_object_type = 0;
+					
+					active_stroke_selection = null;
 				}
-				
-				if(stroke_selection_candidate != null)
+				// If there only strokes available to select
+				else if(key_selection_candidate == null && stroke_selection_candidate != null)
 				{
 					stroke_selection_candidate.selected = true;
 					stroke_selection_candidate.updateSelectionTime();
 					active_stroke_selection = stroke_selection_candidate;
+					last_selected_object_type = 1;
+					
+					active_key_selection = null;
 				}
-				
-				// Check key state
-				if(last_active_key != active_key_selection)
+				// If both are available to select
+				else if(key_selection_candidate != null && stroke_selection_candidate != null)
 				{
-					if(active_key_selection != null)
+					p.println("both");
+					// If the last selected object is a stroke, select the available key
+					if(last_selected_object_type == 1)
 					{
-						// If there is a key selected, pass the key to the 'open key' button for handling. This ensures that the "open key" button state is correct.
-						p.main_windows.stage.button_goto_key.checkKeyOpenStatus(active_key_selection);
+						key_selection_candidate.selected = true;
+						key_selection_candidate.updateSelectionTime();
+						active_key_selection = key_selection_candidate;
+						last_selected_object_type = 0;
+						
+						active_stroke_selection = null;
 					}
-					else if(active_key_selection == null)
+					// If the last selected object is a key, select the available stroke
+					else if(last_selected_object_type == 0)
 					{
-						p.main_windows.stage.exitActiveKey();
+						stroke_selection_candidate.selected = true;
+						stroke_selection_candidate.updateSelectionTime();
+						active_stroke_selection = stroke_selection_candidate;
+						last_selected_object_type = 1;
+						
+						active_key_selection = null;
 					}
 				}
+				*/
+				
+				
+				
+				p.println(active_key_selection);
 				
 			}	
 			else if(animation_mode == DRAW)

@@ -654,12 +654,18 @@ public class Stroke
 			{
 				if(within_bounds) 
 				{
-					//selected = true;
+					// Always select the stroke is it is the only thing available
+					if(selectable_strokes.size() == 1 && selectable_strokes.contains(this))
+					{
+						selected = true;
+						updateSelectionTime();
+						mouse_status[1] = 1;
+					}
 				}
 				else 
 				{
 					selected = false;
-					
+					mouse_status[1] = -1;
 				}
 			}
 			if(e.getButton() == 39)
@@ -705,8 +711,8 @@ public class Stroke
 									other_strokes.selected = false;
 								}
 								
-								//selected = true;
-								//updateSelectionTime();
+								selected = true;
+								updateSelectionTime();
 								mouse_status[1] = 1;
 							}
 						}
