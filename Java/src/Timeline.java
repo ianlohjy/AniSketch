@@ -46,6 +46,8 @@ public class Timeline extends Element{
 			default_style.fill(30,30,30,255);
 		}
 		
+		default_style.fill(30,30,30,255);
+		
 		default_style.apply();
 		p.rect(x, y, w, h);
 

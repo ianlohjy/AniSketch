@@ -207,6 +207,7 @@ public class Sheet extends Element{
 		//a.keyshapes.getWeights(e.getX(), e.getY());
 		if(within_bounds && !buttons_in_use)
 		{
+			// We only care about selection when in composition mode
 			if(animation_mode == COMPOSITION)
 			{
 				boolean allow_selection_switch = false;
