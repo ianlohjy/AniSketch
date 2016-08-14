@@ -40,6 +40,9 @@ public class Key {
 	// Transform Data
 	PVector transform_offset; // General purpose var for holding transform info
 
+	// GRAPHICS // 
+	float opacity_scale = 1.0f;
+	
 	// HANDLES // 
 	HandleRing ring_handle = new HandleRing(this);
 	

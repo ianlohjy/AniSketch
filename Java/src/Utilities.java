@@ -62,7 +62,14 @@ public class Utilities {
 
 	public static boolean isPointLeftOfLine(PVector a, PVector b, float x_input, float y_input)
 	{
-		return ((b.x - a.x)*(y_input - a.y) - (b.y - a.y)*(x_input - a.x)) > 0;
+		try{
+			return ((b.x - a.x)*(y_input - a.y) - (b.y - a.y)*(x_input - a.x)) > 0;
+		}
+		catch(Exception e)
+		{
+			return false;
+		}
+		
 	}
 	
 	public static boolean isPointLeftOfLine(float ax, float ay, float bx, float by, float x_input, float y_input)

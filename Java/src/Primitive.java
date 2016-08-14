@@ -1140,9 +1140,6 @@ public class Primitive
 					p.popMatrix();
 					style_hover.apply();
 				}
-				// NEEDS WORK
-				style_default.apply();
-				drawStretchRect(pivot.x, pivot.y, t, b, l, r);
 			}
 		}
 		
@@ -1155,7 +1152,18 @@ public class Primitive
 				drawStretchRect(pivot.x, pivot.y, t, b, l, r);
 				p.popMatrix();
 			}
+		}		
+		
+		// If there is no sprite attached, we will always want to draw the primitive bounding box
+		if(sprite == null)
+		{
+			p.pushMatrix();
+			p.translate(0, 0, stage.primitives.size()+1);
+			style_default.apply();
+			drawStretchRect(pivot.x, pivot.y, t, b, l, r);
+			p.popMatrix();
 		}
+		
 		
 		//p.fill(0);
 		//p.textAlign(p.LEFT);
