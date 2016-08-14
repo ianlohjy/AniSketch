@@ -514,7 +514,7 @@ public class Key {
 	}
 	
 	// SELECTION HANDLING //
-	public boolean lastSelectionTimeIsLowest(ArrayList<Key> selectable_keys)
+	public boolean oldestSelectionOf(ArrayList<Key> selectable_keys)
 	{
 		// Checks if the current Key's last selected time is the lowest of all selectable keys
 		// Returns true if it is the lowest
@@ -533,6 +533,11 @@ public class Key {
 	public boolean selectableKeysContainsKey(ArrayList<Key> selectable_keys, Key key)
 	{
 		return selectable_keys.contains(key);
+	}
+	
+	void updateSelectionTime()
+	{
+		last_time_selected = System.currentTimeMillis();
 	}
 	
 	public int[] checkMouseEvent(MouseEvent e, Key active_key_selection, ArrayList<Key> selectable_keys, boolean allow_switching)
@@ -560,16 +565,16 @@ public class Key {
 					if(within_bounds)
 					{
 						// If the active key is NOT selectable, meaning that the current selected key is not in the possible selection list 
-						if(!selectableKeysContainsKey(selectable_keys, active_key_selection))
+						if(!selectable_keys.contains(active_key_selection))
 						{
 							// And if there is no active key OR the active key is out of bounds
 							if(active_key_selection == null || !active_key_selection.withinBounds(e.getX(), e.getY()))
 							{
 								// Select this key is this has the oldest last selection time
-								if(lastSelectionTimeIsLowest(selectable_keys))
+								if(oldestSelectionOf(selectable_keys))
 								{
 									selected = true;
-									last_time_selected = System.currentTimeMillis();
+									updateSelectionTime();
 									mouse_status[1] = 1;
 									p.println("PRESS");
 								}
@@ -616,7 +621,7 @@ public class Key {
 						if(active_key_selection == this)
 						{
 							p.println("CLICK");
-							if(selectableKeysContainsKey(selectable_keys, this) && selectable_keys.size() != 1)
+							if(selectable_keys.contains(this) && selectable_keys.size() != 1)
 							{
 								selected = false;
 								mouse_status[1] = -1;
@@ -626,7 +631,7 @@ public class Key {
 						}
 						else
 						{
-							if(lastSelectionTimeIsLowest(selectable_keys))
+							if(oldestSelectionOf(selectable_keys))
 							{
 								if(allow_switching)
 								{
@@ -636,7 +641,7 @@ public class Key {
 									}
 									
 									selected = true;
-									last_time_selected = System.currentTimeMillis();
+									updateSelectionTime();
 									mouse_status[1] = 1;
 									p.println("PRESS");
 								}

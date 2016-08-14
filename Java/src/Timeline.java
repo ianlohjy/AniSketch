@@ -516,11 +516,18 @@ public class Timeline extends Element{
 	class ButtonPlay extends Button
 	{
 		TimelineBar t;
+		Style new_default;
 		
 		ButtonPlay(int w, int h, TimelineBar t, AniSketch p) 
 		{
 			super(0, 0, w, h, p);
 			this.t = t;
+			
+			new_default = new Style(p);
+			new_default.noStroke();
+			new_default.fill(0,0,0,0);
+			setDefaultStyle(new_default);
+			
 			setToToggle();
 			setOffImage(p.getResource("/resources/icons/play.png"), 11, 14);
 			setOnImage(p.getResource("/resources/icons/pause.png"), 14, 14);
@@ -547,10 +554,17 @@ public class Timeline extends Element{
 	class ButtonStop extends Button
 	{
 		TimelineBar t;
+		Style new_default;
 		
 		ButtonStop(int w, int h, TimelineBar t, AniSketch p) 
 		{
 			super(0, 0, w, h, p);
+			
+			new_default = new Style(p);
+			new_default.noStroke();
+			new_default.fill(0,0,0,0);
+			setDefaultStyle(new_default);
+			
 			this.t = t;
 			setToPress();
 			setOffImage(p.getResource("/resources/icons/stop.png"), 14, 14);
@@ -573,10 +587,17 @@ public class Timeline extends Element{
 	class ButtonLoop extends Button
 	{
 		TimelineBar t;
+		Style new_default;
 		
 		ButtonLoop(int w, int h, TimelineBar t, AniSketch p) 
 		{
 			super(0, 0, w, h, p);
+			
+			new_default = new Style(p);
+			new_default.noStroke();
+			new_default.fill(0,0,0,0);
+			setDefaultStyle(new_default);
+			
 			this.t = t;
 			setToToggle();
 			setOffImage(p.getResource("/resources/icons/back.png"), 14, 14);
@@ -603,9 +624,17 @@ public class Timeline extends Element{
 	
 	public class ButtonRender extends Button
 	{
+		Style new_default;
+		
 		ButtonRender(int w, int h, AniSketch p) 
 		{
 			super(0, 0, w, h, p);
+			
+			new_default = new Style(p);
+			new_default.noStroke();
+			new_default.fill(0,0,0,0);
+			setDefaultStyle(new_default);
+			
 			setToPress();
 			setLabel("RENDER");
 		}
