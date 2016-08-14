@@ -1,5 +1,7 @@
 import processing.core.*;
 import processing.event.MouseEvent;
+
+import java.nio.channels.SelectableChannel;
 import java.util.ArrayList;
 
 public class Stroke 
@@ -34,6 +36,9 @@ public class Stroke
 	boolean hover, selected;
 	int hover_focus = -1; // Indicates the closest index to the mouse (if close enough)
 	
+	// SELECTION // 
+	long last_time_selected = 0;
+	
 	Stroke(AniSketch p, AnimationController a)
 	{
 		this.p = p;
@@ -53,7 +58,7 @@ public class Stroke
 	
 	void draw()
 	{
-		if(selected)
+		if(selected && p.main_windows.sheet.isCompositionMode())
 		{
 			drawInk((int)a.current_frame-(int)start_frame, visible_range, range_fade_amount, false, 30, 150);	
 		}
@@ -588,14 +593,35 @@ public class Stroke
 		return segments;
 	}
 	
-	//================//
-	// MOUSE HANDLING //
-	//================//
+	//==========================//
+	// MOUSE/SELECTION HANDLING //
+	//==========================//
 	
-	void checkMouseEvent(MouseEvent e)
+	void updateSelectionTime()
+	{
+		last_time_selected = System.currentTimeMillis();
+	}
+	
+	public boolean oldestSelectionOf(ArrayList<Stroke> selectable_strokes)
+	{
+		// Checks if the current Stroke's last selected time is the lowest of all selectable strokes
+		// Returns true if it is the lowest
+
+		for(Stroke other_strokes: selectable_strokes)
+		{
+			if(other_strokes.last_time_selected < this.last_time_selected)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	int[] checkMouseEvent(MouseEvent e, Stroke active_stroke_selection, ArrayList<Stroke> selectable_strokes, boolean allow_switching)
 	{
 		float[] collision_response = checkCollision(e);
 		boolean within_bounds = false;
+		int[] mouse_status = {0,0};
 		
 		if(collision_response[0] != -1)
 		{	
@@ -626,8 +652,15 @@ public class Stroke
 		{
 			if(e.getButton() == 37)
 			{
-				if(within_bounds) {selected = true;}
-				else {selected = false;}
+				if(within_bounds) 
+				{
+					//selected = true;
+				}
+				else 
+				{
+					selected = false;
+					
+				}
 			}
 			if(e.getButton() == 39)
 			{
@@ -644,6 +677,42 @@ public class Stroke
 		}
 		else if(e.getAction() == 3) // When mouse is clicked (down then up)
 		{
+			// This is where we will handle selection switching
+			if(e.getButton() == 37)
+			{
+				if(within_bounds)
+				{
+					// If this stroke is already selected, deselect it
+					if(active_stroke_selection == this)
+					{
+						if(selectable_strokes.contains(this) 
+						&& selectable_strokes.size() != 1)
+						{
+							selected = false;
+							mouse_status[1] = -1;
+						}
+					}
+					else
+					{
+						// If this is a valid selection
+						if(oldestSelectionOf(selectable_strokes))
+						{
+							if(allow_switching)
+							{
+								// Deselect all other strokes
+								for(Stroke other_strokes: selectable_strokes)
+								{
+									other_strokes.selected = false;
+								}
+								
+								selected = true;
+								updateSelectionTime();
+								mouse_status[1] = 1;
+							}
+						}
+					}
+				}
+			}
 		}
 		else if(e.getAction() == 4) // When mouse is dragged
 		{
@@ -653,6 +722,18 @@ public class Stroke
 			if(within_bounds) {hover = true;}
 			else {hover = false;}
 		}
+		
+		if(within_bounds)
+		{
+			mouse_status[0] = 1;
+		}
+		else
+		{
+			mouse_status[0] = -1;
+		}
+		
+		return mouse_status;
+		
 	}
 	
 	//=======================//

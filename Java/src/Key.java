@@ -518,11 +518,9 @@ public class Key {
 	{
 		// Checks if the current Key's last selected time is the lowest of all selectable keys
 		// Returns true if it is the lowest
-		p.println("HI " + selectable_keys.size());
+
 		for(Key other_keys: selectable_keys)
 		{
-			p.println("HI");
-			//p.println(other_keys.last_time_selected);
 			if(other_keys.last_time_selected < this.last_time_selected)
 			{
 				
@@ -542,6 +540,7 @@ public class Key {
 		boolean within_bounds = withinBounds(e.getX(), e.getY());
 		boolean handles_mouse_event_state = false;
 		int[] mouse_status = {0,0}; 
+		
 		// Mouse state communicates how the Key has processed the mouse event
 		// mouse_status[0] = if the mouse is within the bounds of the object
 		// mouse_status[1] = if the Key has become the active selection (1) if the key has been deselected (-1)
@@ -566,6 +565,7 @@ public class Key {
 							// And if there is no active key OR the active key is out of bounds
 							if(active_key_selection == null || !active_key_selection.withinBounds(e.getX(), e.getY()))
 							{
+								// Select this key is this has the oldest last selection time
 								if(lastSelectionTimeIsLowest(selectable_keys))
 								{
 									selected = true;

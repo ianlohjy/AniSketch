@@ -28,7 +28,9 @@ public class Sheet extends Element{
 	Stroke active_stroke_selection; 
 	
 	int number_keys_under_mouse = 0;
-	ArrayList<Key> possible_selections;
+	int number_strokes_under_mouse = 0;
+	ArrayList<Key> selectable_keys;
+	ArrayList<Stroke> selectable_strokes;
 	
 	int animation_mode = COMPOSITION;
 	ButtonToggleMode button_toggle_mode = new ButtonToggleMode(80, 25, p);
@@ -43,7 +45,8 @@ public class Sheet extends Element{
 		//drawn_points = new ArrayList<PVector>();
 		drawing = false;
 		this.a = a;
-		possible_selections = new ArrayList<Key>();
+		selectable_keys = new ArrayList<Key>();
+		selectable_strokes = new ArrayList<Stroke>();
 	}
 	
 	void draw()
@@ -200,22 +203,27 @@ public class Sheet extends Element{
 	void checkMouseEvent(MouseEvent e)
 	{
 		// Check event, if it is a click, we know to change selection, 
-		// 
+		
 		boolean within_bounds = withinBounds(e.getX(), e.getY());
 		boolean buttons_in_use = checkButtonMouseEvent(e);
 		
-		//a.keyshapes.getWeights(e.getX(), e.getY());
+		// Check if selection is possible
 		if(within_bounds && !buttons_in_use)
 		{
 			// We only care about selection when in composition mode
 			if(animation_mode == COMPOSITION)
 			{
 				boolean allow_selection_switch = false;
-				ArrayList<Key> t_possible_selections = new ArrayList<Key>();
+				
+				final int SELECTABLE = 1;
+				final int SELECTED = 1;
+				final int DESELECTED = -1;
+				
+				ArrayList<Key> _selectable_keys = new ArrayList<Key>();
+				ArrayList<Stroke> _selectable_strokes = new ArrayList<Stroke>();
+				
 				int[] mouse_status;
-				
 				boolean selection_has_switched = false;
-				
 				Key last_active_key = active_key_selection; 
 				
 				// Check key mouse selection incrementally
@@ -225,37 +233,45 @@ public class Sheet extends Element{
 				// If there is no active selection:
 				// 1. The key with the oldest last selected time becomes the new selected key
 				
-				
+				// KEY SELECTION
 				for(Key key: a.delta_keys)
 				{	
-					mouse_status = key.checkMouseEvent(e, active_key_selection, possible_selections, !selection_has_switched);	
+					// Get the mouse event result from the key
+					mouse_status = key.checkMouseEvent(e, active_key_selection, selectable_keys, !selection_has_switched);	
 					
-					if(mouse_status[0] == 1)
+					// If the key is selectable, add it to the possible selections
+					if(mouse_status[0] == SELECTABLE)
 					{
-						t_possible_selections.add(key);
+						_selectable_keys.add(key);
 					} 
 					
-					if(mouse_status[1] == 1)
+					// If the key has decided to become selected
+					if(mouse_status[1] == SELECTED)
 					{
+						// Update the active key
 						if(!selection_has_switched)
 						{
-							p.println("SWITCHING ACTIVE KEY");
-							//found_selection = true;
+							Utilities.printAlert("SWITCHING ACTIVE KEY");
 							active_key_selection = key;
 						}
 						selection_has_switched = true;
 					}	
-					else if(mouse_status[1] == -1 && active_key_selection == key)
+					// If the key was deselected
+					else if(mouse_status[1] == DESELECTED && active_key_selection == key)
 					{
 						active_key_selection = null;
 					}
 				}
-				possible_selections = t_possible_selections;
+				
+				// Update selectable keys
+				selectable_keys = _selectable_keys;
+				
+				// Check key state
 				if(last_active_key != active_key_selection)
 				{
 					if(active_key_selection != null)
 					{
-						// If there is a key selected, pass the key to the 'open key' button for handling.
+						// If there is a key selected, pass the key to the 'open key' button for handling. This ensures that the "open key" button state is correct.
 						p.main_windows.stage.button_goto_key.checkKeyOpenStatus(active_key_selection);
 					}
 					else if(active_key_selection == null)
@@ -263,24 +279,53 @@ public class Sheet extends Element{
 						p.main_windows.stage.exitActiveKey();
 					}
 				}
+				 
+				selection_has_switched = false;
 				
-				// Stroke selection
-				active_stroke_selection = null;
+				// STROKE SELECTION
 				for(Stroke stroke: a.strokes)
 				{
-					stroke.checkMouseEvent(e);
+					// Get the mouse event result from the stroke
+					
+					mouse_status = stroke.checkMouseEvent(e, active_stroke_selection, selectable_strokes, !selection_has_switched);
+					
+					// If the key is selectable, add it to the possible selections
+					/*
 					if(stroke.selected)
 					{
 						active_stroke_selection = stroke;
 					}
-				}	
+					*/
+
+					if(mouse_status[0] == SELECTABLE)
+					{
+						_selectable_strokes.add(stroke);
+					} 
+					
+					// If the stroke has decided to become selected
+					if(mouse_status[1] == SELECTED)
+					{
+						// Update the active stroke
+						if(!selection_has_switched)
+						{
+							Utilities.printAlert("SWITCHING ACTIVE STROKE TO " + stroke);
+							active_stroke_selection = stroke;
+						}
+						selection_has_switched = true;
+					}	
+					// If the stroke was deselected
+					else if(mouse_status[1] == DESELECTED && active_stroke_selection == stroke)
+					{
+						active_stroke_selection = null;
+					}
+				}
+				selectable_strokes = _selectable_strokes;	
+				
 			}	
 			else if(animation_mode == DRAW)
 			{
 				if(within_bounds)
 				{
-					//p.main_windows.stage.showCompiledKeys(e.getX(), e.getY());
-					
 					if(e.getButton() == 37)
 					{ // If its a left click
 						if(e.getAction() == 1)// Mouse Pressed
@@ -476,7 +521,6 @@ public class Sheet extends Element{
 						// Find which colour the mouse is on
 						int location = (int)(((e.getX()-this.x)/(float)this.w)*colours.length);
 						selection = location;
-						p.println(location);
 						
 						// If the mouse is down, we will select and update the colour of the selected key
 						if(pressed)
