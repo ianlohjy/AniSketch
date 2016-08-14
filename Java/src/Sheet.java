@@ -305,6 +305,21 @@ public class Sheet extends Element{
 				}
 			}
 		}
+		
+		if(within_bounds)
+		{
+			// When the mouse is released
+			if(e.getAction() == 2)
+			{
+				p.main_windows.registerMouseRelease(0);
+			}
+			
+			// When the mouse is dragged
+			if(e.getAction() == 4)
+			{
+				p.main_windows.registerMouseDrag(0);
+			}
+		}
 	}
 	
 	/*

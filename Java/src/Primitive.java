@@ -85,7 +85,6 @@ public class Primitive
 	final static int ROTATION = 5;
 	final static int SHAPE = 6;
 	
-	
 	//=====================//
 	// KEY DELTA RECORDING //
 	//=====================//
@@ -1316,7 +1315,6 @@ public class Primitive
 		
 		if(within_bounds){response[0] = 1;}
 		
-		
 		// If the primitive is already selected, pass the mouse event to the handles first
 		if(selected)
 		{
@@ -1507,6 +1505,7 @@ public class Primitive
 		if(a.current_frame != 0 && !delta_recording_start) 
 		{
 			p.setCursorMessage("OBJECTS CAN ONLY BE EDITED AT FRAME 0");
+			stage.cursor_message_active = true;
 			return;
 		}
 		
@@ -1603,9 +1602,7 @@ public class Primitive
 	{ 
 		// Ends translation of primitive
 		a.unlockFrameUpdate();
-		
-		if(a.current_frame != 0 && !delta_recording_start) {p.clearCursorMessage();}
-		
+			
 		if(transform_mode == MOVE)
 		{
 			transform_mode = NONE;
@@ -1617,6 +1614,7 @@ public class Primitive
 		if(a.current_frame != 0 && !delta_recording_start) 
 		{
 			p.setCursorMessage("OBJECTS CAN ONLY BE EDITED AT FRAME 0");
+			stage.cursor_message_active = true;
 			return;
 		}
 		
@@ -1666,8 +1664,6 @@ public class Primitive
 	{
 		a.unlockFrameUpdate();
 		
-		if(a.current_frame != 0 && !delta_recording_start) {p.clearCursorMessage();}
-		
 		if(transform_mode == ROTATE)
 		{
 			transform_mode = NONE;
@@ -1679,6 +1675,7 @@ public class Primitive
 		if(a.current_frame != 0 && !delta_recording_start) 
 		{
 			p.setCursorMessage("OBJECTS CAN ONLY BE EDITED AT FRAME 0");
+			stage.cursor_message_active = true;
 			return;
 		}
 		
@@ -1800,8 +1797,6 @@ public class Primitive
 	public void endWidthHeight(float x_input, float y_input)
 	{ // Ends translation of primitive
 		a.unlockFrameUpdate();
-		
-		if(a.current_frame != 0 && !delta_recording_start) {p.clearCursorMessage();}
 		
 		if(transform_mode == WIDTH_HEIGHT)
 		{

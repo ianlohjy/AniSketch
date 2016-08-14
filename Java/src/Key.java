@@ -429,6 +429,7 @@ public class Key {
 			
 			PApplet.println("Started translate");
 		}
+		
 		if(transform_mode == MOVE)
 		{
 			float amount_x = this.x - (x_input - transform_offset.x);
@@ -655,10 +656,15 @@ public class Key {
 					
 					if(selected && p.main_windows.sheet.withinBounds(e.getX(), e.getY()))
 					{
-						if(e.getButton() == 37)
+						// Make sure that the left mouse button is pressed, and that the drag event started inside the sheet
+						if(e.getButton() == 37 && p.main_windows.mouseDraggedStartedIn(0))
 						{
 							doTranslate(e.getX(), e.getY());
 						}	
+						else
+						{
+							endTranslate(e.getX(), e.getY());
+						}
 					}
 				}
 				if(e.getButton() == 39) // If it was a right-click

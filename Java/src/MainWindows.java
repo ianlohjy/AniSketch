@@ -26,6 +26,10 @@ public class MainWindows {
 	final static int RIGHT_HAND = 1;
 	int handedness = RIGHT_HAND;
 	
+	// MOUSE STATES //
+	int mouse_drag_start_window = -1; // Default value 
+	boolean mouse_drag_started = false;
+	
 	AniSketch p;		
 			
 	MainWindows(AniSketch p){
@@ -150,6 +154,36 @@ public class MainWindows {
 			sheet.checkMouseEvent(e);
 			timeline.checkMouseEvent(e);
 		}
+	}
+	
+	// Returns the window id of where the mouse drag even started from (useful when dragged mouse moves across different windows)
+	boolean mouseDraggedStartedIn(int window_id)
+	{
+		if(mouse_drag_start_window == window_id)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	// This is used by windows to register a mouse drag with MainWindows
+	void registerMouseDrag(int window_id)
+	{
+		if(!mouse_drag_started)
+		{
+			mouse_drag_start_window = window_id;
+			mouse_drag_started = true;
+		}
+	}
+	
+	// This is used by windows to register a mouse release with MainWindows
+	void registerMouseRelease(int window_id)
+	{
+		mouse_drag_start_window = -1;
+		mouse_drag_started = false;
 	}
 	
 	void handleGestureResponse(GestureEngine.GestureResponse gesture_response)

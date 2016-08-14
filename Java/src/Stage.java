@@ -37,6 +37,11 @@ public class Stage extends Element{
 	ButtonMakeElephant button_make_elephant = new ButtonMakeElephant(x, y, 80, 25, p);
 	ButtonLoadBackground button_load_background = new ButtonLoadBackground(x, y, 80, 25, p);
 	
+	//===========//
+	// UTILITIES //
+	//===========//
+	boolean cursor_message_active = false; // If a cursor message is active within the stage
+	
 	Stage(int x, int y, int w, int h, Sheet sheet, AniSketch p)
 	{
 		super(x,y,w,h,p);
@@ -340,7 +345,9 @@ public class Stage extends Element{
 	
 	void checkMouseEvent(MouseEvent e)
 	{
-		if(withinBounds(e.getX(), e.getY()))
+		boolean within_bounds = withinBounds(e.getX(), e.getY());
+		
+		if(within_bounds)
 		{
 			boolean buttons_in_use = checkButtonMouseEvent(e);
 			
@@ -381,7 +388,28 @@ public class Stage extends Element{
 				}
 				selectable_primitives = new_selectables;
 			}
+			
+			// When the mouse is released
+			if(e.getAction() == 2)
+			{
+				p.main_windows.registerMouseRelease(1);
+			}
+			
+			// When the mouse is dragged
+			if(e.getAction() == 4)
+			{
+				p.main_windows.registerMouseDrag(1);
+			}
 		}
+		
+		// If the mouse is released anywhere and there is a stage related cursor message, remove it
+		if(e.getAction() == 2 && cursor_message_active)
+		{
+			p.clearCursorMessage();
+			cursor_message_active = false;
+		}
+		
+		
 	}
 
 	void exampleMakeElephant()

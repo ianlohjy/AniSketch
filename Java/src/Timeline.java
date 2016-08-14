@@ -74,6 +74,21 @@ public class Timeline extends Element{
 		button_stop.checkMouseEvent(e);
 		button_loop.checkMouseEvent(e);
 		button_render.checkMouseEvent(e);
+		
+		if(within_bounds)
+		{
+			// When the mouse is released
+			if(e.getAction() == 2)
+			{
+				p.main_windows.registerMouseRelease(2);
+			}
+			
+			// When the mouse is dragged
+			if(e.getAction() == 4)
+			{
+				p.main_windows.registerMouseDrag(2);
+			}
+		}
 	}
 	
 	///////////////////////////////////

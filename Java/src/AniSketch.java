@@ -133,12 +133,15 @@ public class AniSketch extends PApplet
 			textSize(12);
 			float message_width = textWidth(cursor_message)+20;
 			
+			pushMatrix();
+			translate(0,0,100);
 			noStroke();
-			fill(0, 50);
-			rect(mouseX-(message_width/2), mouseY-30, message_width, 25);
 			fill(0);
+			rect(mouseX-(message_width/2), mouseY-30, message_width, 25);
+			fill(255);
 			textAlign(CENTER, BOTTOM);
 			text(cursor_message,mouseX, mouseY-10);
+			popMatrix();
 		}
 	}
 	
