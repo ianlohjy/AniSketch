@@ -226,6 +226,9 @@ public class Sheet extends Element{
 				boolean selection_has_switched = false;
 				Key last_active_key = active_key_selection; 
 				
+				Key key_selection_candidate = null;
+				Stroke stroke_selection_candidate = null;
+				
 				// Check key mouse selection incrementally
 				// If there is an active key selection, DO NOT switch selection unless:
 				// 1. A mouse click event is detected
@@ -252,7 +255,8 @@ public class Sheet extends Element{
 						if(!selection_has_switched)
 						{
 							Utilities.printAlert("SWITCHING ACTIVE KEY");
-							active_key_selection = key;
+							//active_key_selection = key;
+							key_selection_candidate = key;
 						}
 						selection_has_switched = true;
 					}	
@@ -266,19 +270,7 @@ public class Sheet extends Element{
 				// Update selectable keys
 				selectable_keys = _selectable_keys;
 				
-				// Check key state
-				if(last_active_key != active_key_selection)
-				{
-					if(active_key_selection != null)
-					{
-						// If there is a key selected, pass the key to the 'open key' button for handling. This ensures that the "open key" button state is correct.
-						p.main_windows.stage.button_goto_key.checkKeyOpenStatus(active_key_selection);
-					}
-					else if(active_key_selection == null)
-					{
-						p.main_windows.stage.exitActiveKey();
-					}
-				}
+				
 				 
 				selection_has_switched = false;
 				
@@ -309,7 +301,8 @@ public class Sheet extends Element{
 						if(!selection_has_switched)
 						{
 							Utilities.printAlert("SWITCHING ACTIVE STROKE TO " + stroke);
-							active_stroke_selection = stroke;
+							stroke_selection_candidate = stroke;
+							//active_stroke_selection = stroke;
 						}
 						selection_has_switched = true;
 					}	
@@ -319,7 +312,39 @@ public class Sheet extends Element{
 						active_stroke_selection = null;
 					}
 				}
+				
+				// Update selectable strokes
 				selectable_strokes = _selectable_strokes;	
+				
+				// DECIDE WHETHER TO SELECT STROKES OR KEYS
+				
+				if(key_selection_candidate != null)
+				{
+					key_selection_candidate.selected = true;
+					key_selection_candidate.updateSelectionTime();
+					active_key_selection = key_selection_candidate;
+				}
+				
+				if(stroke_selection_candidate != null)
+				{
+					stroke_selection_candidate.selected = true;
+					stroke_selection_candidate.updateSelectionTime();
+					active_stroke_selection = stroke_selection_candidate;
+				}
+				
+				// Check key state
+				if(last_active_key != active_key_selection)
+				{
+					if(active_key_selection != null)
+					{
+						// If there is a key selected, pass the key to the 'open key' button for handling. This ensures that the "open key" button state is correct.
+						p.main_windows.stage.button_goto_key.checkKeyOpenStatus(active_key_selection);
+					}
+					else if(active_key_selection == null)
+					{
+						p.main_windows.stage.exitActiveKey();
+					}
+				}
 				
 			}	
 			else if(animation_mode == DRAW)

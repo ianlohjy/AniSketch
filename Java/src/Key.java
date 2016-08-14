@@ -540,7 +540,10 @@ public class Key {
 		last_time_selected = System.currentTimeMillis();
 	}
 	
-	public int[] checkMouseEvent(MouseEvent e, Key active_key_selection, ArrayList<Key> selectable_keys, boolean allow_switching)
+	public int[] checkMouseEvent(MouseEvent e, 
+								 Key active_key_selection,
+								 ArrayList<Key> selectable_keys, 
+								 boolean allow_switching)
 	{
 		boolean within_bounds = withinBounds(e.getX(), e.getY());
 		boolean handles_mouse_event_state = false;
@@ -573,8 +576,8 @@ public class Key {
 								// Select this key is this has the oldest last selection time
 								if(oldestSelectionOf(selectable_keys))
 								{
-									selected = true;
-									updateSelectionTime();
+									//selected = true;
+									//updateSelectionTime();
 									mouse_status[1] = 1;
 									p.println("PRESS");
 								}
@@ -640,8 +643,8 @@ public class Key {
 										other_keys.selected = false;
 									}
 									
-									selected = true;
-									updateSelectionTime();
+									//selected = true;
+									//updateSelectionTime();
 									mouse_status[1] = 1;
 									p.println("PRESS");
 								}

@@ -705,8 +705,8 @@ public class Stroke
 									other_strokes.selected = false;
 								}
 								
-								selected = true;
-								updateSelectionTime();
+								//selected = true;
+								//updateSelectionTime();
 								mouse_status[1] = 1;
 							}
 						}
