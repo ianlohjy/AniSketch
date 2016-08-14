@@ -564,7 +564,7 @@ public class Key {
 		{
 			handles_mouse_event_state = checkMouseEventHandle(e);
 		}
-		
+
 		if(!handles_mouse_event_state)
 		{
 			if(e.getAction() == 1)// Mouse Pressed

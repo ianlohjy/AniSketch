@@ -624,7 +624,7 @@ public class Stroke
 	}
 	
 	int[] checkMouseEvent(MouseEvent e, 
-						  Stroke active_stroke_selection, 
+						  Object active_selection, 
 						  ArrayList<Object> selectables, 
 						  boolean allow_switching)
 	{
@@ -698,7 +698,7 @@ public class Stroke
 				if(within_bounds)
 				{
 					// If this stroke is already selected, deselect it
-					if(active_stroke_selection == this)
+					if(active_selection == this)
 					{
 						if(selectables.contains(this) 
 						&& selectables.size() != 1)

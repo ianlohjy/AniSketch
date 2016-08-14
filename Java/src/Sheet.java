@@ -26,12 +26,14 @@ public class Sheet extends Element{
 	// SELECTION //
 	Key active_key_selection; // Currently selected key (There can only be one key selected at a time)
 	Stroke active_stroke_selection; 
+	Object active_selection;
 	
 	int number_keys_under_mouse = 0;
 	int number_strokes_under_mouse = 0;
 	int last_selected_object_type = 1; // 0 is key, 1 is stroke
-	ArrayList<Key> selectable_keys;
-	ArrayList<Stroke> selectable_strokes;
+	//ArrayList<Key> selectable_keys;
+	//ArrayList<Stroke> selectable_strokes;
+	ArrayList<Object> selectables; 
 	
 	int animation_mode = COMPOSITION;
 	ButtonToggleMode button_toggle_mode = new ButtonToggleMode(80, 25, p);
@@ -46,8 +48,9 @@ public class Sheet extends Element{
 		//drawn_points = new ArrayList<PVector>();
 		drawing = false;
 		this.a = a;
-		selectable_keys = new ArrayList<Key>();
-		selectable_strokes = new ArrayList<Stroke>();
+		//selectable_keys = new ArrayList<Key>();
+		//selectable_strokes = new ArrayList<Stroke>();
+		selectables = new ArrayList<Object>();
 	}
 	
 	void draw()
@@ -214,21 +217,7 @@ public class Sheet extends Element{
 			// We only care about selection when in composition mode
 			if(animation_mode == COMPOSITION)
 			{
-				boolean allow_selection_switch = false;
-				
-				final int SELECTABLE = 1;
-				final int SELECTED = 1;
-				final int DESELECTED = -1;
-				
-				ArrayList<Key> _selectable_keys = new ArrayList<Key>();
-				ArrayList<Stroke> _selectable_strokes = new ArrayList<Stroke>();
-				
-				int[] mouse_status;
-				boolean selection_has_switched = false;
-				Key last_active_key = active_key_selection; 
-				
-				Key key_selection_candidate = null;
-				Stroke stroke_selection_candidate = null;
+				//boolean allow_selection_switch = false;
 				
 				// Check key mouse selection incrementally
 				// If there is an active key selection, DO NOT switch selection unless:
@@ -237,43 +226,73 @@ public class Sheet extends Element{
 				// If there is no active selection:
 				// 1. The key with the oldest last selected time becomes the new selected key
 				
-				// KEY SELECTION
-				for(Key key: a.delta_keys)
+				final int SELECTABLE = 1;
+				final int SELECTED = 1;
+				final int DESELECTED = -1;
+				
+				ArrayList<Object> _selectables = new ArrayList<Object>();
+				
+				int[] mouse_status = {0,0};
+				boolean selection_switched = false;
+				Key last_active_key = active_key_selection; 
+				
+				ArrayList<Object> all_objects = new ArrayList<Object>();
+				all_objects.addAll(a.delta_keys);
+				all_objects.addAll(a.strokes);
+				
+				// GENERIC SELECTION CYCLER
+				for(Object object: all_objects)
 				{	
-					ArrayList<Object> selectables = new ArrayList<Object>();
-					selectables.addAll(selectable_keys);
-					
-					// Get the mouse event result from the key
-					mouse_status = key.checkMouseEvent(e, active_key_selection,selectables, !selection_has_switched);	
-					
-					// If the key is selectable, add it to the possible selections
-					if(mouse_status[0] == SELECTABLE)
+					// Get the mouse event results from the object
+					if(object instanceof Key)
 					{
-						_selectable_keys.add(key);
-					} 
+						Key key = (Key)object;
+						mouse_status = key.checkMouseEvent(e, active_selection, selectables, !selection_switched);
+					}
+					else if(object instanceof Stroke)
+					{
+						Stroke stroke = (Stroke)object;
+						mouse_status = stroke.checkMouseEvent(e, active_selection, selectables, !selection_switched);
+					}
 					
-					// If the key has decided to become selected
+					// If the selectable is selectable, add it to the possible selections
+					if(mouse_status[0] == SELECTABLE){_selectables.add(object);} 
+					
+					// If the object has been selected
 					if(mouse_status[1] == SELECTED)
 					{
-						// Update the active key
-						if(!selection_has_switched)
+						if(!selection_switched)
 						{
-							Utilities.printAlert("SWITCHING ACTIVE KEY");
-							active_key_selection = key;
+							Utilities.printAlert("Cycling object selection");
+							active_selection = object;
 						}
-						selection_has_switched = true;
+						selection_switched = true;
 					}	
-					// If the key was deselected
-					else if(mouse_status[1] == DESELECTED && active_key_selection == key)
+					// If the object was deselected
+					else if(mouse_status[1] == DESELECTED && active_selection == object)
 					{
-						active_key_selection = null;
+						if(object instanceof Key){active_key_selection = null;}
+						else if(object instanceof Stroke){active_stroke_selection = null;}
+						active_selection = null;
 					}
 				}
 				
-				// Update selectable keys
-				selectable_keys = _selectable_keys;
+				// Update selectable objects
+				selectables = _selectables;
+
+				// Figure out what object was selected
+				if(active_selection instanceof Key)
+				{
+					active_key_selection = (Key)active_selection;
+					active_stroke_selection = null;
+				}
+				else if(active_selection instanceof Stroke)
+				{
+					active_stroke_selection = (Stroke)active_selection;
+					active_key_selection = null;
+				}
 				
-				// Check key state
+				// Check the active key state and update the stage accordingly
 				if(last_active_key != active_key_selection)
 				{
 					if(active_key_selection != null)
@@ -286,113 +305,6 @@ public class Sheet extends Element{
 						p.main_windows.stage.exitActiveKey();
 					}
 				}
-				
-				 
-				selection_has_switched = false;
-				
-				// STROKE SELECTION
-				for(Stroke stroke: a.strokes)
-				{
-					// Get the mouse event result from the stroke
-					
-					ArrayList<Object> selectables = new ArrayList<Object>();
-					selectables.addAll(selectable_strokes);
-					
-					mouse_status = stroke.checkMouseEvent(e, active_stroke_selection, selectables, !selection_has_switched);
-					
-					// If the key is selectable, add it to the possible selections
-					if(mouse_status[0] == SELECTABLE)
-					{
-						_selectable_strokes.add(stroke);
-					} 
-					
-					// If the stroke has decided to become selected
-					if(mouse_status[1] == SELECTED)
-					{
-						// Update the active stroke
-						if(!selection_has_switched)
-						{
-							Utilities.printAlert("SWITCHING ACTIVE STROKE TO " + stroke);
-							active_stroke_selection = stroke;
-						}
-						selection_has_switched = true;
-					}	
-					// If the stroke was deselected
-					else if(mouse_status[1] == DESELECTED && active_stroke_selection == stroke)
-					{
-						active_stroke_selection = null;
-					}
-				}
-				
-				// Update selectable strokes
-				selectable_strokes = _selectable_strokes;	
-				
-				// New selection code to handle both selections
-				/*
-				ArrayList<Object> all_objects = new ArrayList<Object>();
-				all_objects.addAll(a.strokes);
-				all_objects.addAll(a.delta_keys);
-				ArrayList<Object> all_selectables = new ArrayList<Object>();
-				
-				for(Object object: all_objects)
-				{
-					
-				}*/
-				
-				/*
-				// DECIDE WHETHER TO SELECT STROKES OR KEYS
-				
-				// If there only keys available to select
-				if(key_selection_candidate != null && stroke_selection_candidate == null)
-				{
-					key_selection_candidate.selected = true;
-					key_selection_candidate.updateSelectionTime();
-					active_key_selection = key_selection_candidate;
-					last_selected_object_type = 0;
-					
-					active_stroke_selection = null;
-				}
-				// If there only strokes available to select
-				else if(key_selection_candidate == null && stroke_selection_candidate != null)
-				{
-					stroke_selection_candidate.selected = true;
-					stroke_selection_candidate.updateSelectionTime();
-					active_stroke_selection = stroke_selection_candidate;
-					last_selected_object_type = 1;
-					
-					active_key_selection = null;
-				}
-				// If both are available to select
-				else if(key_selection_candidate != null && stroke_selection_candidate != null)
-				{
-					p.println("both");
-					// If the last selected object is a stroke, select the available key
-					if(last_selected_object_type == 1)
-					{
-						key_selection_candidate.selected = true;
-						key_selection_candidate.updateSelectionTime();
-						active_key_selection = key_selection_candidate;
-						last_selected_object_type = 0;
-						
-						active_stroke_selection = null;
-					}
-					// If the last selected object is a key, select the available stroke
-					else if(last_selected_object_type == 0)
-					{
-						stroke_selection_candidate.selected = true;
-						stroke_selection_candidate.updateSelectionTime();
-						active_stroke_selection = stroke_selection_candidate;
-						last_selected_object_type = 1;
-						
-						active_key_selection = null;
-					}
-				}
-				*/
-				
-				
-				
-				p.println(active_key_selection);
-				
 			}	
 			else if(animation_mode == DRAW)
 			{
