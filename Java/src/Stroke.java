@@ -602,22 +602,31 @@ public class Stroke
 		last_time_selected = System.currentTimeMillis();
 	}
 	
-	public boolean oldestSelectionOf(ArrayList<Stroke> selectable_strokes)
+	public boolean oldestSelectionOf(ArrayList<Object> selectables)
 	{
 		// Checks if the current Stroke's last selected time is the lowest of all selectable strokes
 		// Returns true if it is the lowest
 
-		for(Stroke other_strokes: selectable_strokes)
+		for(Object other_selectable: selectables)
 		{
-			if(other_strokes.last_time_selected < this.last_time_selected)
+			if(other_selectable instanceof Key)
 			{
-				return false;
+				Key other_key = (Key)other_selectable;
+				if(other_key.last_time_selected < this.last_time_selected){return false;}
+			}
+			else if(other_selectable instanceof Stroke)
+			{
+				Stroke other_stroke = (Stroke)other_selectable;
+				if(other_stroke.last_time_selected < this.last_time_selected){return false;}
 			}
 		}
 		return true;
 	}
 	
-	int[] checkMouseEvent(MouseEvent e, Stroke active_stroke_selection, ArrayList<Stroke> selectable_strokes, boolean allow_switching)
+	int[] checkMouseEvent(MouseEvent e, 
+						  Stroke active_stroke_selection, 
+						  ArrayList<Object> selectables, 
+						  boolean allow_switching)
 	{
 		float[] collision_response = checkCollision(e);
 		boolean within_bounds = false;
@@ -655,7 +664,7 @@ public class Stroke
 				if(within_bounds) 
 				{
 					// Always select the stroke is it is the only thing available
-					if(selectable_strokes.size() == 1 && selectable_strokes.contains(this))
+					if(selectables.size() == 1 && selectables.contains(this))
 					{
 						selected = true;
 						updateSelectionTime();
@@ -691,8 +700,8 @@ public class Stroke
 					// If this stroke is already selected, deselect it
 					if(active_stroke_selection == this)
 					{
-						if(selectable_strokes.contains(this) 
-						&& selectable_strokes.size() != 1)
+						if(selectables.contains(this) 
+						&& selectables.size() != 1)
 						{
 							selected = false;
 							mouse_status[1] = -1;
@@ -701,14 +710,23 @@ public class Stroke
 					else
 					{
 						// If this is a valid selection
-						if(oldestSelectionOf(selectable_strokes))
+						if(oldestSelectionOf(selectables))
 						{
 							if(allow_switching)
 							{
 								// Deselect all other strokes
-								for(Stroke other_strokes: selectable_strokes)
+								for(Object others: selectables)
 								{
-									other_strokes.selected = false;
+									if(others instanceof Key)
+									{
+										Key other_key = (Key)others;
+										other_key.selected = false;
+									}
+									else if(others instanceof Stroke)
+									{
+										Stroke other_stroke = (Stroke)others;
+										other_stroke.selected = false;
+									}
 								}
 								
 								selected = true;

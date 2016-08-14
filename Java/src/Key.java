@@ -514,26 +514,33 @@ public class Key {
 	}
 	
 	// SELECTION HANDLING //
-	public boolean oldestSelectionOf(ArrayList<Key> selectable_keys)
+	public boolean oldestSelectionOf(ArrayList<Object> selectables)
 	{
-		// Checks if the current Key's last selected time is the lowest of all selectable keys
+		// Checks if the current object's last selected time is the lowest of all selectables
 		// Returns true if it is the lowest
 
-		for(Key other_keys: selectable_keys)
+		for(Object other_selectable: selectables)
 		{
-			if(other_keys.last_time_selected < this.last_time_selected)
+			if(other_selectable instanceof Key)
 			{
-				
-				return false;
+				Key other_key = (Key)other_selectable;
+				if(other_key.last_time_selected < this.last_time_selected){return false;}
+			}
+			else if(other_selectable instanceof Stroke)
+			{
+				Stroke other_stroke = (Stroke)other_selectable;
+				if(other_stroke.last_time_selected < this.last_time_selected){return false;}
 			}
 		}
 		return true;
 	}
 	
+	/*
 	public boolean selectableKeysContainsKey(ArrayList<Key> selectable_keys, Key key)
 	{
 		return selectable_keys.contains(key);
 	}
+	*/
 	
 	void updateSelectionTime()
 	{
@@ -541,8 +548,8 @@ public class Key {
 	}
 	
 	public int[] checkMouseEvent(MouseEvent e, 
-								 Key active_key_selection,
-								 ArrayList<Key> selectable_keys, 
+								 Object active_selection,
+								 ArrayList<Object> selectables, 
 								 boolean allow_switching)
 	{
 		boolean within_bounds = withinBounds(e.getX(), e.getY());
@@ -567,6 +574,18 @@ public class Key {
 					// If within bounds
 					if(within_bounds)
 					{
+						if(!selectables.contains(active_selection))
+						{
+							if(oldestSelectionOf(selectables))
+							{
+								selected = true;
+								updateSelectionTime();
+								mouse_status[1] = 1;
+								p.println("PRESS");
+							}
+						}
+							
+						/*
 						// If the active key is NOT selectable, meaning that the current selected key is not in the possible selection list 
 						if(!selectable_keys.contains(active_key_selection))
 						{
@@ -583,6 +602,7 @@ public class Key {
 								}
 							}
 						}
+						*/
 					}
 					else
 					{
@@ -621,10 +641,10 @@ public class Key {
 					// Clicking will cycle through selections
 					if(within_bounds)
 					{
-						if(active_key_selection == this)
+						if(active_selection == this)
 						{
 							p.println("CLICK");
-							if(selectable_keys.contains(this) && selectable_keys.size() != 1)
+							if(selectables.contains(this) && selectables.size() != 1)
 							{
 								selected = false;
 								mouse_status[1] = -1;
@@ -634,13 +654,22 @@ public class Key {
 						}
 						else
 						{
-							if(oldestSelectionOf(selectable_keys))
+							if(oldestSelectionOf(selectables))
 							{
 								if(allow_switching)
 								{
-									for(Key other_keys: selectable_keys)
+									for(Object others: selectables)
 									{
-										other_keys.selected = false;
+										if(others instanceof Key)
+										{
+											Key other_key = (Key)others;
+											other_key.selected = false;
+										}
+										else if(others instanceof Stroke)
+										{
+											Stroke other_stroke = (Stroke)others;
+											other_stroke.selected = false;
+										}
 									}
 									
 									selected = true;

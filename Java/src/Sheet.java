@@ -240,8 +240,11 @@ public class Sheet extends Element{
 				// KEY SELECTION
 				for(Key key: a.delta_keys)
 				{	
+					ArrayList<Object> selectables = new ArrayList<Object>();
+					selectables.addAll(selectable_keys);
+					
 					// Get the mouse event result from the key
-					mouse_status = key.checkMouseEvent(e, active_key_selection, selectable_keys, !selection_has_switched);	
+					mouse_status = key.checkMouseEvent(e, active_key_selection,selectables, !selection_has_switched);	
 					
 					// If the key is selectable, add it to the possible selections
 					if(mouse_status[0] == SELECTABLE)
@@ -292,16 +295,12 @@ public class Sheet extends Element{
 				{
 					// Get the mouse event result from the stroke
 					
-					mouse_status = stroke.checkMouseEvent(e, active_stroke_selection, selectable_strokes, !selection_has_switched);
+					ArrayList<Object> selectables = new ArrayList<Object>();
+					selectables.addAll(selectable_strokes);
+					
+					mouse_status = stroke.checkMouseEvent(e, active_stroke_selection, selectables, !selection_has_switched);
 					
 					// If the key is selectable, add it to the possible selections
-					/*
-					if(stroke.selected)
-					{
-						active_stroke_selection = stroke;
-					}
-					*/
-
 					if(mouse_status[0] == SELECTABLE)
 					{
 						_selectable_strokes.add(stroke);
@@ -327,6 +326,18 @@ public class Sheet extends Element{
 				
 				// Update selectable strokes
 				selectable_strokes = _selectable_strokes;	
+				
+				// New selection code to handle both selections
+				/*
+				ArrayList<Object> all_objects = new ArrayList<Object>();
+				all_objects.addAll(a.strokes);
+				all_objects.addAll(a.delta_keys);
+				ArrayList<Object> all_selectables = new ArrayList<Object>();
+				
+				for(Object object: all_objects)
+				{
+					
+				}*/
 				
 				/*
 				// DECIDE WHETHER TO SELECT STROKES OR KEYS
