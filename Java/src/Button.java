@@ -25,6 +25,10 @@ public class Button{
 	float[] on_image_size;
 	float[] off_image_size;		
 	
+	Style hover_style;
+	Style pressed_style;
+	Style default_style;
+	
 	Button(int x, int y, int w, int h, AniSketch p) 
 	{
 		this.x = x;
@@ -36,6 +40,7 @@ public class Button{
 		this.pressed = false;
 		this.hover = false;
 		this.font_size = 12;
+		setupStyles();
 	}
 	
 	void setToToggle()
@@ -78,44 +83,57 @@ public class Button{
 		font_size = size;
 	}
 	
+	void setupStyles(){
+		default_style = new Style(p);
+		default_style.fill(0,0,0,50);
+		default_style.noStroke();
+		
+		hover_style = new Style(p);
+		hover_style.fill(0,0,0,150);
+		hover_style.noStroke();
+		
+		pressed_style = new Style(p);
+		pressed_style.fill(0,0,0,255);
+		pressed_style.noStroke();
+	}
+	
 	void draw()
 	{
-		p.noStroke();
-		
 		if(behavior == PRESS)
 		{
-			p.fill(0,50);	
-			
+			default_style.apply();
+		
 			if(pressed)
 			{
-				p.fill(0);
+				pressed_style.apply();
 			}
 			else if(hover)
 			{
-				p.fill(0,150);
+				hover_style.apply();
 			}
 		}
 		else if(behavior == TOGGLE)
 		{	
 			if(pressed)
 			{
-				p.fill(0,200);
+				hover_style.apply();
 				if(hover)
 				{
-					p.fill(0,255);
+					pressed_style.apply();
 				}
 			}
 			else if(!pressed)
 			{
-				p.fill(0,50);
+				default_style.apply();
 				if(hover)
 				{
-					p.fill(0,150);
+					hover_style.apply();
 				}
 			}
 		}	
 		p.rect(x, y, w, h);
 		
+		// Draw the text label over the button
 		p.fill(255);
 		p.textFont(p.default_font, font_size);
 		p.textAlign(p.CENTER, p.CENTER);
@@ -257,14 +275,19 @@ public class Button{
 		Utilities.printAlert("TOGGLE OFF ACTION");
 	}
 	
+	void setDefaultStyle(Style style)
+	{
+		default_style = style;
+	}
+	
 	void setHoverStyle(Style style)
 	{
-		
+		hover_style = style;
 	}
 	
 	void setPressedStyle(Style style)
 	{
-		
+		pressed_style = style;
 	}
 
 

@@ -87,8 +87,11 @@ public class MainWindows {
 	
 	void drawDividers()
 	{	// Draws dividers
+		p.pushMatrix();
+		p.translate(0,0,1);
 		vertical_divider.draw();
 		horizontal_divider.draw();
+		p.popMatrix();
 	}
 	
 	void drawWindows()

@@ -17,7 +17,6 @@ public class Sheet extends Element{
 	static final int DRAW = 0;
 	static final int COMPOSITION = 1;
 	
-	
 	//int framerate = 25; // The framerate sets limits the number of points per second that you are able to draw
 	//int millis_per_frame = 1000/25;
 	
@@ -60,8 +59,25 @@ public class Sheet extends Element{
 		drawStrokes();
 		p.blendMode(p.NORMAL);
 		
+		p.noFill();
+		p.strokeWeight(5);
+		p.stroke(194,53,51);
+		//p.strokeJoin(PApplet.MITER);
+		//p.rect(x+5, y+5, w-10, h-10);
+		
+		if(button_toggle_mode.pressed)
+		{
+			// Left border
+			p.line(x+7.5f,y+10f,x+7.5f,y+h-10f);
+			// Top border
+			p.line(x+5f,y+7.5f,x+w-5f,y+7.5f);
+			// Bottom border
+			p.line(x+5f,y+h-7.5f,x+w-5f,y+h-7.5f);
+			// Right border
+			p.line(x+w-7.5f,y+10f,x+w-7.5f,y+h-10f);	
+		}
+		
 		p.noClip();
-		p.fill(0);
 		
 		/*
 		if(animation_mode == COMPOSITION)
@@ -312,7 +328,7 @@ public class Sheet extends Element{
 		button_toggle_mode.y = this.y + 10;
 		button_toggle_mode.draw();
 		
-		if(active_key_selection != null)
+		if(active_key_selection != null && isCompositionMode())
 		{
 			button_key_colour.x = this.x + 10;
 			button_key_colour.y = button_toggle_mode.y + button_toggle_mode.h + 2;
@@ -347,6 +363,17 @@ public class Sheet extends Element{
 			super(0, 0, w, h, p);
 			setToToggle();
 			setLabel("COMP");
+			
+			Style new_pressed = new Style(p);
+			new_pressed.noStroke();
+			new_pressed.fill(194,53,51,255);
+			
+			Style new_hover = new Style(p);
+			new_hover.noStroke();
+			new_hover.fill(194,53,51,180);
+			
+			setHoverStyle(new_hover);
+			setPressedStyle(new_pressed);
 		}
 		
 		@Override
