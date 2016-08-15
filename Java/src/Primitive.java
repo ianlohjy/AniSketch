@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 
+import javax.print.attribute.standard.PrinterMoreInfoManufacturer;
 import javax.xml.bind.annotation.XmlElementDecl.GLOBAL;
 
 import processing.core.*;
@@ -169,7 +170,10 @@ public class Primitive
 			{
 				if(!p.rendering)
 				{
-					drawHandles();
+					if(!sheet.isDrawMode())
+					{
+						drawHandles();
+					}	
 				}
 			}
 		}
@@ -601,7 +605,7 @@ public class Primitive
 						computed_pos = computed_pos.rotate(PApplet.radians(default_child.rt));
 						
 						//p.println("XDEFF3: " + computed_pos.x + " YDEFF3: " + computed_pos.y);
-						p.println("!");
+						//p.println("!");
 						addPropertyToDefaultKey(PROP_X, computed_pos.x);
 						addPropertyToDefaultKey(PROP_Y, computed_pos.y);
 						
@@ -740,9 +744,9 @@ public class Primitive
 						Key.PrimitiveData default_parent = a.default_key.getData(parent);
 						Key.PrimitiveData default_child = a.default_key.getData(this);
 						
-						p.fill(0);
-						p.ellipse(default_parent.x + stage.camera.x,default_parent.y + stage.camera.y,10,10);
-						p.ellipse(default_child.x + stage.camera.x,default_child.y + stage.camera.y,10,10);
+						//p.fill(0);
+						//p.ellipse(default_parent.x + stage.camera.x,default_parent.y + stage.camera.y,10,10);
+						//p.ellipse(default_child.x + stage.camera.x,default_child.y + stage.camera.y,10,10);
 						
 						
 						//p.noFill();
@@ -1088,11 +1092,14 @@ public class Primitive
 			{	
 				if(!p.rendering)
 				{
-					p.pushMatrix();
-					p.translate(0, 0, stage.primitives.size()+1);
-					style_light.apply();
-					Utilities.dottedLine(x+stage.camera.x, y+stage.camera.y, parent.x+stage.camera.x, parent.y+stage.camera.y, 5, 10, p);
-					p.popMatrix();
+					if(!sheet.isDrawMode())
+					{
+						p.pushMatrix();
+						p.translate(0, 0, stage.primitives.size()+1);
+						style_light.apply();
+						Utilities.dottedLine(x+stage.camera.x, y+stage.camera.y, parent.x+stage.camera.x, parent.y+stage.camera.y, 5, 10, p);
+						p.popMatrix();
+					}
 				}
 			}
 		}
@@ -1120,24 +1127,27 @@ public class Primitive
 		{	
 			if(!p.rendering)
 			{
-				if(selected)
+				if(!sheet.isDrawMode())
 				{
-					p.pushMatrix();
-					p.translate(0, 0, stage.primitives.size()+1);
-					style_outline_selected.apply();
-					drawStretchRect(pivot.x, pivot.y, t, b, l, r);
-					p.popMatrix();
-					style_selected.apply();
-				}
-				if(hover && !selected)
-				{
-					// Draw an outline
-					p.pushMatrix();
-					p.translate(0, 0, stage.primitives.size()+1);
-					style_outline.apply();
-					drawStretchRect(pivot.x, pivot.y, t, b, l, r);
-					p.popMatrix();
-					style_hover.apply();
+					if(selected)
+					{
+						p.pushMatrix();
+						p.translate(0, 0, stage.primitives.size()+1);
+						style_outline_selected.apply();
+						drawStretchRect(pivot.x, pivot.y, t, b, l, r);
+						p.popMatrix();
+						style_selected.apply();
+					}
+					if(hover && !selected)
+					{
+						// Draw an outline
+						p.pushMatrix();
+						p.translate(0, 0, stage.primitives.size()+1);
+						style_outline.apply();
+						drawStretchRect(pivot.x, pivot.y, t, b, l, r);
+						p.popMatrix();
+						style_hover.apply();
+					}
 				}
 			}
 		}
@@ -1146,10 +1156,13 @@ public class Primitive
 		{	
 			if(!p.rendering && sprite != null)
 			{
-				p.pushMatrix();
-				p.translate(0, 0, stage.primitives.size()+1);
-				drawStretchRect(pivot.x, pivot.y, t, b, l, r);
-				p.popMatrix();
+				if(!sheet.isDrawMode())
+				{
+					p.pushMatrix();
+					p.translate(0, 0, stage.primitives.size()+1);
+					drawStretchRect(pivot.x, pivot.y, t, b, l, r);
+					p.popMatrix();
+				}
 			}
 		}		
 		
@@ -1983,10 +1996,46 @@ public class Primitive
 	
 	public void setParent(Primitive parent)
 	{
-		this.parent = parent;
-		enableParentControl();
+		boolean safe = true;
+		ArrayList<Primitive> cur_children = this.children;
+		ArrayList<Primitive> next_children = new ArrayList<Primitive>();	
+		int total_children = 0;
 		
-		parent.children.add(this);
+		while(cur_children.size()>0)
+		{	
+			if(cur_children.contains(parent))
+			{
+				Utilities.printAlert("UNSAFE LINKAGE DETECTED");
+				safe = false;
+				break;
+			}
+			for(Primitive cur_child: cur_children)
+			{
+				if(cur_child.hasChildren())
+				{
+					next_children.addAll(cur_child.children);
+				}
+				total_children++;
+			}
+			
+			// Update children lists
+			cur_children = next_children;
+			next_children = new ArrayList<Primitive>();
+		}
+		Utilities.printAlert("Number of children: " + total_children);
+		
+		
+		if(safe)
+		{
+			this.parent = parent;
+			enableParentControl();
+			
+			parent.children.add(this);
+		}
+		else
+		{
+			Utilities.printAlert("Cannot Set Parent Due To Link Dependancy");
+		}
 	}
 	
 	public void unparent()

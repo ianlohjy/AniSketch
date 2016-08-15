@@ -313,6 +313,14 @@ public class Stroke
 	// Marks stroke for deletion. Deletion is handled during the animation controller's update loop
 	void delete()
 	{
+		if(p.main_windows.sheet.active_selection == this)
+		{
+			p.main_windows.sheet.active_selection = null;
+		}
+		if(p.main_windows.sheet.active_stroke_selection == this)
+		{
+			p.main_windows.sheet.active_stroke_selection = null;
+		}
 		marked_for_deletion = true;
 	}
 	

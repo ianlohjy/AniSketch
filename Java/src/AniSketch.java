@@ -10,7 +10,7 @@ import processing.event.MouseEvent;
 
 public class AniSketch extends PApplet 
 {
-	final int[] init_resolution = {1280,720}; 
+	final int[] init_resolution = {1600,900}; 
 	final int[] min_resolution  = {1024,640};
 	
 	int cur_width;
