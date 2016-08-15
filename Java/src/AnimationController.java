@@ -294,6 +294,10 @@ public class AnimationController {
 		if(index_to_delete != -1)
 		{
 			to_delete.disconnectAllKeys();
+			if(to_delete == p.main_windows.sheet.active_key_selection)
+			{
+				p.main_windows.sheet.active_key_selection = null;
+			}
 			delta_keys.remove(index_to_delete);
 		}
 		else

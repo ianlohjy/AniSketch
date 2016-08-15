@@ -1829,8 +1829,13 @@ public class Primitive
 		pivot.y = new_pivot_y;
 		
 		pivot_difference = pivot_difference.rotate(PApplet.radians(this.rotation));
+		
+		//p.println(this.x, this.y);
+		
 		this.x -= pivot_difference.x;
 		this.y -= pivot_difference.y;
+		
+		//p.println(this.x, this.y);
 		
 		/*
 		if(parent != null)

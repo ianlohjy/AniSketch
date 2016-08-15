@@ -502,6 +502,12 @@ public class Key {
 		{
 			p.main_windows.stage.exitActiveKey();
 			p.main_windows.sheet.active_key_selection = null;
+			
+			if(p.main_windows.sheet.active_selection == this)
+			{
+				p.main_windows.sheet.active_selection = null;
+			}
+			this.selected = false;
 		}
 		marked_for_deletion = true;
 	}

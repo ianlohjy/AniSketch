@@ -248,7 +248,8 @@ public class GestureHandler {
 		            		if(candidate.initialSize[0] <= 50 && candidate.initialSize[1] <= 50)
 		            		{
 		            			Primitive found_object = (Primitive)state.start_point_objects.get(0).object;
-		            			found_object.setPivotUsingGlobalPosition(candidate.centroid.x, candidate.centroid.y);
+		            			// Disable pivots for now
+		            			//found_object.setPivotUsingGlobalPosition(candidate.centroid.x, candidate.centroid.y);
 		            		}	
 	            		}
             		}
