@@ -24,7 +24,7 @@ public class AniSketch extends PApplet
 	String cursor_message = "";
 	
 	final boolean export = false;
-	String version_info = "AniSketch 0.8 (24/05/2016)";
+	String version_info = "AniSketch 0.8.1 (15/08/2016)";
 	
 	// RENDER & EXPORT
 	boolean rendering = false;

@@ -212,8 +212,10 @@ public class GestureHandler {
 	
 	public void processResponse(GestureEngine.GestureResponse response, GestureState state, Gesture candidate){
 		
+		ArrayList<GestureState.ObjectState> found_selected_objects;
+		Stage stage = p.main_windows.stage;
+		Sheet sheet = p.main_windows.sheet;
 		// If the highest score is greater than the threshold
-		
 		if(response.bestScore > 75)
 		{
 			switch (response.bestGesture.gestureName) {
@@ -232,13 +234,13 @@ public class GestureHandler {
             			found_object.disconnectAllKeys();
 					}
 				}
-			break;
+				break;
 			
             case "CIRCLE":
             	// BREAKS HERE
             	if(p.main_windows.stage.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
             	{
-            		ArrayList<GestureState.ObjectState> found_selected_objects = state.selectedStartObjectsSize();
+            		found_selected_objects = state.selectedStartObjectsSize();
             		if(found_selected_objects.size() == 1)
             		{
             			if(state.start_point_objects.get(0).isPrimitive())
@@ -253,11 +255,10 @@ public class GestureHandler {
             	}
             	if(p.main_windows.sheet.withinBounds((int)response.startPoint.x, (int)response.startPoint.y))
             	{
-            		Sheet sheet = p.main_windows.sheet;
             		p.animation.addKey(candidate.centroid.x, candidate.centroid.y, (candidate.initialSize[0]+candidate.initialSize[1])/2);
             	}
-            p.println("THIS IS A CIRCLE");
-            break;
+	            p.println("THIS IS A CIRCLE");
+	            break;
             
             case "SQUARE_CW":
             	if(p.main_windows.stage.withinBounds((int)response.startPoint.x, (int)response.startPoint.y))
@@ -266,13 +267,12 @@ public class GestureHandler {
                 	{
             			if(candidate.initialSize[0] > 50)
             			{
-            				Stage stage = p.main_windows.stage;
             				p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.main_windows.sheet, p.animation, p);
             			}
             		}
             	}
-            p.println("THIS IS A SQUARE");
-            break;
+	            p.println("THIS IS A SQUARE");
+	            break;
 			
             case "SQUARE_CCW":
             	if(p.main_windows.stage.withinBounds((int)response.startPoint.x, (int)response.startPoint.y))
@@ -283,7 +283,6 @@ public class GestureHandler {
             			//float[] box_shape = findBoxShapeAndAngle(candidate.input_points); //!!! BUGGY
             			if(candidate.initialSize[0] > 50)
             			{
-            				Stage stage = p.main_windows.stage;
                 			p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.main_windows.sheet, p.animation, p);
             				//p.println("BOX SHAPE " + box_shape[0] + " " + box_shape[1] + " " + box_shape[2] + " " + box_shape[3] + " " + box_shape[4] + " " );
             				//Primitive new_primitive = p.main_windows.stage.addPrimitive(box_shape[0] - stage.camera.x, box_shape[1] - stage.camera.y, box_shape[3], box_shape[4], p.main_windows.stage, p.main_windows.sheet, p.animation, p);
@@ -292,8 +291,8 @@ public class GestureHandler {
             			
                 	}
             	}
-            p.println("THIS IS A SQUARE");
-            break;
+	            p.println("THIS IS A SQUARE");
+	            break;
             
             case "RECT_CCW":
             	if(p.main_windows.stage.withinBounds((int)response.startPoint.x, (int)response.startPoint.y))
@@ -302,13 +301,12 @@ public class GestureHandler {
                 	{
             			if(candidate.initialSize[0] > 50)
             			{
-            				Stage stage = p.main_windows.stage;
             				p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.main_windows.sheet, p.animation, p);
             			}
             		}
             	}
-            p.println("THIS IS A RECT");
-            break;
+	            p.println("THIS IS A RECT");
+	            break;
 			
             case "RECT_CW":
             	if(p.main_windows.stage.withinBounds((int)response.startPoint.x, (int)response.startPoint.y))
@@ -317,16 +315,15 @@ public class GestureHandler {
                 	{
             			if(candidate.initialSize[0] > 50)
             			{
-            				Stage stage = p.main_windows.stage;
             				p.main_windows.stage.addPrimitive(candidate.centroid.x - stage.camera.x, candidate.centroid.y - stage.camera.y, candidate.initialSize[0], candidate.initialSize[1], p.main_windows.stage, p.main_windows.sheet, p.animation, p);
             			}
                 	}
             	}
-            p.println("THIS IS A RECT");
-            break;
+	            p.println("THIS IS A RECT");
+	            break;
             
             case "DELETE":
-            	ArrayList<GestureState.ObjectState> found_selected_objects = state.selectedStartObjectsSize();
+            	found_selected_objects = state.selectedStartObjectsSize();
             	
             	if(found_selected_objects.size() == 1)
             	{
@@ -358,8 +355,36 @@ public class GestureHandler {
             			//}
         			}
             	}
-            p.println("EXECUTING DELETE");
-            break;
+	            p.println("EXECUTING DELETE");
+	            break;
+            
+            case "COPY":	
+	            found_selected_objects = state.selectedStartObjectsSize();
+	            
+	        	if(found_selected_objects.size() == 1)
+	        	{
+	        		if(found_selected_objects.get(0).isPrimitive())
+	    			{
+	    				Primitive found_object = (Primitive)found_selected_objects.get(0).object;
+	        			
+	        			if(p.main_windows.stage.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
+	        			{
+	        				p.main_windows.stage.copyPrimitive(found_object, response.endPoint.x-stage.camera.x, response.endPoint.y-stage.camera.y);
+	        				Utilities.printAlert("COPYING PRIMITIVE");
+	        			}
+	    			}
+	        		if(found_selected_objects.get(0).isKey())
+	    			{
+	    				Key found_object = (Key)found_selected_objects.get(0).object;
+	        			
+	        			if(p.main_windows.sheet.withinBounds((int)response.endPoint.x, (int)response.endPoint.y))
+	        			{
+	        				p.animation.copyKey(found_object, response.endPoint.x, response.endPoint.y);
+	        				Utilities.printAlert("COPYING KEY");
+	        			}
+	    			}	
+	        	}
+	            break;
 			}
 		}
 		// If the gesture score is too low

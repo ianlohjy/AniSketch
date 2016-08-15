@@ -239,6 +239,15 @@ public class Key {
 		}
 	}
 	
+	// Make a copy of a PrimitiveData
+	public PrimitiveData copyData(PrimitiveData data)
+	{
+		PrimitiveData data_copy = new PrimitiveData(data.primitive);
+		data_copy.set(data);
+		data_copy.sprite = data.sprite;
+		return data_copy;
+	}
+	
 	// Overloaded method for setting sprites
 	public void setDataProperty(Primitive primitive, int property, PImage sprite)
 	{
@@ -620,11 +629,12 @@ public class Key {
 				if(within_bounds && e.getButton() == 39)// && selected)
 				{
 					p.gesture_handler.registerObject(this, e);
-				} 
+				}
+				/*
 				else if(selected)
 				{
 					p.gesture_handler.registerObject(this, e);
-				}
+				}*/
 				////////////////////////////
 			}
 			else if(e.getAction() == 2)// Mouse Released
@@ -634,10 +644,10 @@ public class Key {
 					endTranslate(e.getX(), e.getY());
 				}
 				// REGISTER GESTURE EVENT //
-				if(within_bounds && e.getButton() == 39)// && selected)
+				/*if(within_bounds && e.getButton() == 39)// && selected)
 				{
 					p.gesture_handler.registerObject(this, e);
-				}
+				}*/
 				////////////////////////////
 			}
 			else if(e.getAction() == 3) // Mouse Clicked
@@ -829,10 +839,7 @@ public class Key {
 		
 	}
 	
-	class HandleSlider
-	{
-		
-	}
+	
 	
 	//=======================//
 	// PRIMITIVE DATA OBJECT //

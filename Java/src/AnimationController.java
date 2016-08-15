@@ -307,6 +307,18 @@ public class AnimationController {
 		delta_keys.add(new Key(x, y, d, p));
 	}
 	
+	public void copyKey(Key key, float x, float y)
+	{
+		Key key_copy = new Key(x, y, key.d, p);
+		key_copy.colour = key.colour;
+		for(Key.PrimitiveData data: key.primitive_data)
+		{
+			key_copy.primitive_data.add(key.copyData(data));
+		}
+		delta_keys.add(key_copy);
+		//delta_keys.add()
+	}
+	
 	//public void addKeyLine(Key key1, Key key2)
 	//{
 	///	keylines.add(new KeyLine(key1, key2, p));

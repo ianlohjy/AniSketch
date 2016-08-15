@@ -8,7 +8,7 @@ public class Sheet extends Element{
 
 	Style default_style;
 	//ArrayList<PVector> drawn_points;
-	PVector camera;
+	PVector camera; // This is not used at the momement, but should be implemented in the future
 	boolean drawing;
 	//long time_since_last_point = System.currentTimeMillis();
 	

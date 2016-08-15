@@ -1209,6 +1209,12 @@ public class Primitive
 		//p.ellipse(p.mouseX, p.mouseY, 10, 10);
 	}
 
+	public void loadSprite(PImage image)
+	{
+		sprite = image;
+		a.default_key.setDataProperty(this, PROP_SPRITE, sprite);
+	}
+	
 	public void loadSprite(String file)
 	{
 		sprite = p.loadImage(file);
@@ -1365,10 +1371,10 @@ public class Primitive
 				{
 					p.gesture_handler.registerObject(this, e);
 				} 
-				else if(selected)
+				/*else if(selected)
 				{
 					p.gesture_handler.registerObject(this, e);
-				}
+				}*/
 				////////////////////////////
 				
 			}

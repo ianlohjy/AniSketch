@@ -559,6 +559,15 @@ public class Stage extends Element{
 		background = null;
 	}
 	
+	Primitive copyPrimitive(Primitive primitive, float x, float y)
+	{
+		Primitive result = addPrimitive(x, y, primitive.l+primitive.r, primitive.b+primitive.t, this, sheet, p.animation, p);
+		result.rotation = primitive.rotation;
+		result.loadSprite(primitive.sprite);
+		result.setPropertiesToDefaultKey();
+		return result;
+	}
+	
 	//===============//
 	// STAGE BUTTONS //
 	//===============//
