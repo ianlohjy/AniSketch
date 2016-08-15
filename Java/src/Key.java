@@ -644,10 +644,10 @@ public class Key {
 					endTranslate(e.getX(), e.getY());
 				}
 				// REGISTER GESTURE EVENT //
-				/*if(within_bounds && e.getButton() == 39)// && selected)
+				if(within_bounds && e.getButton() == 39)// && selected)
 				{
 					p.gesture_handler.registerObject(this, e);
-				}*/
+				}
 				////////////////////////////
 			}
 			else if(e.getAction() == 3) // Mouse Clicked
