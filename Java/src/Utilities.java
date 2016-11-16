@@ -184,4 +184,78 @@ public class Utilities {
 		return false;
 	}
 
+	public static float[] RBGtoHSL(int r, int g, int b)
+	{
+		// From https://www.wikiwand.com/en/HSL_and_HSV#/General_approach
+		
+		float _r = (float)r/255;
+		float _g = (float)g/255;
+		float _b = (float)b/255;
+		
+		float M = Math.max(_r, Math.max(_g, _b));
+		float m = Math.min(_r, Math.min(_g, _b));
+		float C = M-m;
+		
+		float _H = 0;
+		
+		if(C == 0)
+		{
+			_H = 0; // Undefined colour, since all values are balanced (achromatic)
+		}
+		else if(M == _r)
+		{
+			_H = ((_g-_b)/C) % 6;
+		}
+		else if(M == _g)
+		{
+			_H = ((_b-_r)/C) + 2;
+		}
+		else if(M == _r)
+		{
+			_H = ((_r-_g)/C) + 4;
+		}
+		
+		float H = 60*_H;
+		float L = (M+m)/2;
+		float S = 0;
+
+		if(L == 1)
+		{
+			S = 0;
+		}
+		else
+		{
+			S = C/(1-Math.abs(2*L-1));
+		}
+		
+		float[] hsl = {H, S, L};
+		return hsl;
+	}
+	
+	public static int[] HSLtoRGB(float h, float s, float l)
+	{
+		// From https://www.wikiwand.com/en/HSL_and_HSV#/General_approach
+		
+		float C  = (1 - Math.abs(2*l-1)) * s;
+		float _H = h/60;
+		float X  = C * (1 - Math.abs(_H % 2 - 1));
+		
+		float _R = 0;
+		float _G = 0;
+		float _B = 0;
+		
+		if     (h == 0)           { _R=0; _G=0; _B=0; }
+		else if(_H >=0 && _H <=1) { _R=C; _G=X; _B=0; }
+		else if(_H >=1 && _H <=2) { _R=X; _G=C; _B=0; }
+		else if(_H >=2 && _H <=3) { _R=0; _G=C; _B=X; }
+		else if(_H >=3 && _H <=4) { _R=0; _G=X; _B=C; }
+		else if(_H >=4 && _H <=5) { _R=X; _G=0; _B=C; }
+		else if(_H >=5 && _H <=6) { _R=C; _G=0; _B=X; }
+		
+		float m = l-(C/2);
+		int[] rgb = {(int)((_R+m)*255) , (int)((_G+m)*255), (int)((_B+m)*255)};
+		
+		return rgb;
+	}
+	
 }

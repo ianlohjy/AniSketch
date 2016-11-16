@@ -1088,7 +1088,7 @@ public class Primitive
 	
 	public void drawBoundingBox()
 	{
-		updateColours(255,255,255,50);
+		//updateColours(255,255,255,50);
 		
 		// DRAW A DOTTED LINE FROM THE CHILD TO THE PARENT
 		if(parent != null)

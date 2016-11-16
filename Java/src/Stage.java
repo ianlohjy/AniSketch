@@ -568,9 +568,9 @@ public class Stage extends Element{
 		return result;
 	}
 	
-	//===============//
-	// STAGE BUTTONS //
-	//===============//
+	//====================//
+	// STAGE BUTTONS & UI //
+	//====================//
 	
 	public class ButtonMakeFish extends Button
 	{
