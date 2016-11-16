@@ -35,7 +35,7 @@ public class Style
 				p.noFill();
 			}
 			else 
-			{
+			{	
 				p.fill(fill[0],fill[1],fill[2],fill[3]);
 			}
 		}

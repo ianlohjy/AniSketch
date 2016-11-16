@@ -29,6 +29,7 @@ public class Primitive
 	boolean marked_for_deletion = false;
 	//PShape sprite;
 	PImage sprite;
+	int colour[] = {0,0,0};
 	//=========// 
 	// HANDLES //
 	//=========//
@@ -115,6 +116,7 @@ public class Primitive
 	static final int PROP_TOP      			= 5;
 	static final int PROP_BOTTOM   			= 6;
 	static final int PROP_SPRITE   			= 7;
+	static final int PROP_COLOUR   			= 8;
 	
 	//========//
 	// STYLES //
@@ -913,11 +915,11 @@ public class Primitive
 		//
 		//        b	
 		
-		p.line(x-l, y-t, x+r, y-t);
-		p.line(x+r, y-t, x+r, y+b);
-		p.line(x+r, y+b, x-l, y+b);
-		p.line(x-l, y+b, x-l, y-t);
-		//p.quad(x-l, y-t, x+r, y-t, x+r, y+b, x-l, y+b);
+		//p.line(x-l, y-t, x+r, y-t);
+		//p.line(x+r, y-t, x+r, y+b);
+		//p.line(x+r, y+b, x-l, y+b);
+		//p.line(x-l, y+b, x-l, y-t);
+		p.quad(x-l, y-t, x+r, y-t, x+r, y+b, x-l, y+b);
 	}
 
 	public void drawHandles()
@@ -949,7 +951,7 @@ public class Primitive
 		p.strokeWeight(2);
 		
 		p.pushMatrix();
-		p.translate(stage.camera.x + def_data.x, stage.camera.y + def_data.y);
+		p.translate(stage.camera.x + def_data.x, stage.camera.y + def_data.y, 10);
 		
 		p.rotate(PApplet.radians(def_data.rt));
 		
@@ -1039,7 +1041,7 @@ public class Primitive
 			// Draw the arrow
 			p.pushMatrix();
 			p.rotate(PApplet.radians(delta_rotation_live));
-			p.translate(rotation_arc_radius/2, 0);
+			p.translate(rotation_arc_radius/2, 0, 10);
 			if(rotation_direction == 1)
 			{
 				p.line(0, 0, -7, -7);
@@ -1066,6 +1068,7 @@ public class Primitive
 		if(delta_translate_live.mag() > 5)
 		{
 			p.pushMatrix();
+			p.translate(0, 0, 10);		
 			p.translate(stage.camera.x + this.x, stage.camera.y + this.y);		
 			
 			p.line(0, 0, -delta_translate_live.x, -delta_translate_live.y);
@@ -1085,6 +1088,8 @@ public class Primitive
 	
 	public void drawBoundingBox()
 	{
+		updateColours(255,255,255,50);
+		
 		// DRAW A DOTTED LINE FROM THE CHILD TO THE PARENT
 		if(parent != null)
 		{		
@@ -1182,6 +1187,16 @@ public class Primitive
 		//p.text(Long.toString(last_time_selected), 0, -25);
 		
 		p.popMatrix();
+	}
+	
+	public void updateColours(int red, int green, int blue, int alpha)
+	{
+		style_default.fill(red,green,blue,alpha);
+		style_hover.fill(red,green,blue,alpha);
+		style_selected.fill(red,green,blue,alpha);
+		style_outline.fill(red,green,blue,alpha);
+		style_outline_selected.fill(red,green,blue,alpha);
+		style_light.fill(red,green,blue,alpha);
 	}
 	
 	public void drawPivot()
