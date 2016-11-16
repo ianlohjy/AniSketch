@@ -511,7 +511,6 @@ public class Sheet extends Element{
 						{
 							active_key_selection.updateColour(colours[selection]);
 						}
-						
 					}
 				}
 			}
@@ -553,8 +552,7 @@ public class Sheet extends Element{
 			 * 
 			 */
 		}
-		
-		
+			
 		int findKeyColourPosition(Key key)
 		{
 			int position = -1;

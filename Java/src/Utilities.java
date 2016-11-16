@@ -244,8 +244,8 @@ public class Utilities {
 		float _G = 0;
 		float _B = 0;
 		
-		if     (h == 0)           { _R=0; _G=0; _B=0; }
-		else if(_H >=0 && _H <=1) { _R=C; _G=X; _B=0; }
+		//if   (h == 0)           { _R=0; _G=0; _B=0; }
+		if     (_H >=0 && _H <=1) { _R=C; _G=X; _B=0; }
 		else if(_H >=1 && _H <=2) { _R=X; _G=C; _B=0; }
 		else if(_H >=2 && _H <=3) { _R=0; _G=C; _B=X; }
 		else if(_H >=3 && _H <=4) { _R=0; _G=X; _B=C; }

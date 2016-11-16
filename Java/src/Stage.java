@@ -37,6 +37,8 @@ public class Stage extends Element{
 	ButtonMakeElephant button_make_elephant = new ButtonMakeElephant(x, y, 80, 25, p);
 	ButtonLoadBackground button_load_background = new ButtonLoadBackground(x, y, 80, 25, p);
 	
+	ColourBar colour_bar = new ColourBar(150, 150, 300, 25, p);
+	
 	//===========//
 	// UTILITIES //
 	//===========//
@@ -465,6 +467,8 @@ public class Stage extends Element{
 	
 	public void updateAndDrawButtons()
 	{
+		// TODO: Logic is depreciated since "Load Image" button is moved to the top right. Optimise logic
+		
 		// Drawing 'open key' and 'load image' buttons 
 		boolean showing_open_key_button = false;
 		boolean showing_load_img_button = false;
@@ -485,10 +489,14 @@ public class Stage extends Element{
 		}
 		else if(showing_load_img_button && not(showing_open_key_button))
 		{
-			button_load_image.x = this.x + 10;
+			button_load_image.x = this.x + this.w - button_load_image.w - 10;
 			button_load_image.y = this.y + 10;
 			button_load_image.updateLabelState();
 			button_load_image.draw();
+			
+			colour_bar.x = (int)button_load_image.x - colour_bar.w - 2;
+			colour_bar.y = (int)button_load_image.y;
+			colour_bar.draw();
 		}
 		else if(showing_load_img_button && showing_open_key_button)
 		{
@@ -496,10 +504,18 @@ public class Stage extends Element{
 			button_goto_key.y = p.main_windows.stage.y + 10;
 			button_goto_key.draw();
 			
-			button_load_image.x = this.x + 10;
-			button_load_image.y = button_goto_key.y + button_goto_key.h + 2;
+			button_load_image.x = this.x + this.w - button_load_image.w - 10;
+			button_load_image.y = this.y + 10;
 			button_load_image.updateLabelState();
 			button_load_image.draw();
+			
+			colour_bar.x = (int)button_load_image.x - colour_bar.w - 2;
+			colour_bar.y = (int)button_load_image.y;
+			colour_bar.draw();
+			//button_load_image.x = this.x + 10;
+			//button_load_image.y = button_goto_key.y + button_goto_key.h + 2;
+			//button_load_image.updateLabelState();
+			//button_load_image.draw();
 		}
 		
 		// Drawing example object buttons
@@ -523,7 +539,8 @@ public class Stage extends Element{
 		if(hasPrimitiveSelected())
 		{
 			button_load_image.checkMouseEvent(e);
-			if(button_load_image.hover) {buttons_in_use = true;}
+			colour_bar.checkMouseEvent(e);
+			if(button_load_image.hover || colour_bar.hover) {buttons_in_use = true;}
 		}
 		if(p.main_windows.sheet.hasKeySelected() && p.main_windows.sheet.isCompositionMode())
 		{
@@ -572,9 +589,95 @@ public class Stage extends Element{
 	// STAGE BUTTONS & UI //
 	//====================//
 	
+	public class ColourBar extends Element
+	{
+		int[][] colours;
+		int divs = 12;
+		float hovered_hue = 0;
+		
+		ColourBar(int x, int y, int w, int h, AniSketch p)
+		{
+			super(x, y, w, h, p);
+			setup();
+		}
+		
+		void setup()
+		{
+			colours  = new int[divs][3];
+			
+			for(int h=0; h<divs; h++)
+			{
+				int[] _colour = Utilities.HSLtoRGB(((float)h/divs)*360, 8f, 0.5f);
+				colours[h] = _colour;
+			}
+		}
+		
+		void draw()
+		{
+			float div_size = ((float)w/(divs+1)); // We add 1 extra division for the "clear box"
+			
+			p.noStroke();
+			
+			float opacity = 100;
+			
+			for(int d=0; d<divs; d++)
+			{
+				if((int)((divs+1)*hovered_hue)-1 == d)
+				{
+					opacity = 200;
+				}
+				else
+				{
+					opacity = 100;
+				}
+				
+				p.fill(colours[d][0], colours[d][1], colours[d][2], opacity);
+				p.rect( (x+d*div_size)+div_size, y, div_size, h);
+			}
+			
+			if(hovered_hue == -1)
+			{
+				opacity = 200;
+			}
+			
+			p.noFill();
+			p.strokeWeight(2);
+			p.stroke(0, opacity);
+			
+			p.rect(x+1, y+1, div_size-2, h-2);
+			p.line(x+2, y+2, x+div_size-2, y+h-2);
+			p.line(x+2, y+h-2, x+div_size-2, y+2);
+		}
+		
+		@Override
+		void mouseInputResponse(MouseEvent e)
+		{
+			float div_size = ((float)w/(divs+1)); // We add 1 extra division for the "clear box"
+			
+			if(hover)
+			{
+				if( e.getX() < this.x + div_size)
+				{
+					p.println("ON THE LEFT!");
+					hovered_hue = -1;
+				}
+				else
+				{
+					hovered_hue = (float)(e.getX()-this.x)/this.w;
+					p.println( hovered_hue );
+				}
+			}
+			else
+			{
+				hovered_hue = -2;
+			}
+		}
+	}
+	
 	public class ButtonMakeFish extends Button
 	{
-		ButtonMakeFish(int x, int y, int w, int h, AniSketch p) {
+		ButtonMakeFish(int x, int y, int w, int h, AniSketch p) 
+		{
 			super(x, y, w, h, p);
 			setToPress();
 			setLabel("CREATE FISH");
